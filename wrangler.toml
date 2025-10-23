@@ -1,6 +1,7 @@
 name = "umbrella-api"
 main = "api/index.ts"
 compatibility_date = "2024-01-01"
+pages_build_output_dir = "dist"
 
 # Development environment
 [env.dev]

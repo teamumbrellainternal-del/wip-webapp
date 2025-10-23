@@ -73,4 +73,9 @@ export function isTestMode(): boolean {
 
   // Check if user email matches test user
   return session.user.email === 'test@umbrella.test'
+ * Check if app is in test mode
+ * @returns true if in test mode
+ */
+export function isTestMode(): boolean {
+  return false // TODO: Implement test mode detection
 }
