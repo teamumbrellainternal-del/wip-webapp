@@ -1,0 +1,17 @@
+# Environment variables for local development
+# Copy this file to .dev.vars and fill in your actual values
+# Never commit .dev.vars to git!
+
+# JWT Secret for signing session tokens
+JWT_SECRET=your-jwt-secret-here-use-a-long-random-string
+
+# Claude API Key (for Violet AI toolkit)
+CLAUDE_API_KEY=sk-ant-api03-...
+
+# Resend API Key (for transactional and broadcast emails)
+RESEND_API_KEY=re_...
+
+# Twilio Credentials (for SMS delivery)
+TWILIO_ACCOUNT_SID=AC...
+TWILIO_AUTH_TOKEN=...
+TWILIO_PHONE_NUMBER=+1...
