@@ -7,6 +7,7 @@ import { successResponse, errorResponse } from '../utils/response'
 import { createJWT } from '../utils/jwt'
 import { generateUUIDv4 } from '../utils/uuid'
 import { authenticateRequest, checkOnboardingComplete, type Env } from '../middleware/auth'
+import type { User } from '../models/user'
 
 /**
  * POST /v1/auth/callback
@@ -38,16 +39,16 @@ export async function handleAuthCallback(request: Request, env: Env): Promise<Re
       'SELECT * FROM users WHERE oauth_provider = ? AND oauth_id = ?'
     )
       .bind(oauth_provider, oauth_id)
-      .first()
+      .first<User>()
 
     if (existingUser) {
       // User exists - create session token
       const token = await createJWT(
         {
-          sub: existingUser.id as string,
-          email: existingUser.email as string,
-          oauth_provider: existingUser.oauth_provider as string,
-          oauth_id: existingUser.oauth_id as string,
+          sub: existingUser.id,
+          email: existingUser.email,
+          oauth_provider: existingUser.oauth_provider,
+          oauth_id: existingUser.oauth_id,
           iat: Math.floor(Date.now() / 1000),
           exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days
         },
