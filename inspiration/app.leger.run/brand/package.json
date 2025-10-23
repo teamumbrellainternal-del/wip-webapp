@@ -1,0 +1,26 @@
+{
+  "name": "@leger-labs/brand",
+  "version": "1.0.0",
+  "description": "Leger Labs design system and brand assets",
+  "main": "dist/tokens.js",
+  "files": [
+    "dist",
+    "tokens",
+    "docs",
+    "assets",
+    "fonts"
+  ],
+  "scripts": {
+    "build": "node scripts/download-fonts.js && node scripts/generate-all.js",
+    "postinstall": "npm run build"
+  },
+  "keywords": [
+    "design-system",
+    "design-tokens",
+    "tailwind",
+    "catppuccin",
+    "geist"
+  ],
+  "author": "Leger Labs",
+  "license": "MIT"
+}

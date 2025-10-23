@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Backgrounds - Dark mode primary (Catppuccin Mocha base) */
+    --background: 240 21% 15%;        /* #1e1e2e (Catppuccin base) */
+    --foreground: 226 64% 88%;        /* #cdd6f4 (Catppuccin text) */
+
+    /* Cards and elevated surfaces */
+    --card: 240 21% 15%;              /* #1e1e2e */
+    --card-foreground: 226 64% 88%;   /* #cdd6f4 */
+
+    /* Popovers */
+    --popover: 232 23% 18%;           /* #181825 (Catppuccin mantle) */
+    --popover-foreground: 226 64% 88%; /* #cdd6f4 */
+
+    /* Primary brand - Catppuccin Yellow */
+    --primary: 41 86% 83%;             /* #f9e2af */
+    --primary-foreground: 240 21% 15%; /* #1e1e2e (dark text on yellow) */
+
+    /* Secondary */
+    --secondary: 233 23% 15%;          /* #181825 (Catppuccin mantle) */
+    --secondary-foreground: 226 64% 88%; /* #cdd6f4 */
+
+    /* Muted */
+    --muted: 233 12% 39%;              /* #585b70 (Catppuccin surface2) */
+    --muted-foreground: 228 24% 72%;   /* #a6adc8 (Catppuccin subtext0) */
+
+    /* Accent - Catppuccin Lavender for highlights */
+    --accent: 243 54% 82%;             /* #b4befe (Catppuccin lavender) */
+    --accent-foreground: 240 21% 15%;  /* #1e1e2e */
+
+    /* Destructive - Catppuccin Red */
+    --destructive: 343 81% 75%;        /* #f38ba8 (Catppuccin red) */
+    --destructive-foreground: 226 64% 88%; /* #cdd6f4 */
+
+    /* Borders */
+    --border: 233 12% 39%;             /* #585b70 (Catppuccin surface2) */
+    --input: 233 12% 39%;              /* #585b70 */
+    --ring: 41 86% 83%;                /* #f9e2af (yellow focus ring) */
+
+    /* Border radius - Exact brand values */
+    --radius: 0.375rem;  /* 6px - brand default */
+  }
+
+  .dark {
+    /* Already optimized for dark mode above, but explicit override */
+    --background: 240 21% 15%;
+    --foreground: 226 64% 88%;
+    --primary: 41 86% 83%;
+    --primary-foreground: 240 21% 15%;
+  }
+
+  /* Light mode (optional - your brand is dark-first) */
+  .light {
+    --background: 0 0% 100%;           /* #ffffff */
+    --foreground: 224 71% 4%;          /* #09090b */
+    --card: 0 0% 100%;
+    --card-foreground: 224 71% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71% 4%;
+    --primary: 41 86% 83%;             /* Keep yellow in light mode */
+    --primary-foreground: 240 21% 15%;
+    --secondary: 220 13% 95%;          /* #f1f5f9 */
+    --secondary-foreground: 224 71% 4%;
+    --muted: 220 13% 95%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 243 54% 82%;
+    --accent-foreground: 240 21% 15%;
+    --destructive: 343 81% 65%;        /* Slightly darker red for light mode */
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 41 86% 83%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Brand-specific overrides */
+@layer components {
+  /* Ensure shadows match brand (darker for dark mode) */
+  .shadow-sm {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  }
+  .shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  }
+  .shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  }
+  .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Focus rings use brand yellow */
+  .focus-visible\:ring-2:focus-visible {
+    --tw-ring-color: hsl(var(--primary));
+  }
+}

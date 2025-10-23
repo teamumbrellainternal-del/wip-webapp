@@ -1,0 +1,7 @@
+/* Import brand kit fonts and tokens */
+@import '../brand/dist/fonts.css';
+@import '../brand/dist/tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

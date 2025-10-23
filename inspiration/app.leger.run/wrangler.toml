@@ -1,0 +1,46 @@
+name = "leger-app"
+compatibility_date = "2025-04-01"
+main = "api/index.ts"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+# KV Namespaces for user data and secrets
+[[kv_namespaces]]
+binding = "LEGER_USERS"
+id = "f1adc48616bb40c4a969e7401a237f8f"
+preview_id = "78ea717b1397493485e8a0e09c2e8f6d"
+
+[[kv_namespaces]]
+binding = "LEGER_SECRETS"
+id = "deaa082adb664509a6626d84c14fef89"
+preview_id = "f781141e14a24348a7d1f457d0ce3b99"
+
+# R2 Bucket for static sites (infrastructure only in v0.1.0)
+[[r2_buckets]]
+binding = "LEGER_STATIC"
+bucket_name = "leger-static-sites" 
+
+# D1 Database
+[[d1_databases]]
+binding = "LEGER_DB"
+database_name = "leger-db"
+database_id = "d5266754-b245-4974-a20d-42eedaecdf1d"
+
+[vars]
+ENVIRONMENT = "production"
+APP_VERSION = "0.1.0"
+
+[placement]
+mode = "smart"
+
+# Custom domain routing
+routes = [
+  { pattern = "app.leger.run/*", zone_name = "leger.run" }
+]
+
+# Secrets (set with wrangler secret put)
+# - ENCRYPTION_KEY: Base64-encoded 256-bit key for AES-256-GCM
+# - JWT_SECRET: Shared secret with CLI for JWT validation

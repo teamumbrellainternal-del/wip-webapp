@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+
+# Keep dist/ and fonts/ - they should be committed
+# !dist/
+# !fonts/

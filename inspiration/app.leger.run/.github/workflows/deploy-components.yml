@@ -1,0 +1,123 @@
+name: Deploy Component Library
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/components/**/*.tsx'
+      - 'src/components/**/*.stories.tsx'
+      - '.ladle/**/*'
+      - 'brand/**/*'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+
+# Sets permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and Deploy Component Library
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: 🏗️ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🎨 Build brand kit
+        run: |
+          echo "Building brand design system..."
+          cd brand
+          npm install
+          npm run build
+          cd ..
+          echo "✅ Brand kit built"
+          echo "📦 Brand dist contents:"
+          ls -la brand/dist/ || echo "No dist directory"
+          ls -la brand/dist/fonts/ || echo "No fonts directory"
+
+      - name: 🎨 Build component library
+        run: npm run ladle:build
+        env:
+          NODE_ENV: production
+
+      - name: 📊 Verify build output
+        run: |
+          if [ ! -d "dist-storybook" ]; then
+            echo "❌ Build failed: dist-storybook directory missing"
+            exit 1
+          fi
+
+          if [ ! -f "dist-storybook/index.html" ]; then
+            echo "❌ Build failed: index.html missing"
+            exit 1
+          fi
+
+          if [ ! -d "dist-storybook/brand/dist/fonts" ]; then
+            echo "❌ Build failed: brand fonts not copied to dist-storybook"
+            exit 1
+          fi
+
+          if [ ! -f "dist-storybook/brand/dist/tokens.css" ]; then
+            echo "❌ Build failed: tokens.css not copied to dist-storybook"
+            exit 1
+          fi
+
+          echo "✅ Build output verified"
+          echo "📦 Storybook build:"
+          du -sh dist-storybook/
+          ls -la dist-storybook/ | head -20
+
+          echo "🎨 Brand assets verified:"
+          ls -la dist-storybook/brand/dist/
+
+          echo "🔤 Brand fonts verified:"
+          ls -la dist-storybook/brand/dist/fonts/geist-sans/
+
+      - name: 🔧 Setup GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: 📦 Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-storybook
+
+      - name: 🚀 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: 📢 Deployment summary
+        if: success()
+        run: |
+          echo "🎉 Component library deployment successful!"
+          echo "📍 URL: ${{ steps.deployment.outputs.page_url }}"
+          echo "🕐 Deployed at: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          echo "📦 Commit: ${{ github.sha }}"
+          echo "👤 Deployed by: ${{ github.actor }}"

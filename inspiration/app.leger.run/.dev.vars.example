@@ -1,0 +1,10 @@
+# Local Development Secrets (copy to .dev.vars)
+# DO NOT COMMIT .dev.vars TO VERSION CONTROL
+
+# AES-256-GCM encryption key (base64-encoded 32 bytes)
+# Generate with: openssl rand -base64 32
+ENCRYPTION_KEY=your-base64-encoded-encryption-key-here
+
+# JWT validation secret (shared with CLI)
+# Must match the secret configured in leger CLI
+JWT_SECRET=your-jwt-secret-here

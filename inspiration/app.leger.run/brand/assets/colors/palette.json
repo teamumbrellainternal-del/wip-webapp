@@ -1,0 +1,42 @@
+{
+  "version": "1.0.0",
+  "colors": {
+    "brand": {
+      "primary": "#f9e2af",
+      "hover": "#f5d97d",
+      "active": "#e5c55a"
+    },
+    "dark": {
+      "background": {
+        "primary": "#0a0a0a",
+        "secondary": "#111111",
+        "tertiary": "#1a1a1a"
+      },
+      "text": {
+        "primary": "#fafafa",
+        "secondary": "#a3a3a3",
+        "tertiary": "#737373"
+      },
+      "border": {
+        "primary": "#262626",
+        "secondary": "#1f1f1f"
+      }
+    },
+    "catppuccin": {
+      "rosewater": "#f5e0dc",
+      "flamingo": "#f2cdcd",
+      "pink": "#f5c2e7",
+      "mauve": "#cba6f7",
+      "red": "#f38ba8",
+      "maroon": "#eba0ac",
+      "peach": "#fab387",
+      "yellow": "#f9e2af",
+      "green": "#a6e3a1",
+      "teal": "#94e2d5",
+      "sky": "#89dceb",
+      "sapphire": "#74c7ec",
+      "blue": "#89b4fa",
+      "lavender": "#b4befe"
+    }
+  }
+}
