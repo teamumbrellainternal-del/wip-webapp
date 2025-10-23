@@ -1,0 +1,55 @@
+name = "umbrella-api"
+main = "api/index.ts"
+compatibility_date = "2024-01-01"
+
+# Development environment
+[env.dev]
+name = "umbrella-api-dev"
+
+[[env.dev.d1_databases]]
+binding = "DB"
+database_name = "umbrella-dev-db"
+database_id = "TBD"  # Add after creation with: wrangler d1 create umbrella-dev-db
+
+[[env.dev.kv_namespaces]]
+binding = "KV"
+id = "TBD"  # Add after creation with: wrangler kv:namespace create KV --preview
+
+[[env.dev.r2_buckets]]
+binding = "BUCKET"
+bucket_name = "umbrella-dev-media"
+# Note: Create with: wrangler r2 bucket create umbrella-dev-media
+
+# Staging environment
+[env.staging]
+name = "umbrella-api-staging"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "umbrella-staging-db"
+database_id = "TBD"  # Add after creation
+
+[[env.staging.kv_namespaces]]
+binding = "KV"
+id = "TBD"  # Add after creation
+
+[[env.staging.r2_buckets]]
+binding = "BUCKET"
+bucket_name = "umbrella-staging-media"
+
+# Production environment
+[env.production]
+name = "umbrella-api-production"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "umbrella-prod-db"
+database_id = "TBD"  # Add after creation
+
+[[env.production.kv_namespaces]]
+binding = "KV"
+id = "TBD"  # Add after creation
+
+[[env.production.r2_buckets]]
+binding = "BUCKET"
+bucket_name = "umbrella-prod-media"
