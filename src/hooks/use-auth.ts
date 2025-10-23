@@ -13,6 +13,7 @@ export interface User {
   onboarding_complete: boolean;
   created_at: string;
   updated_at: string;
+  tailnet?: string;
 }
 
 export interface Session {

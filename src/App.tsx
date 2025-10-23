@@ -1,6 +1,7 @@
 import { ThemeProvider } from './components/theme-provider'
 import { Toaster } from './components/ui/toaster'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import ComponentShowcase from './pages/ComponentShowcase'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
@@ -23,6 +24,8 @@ export default function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light" storageKey="umbrella-theme">
+        <ComponentShowcase />
+        <Toaster />
         <AuthProvider>
           <AppContent />
           <Toaster />

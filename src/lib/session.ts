@@ -64,6 +64,15 @@ export function getAuthToken(): string | null {
 }
 
 /**
+ * Checks if current session is using the test user
+ * @returns true if test mode is active
+ */
+export function isTestMode(): boolean {
+  const session = getSession()
+  if (!session) return false
+
+  // Check if user email matches test user
+  return session.user.email === 'test@umbrella.test'
  * Check if app is in test mode
  * @returns true if in test mode
  */
