@@ -62,3 +62,11 @@ export function getAuthToken(): string | null {
   const session = getSession()
   return session?.token || null
 }
+
+/**
+ * Check if app is in test mode
+ * @returns true if in test mode
+ */
+export function isTestMode(): boolean {
+  return false // TODO: Implement test mode detection
+}

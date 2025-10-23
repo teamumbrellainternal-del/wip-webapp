@@ -145,9 +145,6 @@ export function AppLayout() {
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium">{user?.email}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {user?.tailnet}
-                    </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
