@@ -14,8 +14,9 @@ interface APIResponse<T> {
   success: boolean;
   data?: T;
   error?: {
+    code: string;
     message: string;
-    action?: string;
+    field?: string;
   };
 }
 

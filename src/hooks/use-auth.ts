@@ -4,7 +4,6 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 export interface User {
   id: string;
@@ -49,7 +48,6 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
 
   // Load user from session on mount
   useEffect(() => {
@@ -79,7 +77,7 @@ export function useAuth() {
       clearSession();
       setUser(null);
       setIsAuthenticated(false);
-      navigate('/');
+      window.location.href = '/';
     }
   };
 

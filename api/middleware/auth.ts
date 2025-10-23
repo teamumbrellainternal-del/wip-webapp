@@ -4,6 +4,7 @@
  */
 
 import { verifyJWT, type JWTPayload } from '../utils/jwt'
+import type { User } from '../models/user'
 
 /**
  * Environment interface (defined in api/index.ts)
@@ -71,14 +72,14 @@ export async function authenticateRequest(
         'SELECT * FROM users WHERE oauth_provider = ? AND oauth_id = ?'
       )
         .bind(payload.oauth_provider, payload.oauth_id)
-        .first()
+        .first<User>()
 
       if (!user) {
         throw new Error('User not found')
       }
 
       return {
-        userId: user.id as string,
+        userId: user.id,
         email: payload.email,
         oauthProvider: payload.oauth_provider,
         oauthId: payload.oauth_id,
@@ -106,7 +107,7 @@ export async function authenticateRequest(
       'SELECT * FROM users WHERE oauth_provider = ? AND oauth_id = ?'
     )
       .bind(oauthProvider, oauthId)
-      .first()
+      .first<User>()
 
     if (!user) {
       // User doesn't exist yet - they need to complete onboarding
@@ -114,7 +115,7 @@ export async function authenticateRequest(
     }
 
     return {
-      userId: user.id as string,
+      userId: user.id,
       email: payload.email,
       oauthProvider: oauthProvider,
       oauthId: oauthId,
@@ -141,7 +142,7 @@ export async function checkOnboardingComplete(
     'SELECT onboarding_complete FROM users WHERE id = ?'
   )
     .bind(userId)
-    .first()
+    .first<Pick<User, 'onboarding_complete'>>()
 
   if (!user) {
     return false
