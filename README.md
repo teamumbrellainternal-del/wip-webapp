@@ -39,6 +39,36 @@ npm run dev:worker    # Backend Worker (port 8787)
 
 Visit [http://localhost:5173](http://localhost:5173) to see the app.
 
+## Demo Authentication
+
+Currently using mock authentication for demo purposes:
+
+**Mock Users:**
+- **Apple Sign In**: Returns user with completed onboarding (Demo Artist, demo@umbrella.app)
+- **Google Sign In**: Returns user needing onboarding (Test User, test@umbrella.app)
+
+**Features:**
+- Login screen with Apple/Google OAuth buttons
+- Dashboard with user info, metrics, and gig opportunities
+- Sign out functionality
+- Theme toggle (light/dark mode)
+- Session persistence via localStorage
+
+**Implementation Files:**
+- `src/lib/mock-auth.ts` - Mock authentication service
+- `src/contexts/AuthContext.tsx` - Auth context provider
+- `src/pages/LoginPage.tsx` - Login UI
+- `src/pages/DashboardPage.tsx` - Dashboard UI
+
+**Replacing with Real OAuth:**
+
+To replace with real Cloudflare Access OAuth:
+1. Configure Cloudflare Access with Apple/Google providers
+2. Replace `MockAuthService` with real API calls to `/v1/auth/callback`
+3. Update `AuthContext` to use real JWT tokens from backend
+4. Remove localStorage session, use secure HTTP-only cookies
+5. See `docs/backend-api-setup.md` for backend integration
+
 ## Development
 
 ### Available Scripts

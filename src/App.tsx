@@ -1,20 +1,32 @@
 import { ThemeProvider } from './components/theme-provider'
 import { Toaster } from './components/ui/toaster'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import LoginPage from './pages/LoginPage'
+import DashboardPage from './pages/DashboardPage'
+
+function AppContent() {
+  const { user, isLoading } = useAuth()
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
+      </div>
+    )
+  }
+
+  return user ? <DashboardPage /> : <LoginPage />
+}
 
 export default function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light" storageKey="umbrella-theme">
-        <div className="min-h-screen bg-background">
-          <div className="container mx-auto py-10">
-            <h1 className="text-4xl font-bold tracking-tight">Umbrella MVP</h1>
-            <p className="mt-4 text-lg text-muted-foreground">
-              Artist marketplace connecting musicians with venues
-            </p>
-          </div>
-        </div>
-        <Toaster />
+        <AuthProvider>
+          <AppContent />
+          <Toaster />
+        </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>
   )
