@@ -2,7 +2,7 @@
 node_modules/
 .pnp
 .pnp.js
-package-lock.json
+# Note: package-lock.json should be committed for applications
 yarn.lock
 pnpm-lock.yaml
 
