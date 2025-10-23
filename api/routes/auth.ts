@@ -68,10 +68,15 @@ export async function handleAuthCallback(request: Request, env: Env): Promise<Re
       return successResponse({
         user: {
           id: existingUser.id,
+          oauth_provider: existingUser.oauth_provider,
+          oauth_id: existingUser.oauth_id,
           email: existingUser.email,
           onboarding_complete: existingUser.onboarding_complete,
+          created_at: existingUser.created_at,
+          updated_at: existingUser.updated_at,
         },
         token,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       })
     }
 
@@ -114,10 +119,15 @@ export async function handleAuthCallback(request: Request, env: Env): Promise<Re
       {
         user: {
           id: userId,
+          oauth_provider,
+          oauth_id,
           email,
           onboarding_complete: false,
+          created_at: now,
+          updated_at: now,
         },
         token,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       },
       201
     )
@@ -142,15 +152,26 @@ export async function handleSessionCheck(request: Request, env: Env): Promise<Re
   try {
     const user = await authenticateRequest(request, env)
 
-    // Check if onboarding is complete
-    const onboardingComplete = await checkOnboardingComplete(user.userId, env)
+    // Fetch complete user data from database
+    const dbUser = await env.DB.prepare(
+      'SELECT * FROM users WHERE id = ?'
+    )
+      .bind(user.userId)
+      .first()
+
+    if (!dbUser) {
+      return errorResponse('user_not_found', 'User not found', 404)
+    }
 
     return successResponse({
       user: {
-        id: user.userId,
-        email: user.email,
-        oauth_provider: user.oauthProvider,
-        onboarding_complete: onboardingComplete,
+        id: dbUser.id,
+        oauth_provider: dbUser.oauth_provider,
+        oauth_id: dbUser.oauth_id,
+        email: dbUser.email,
+        onboarding_complete: dbUser.onboarding_complete,
+        created_at: dbUser.created_at,
+        updated_at: dbUser.updated_at,
       },
       valid: true,
     })
