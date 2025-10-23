@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS gig_applications (
   id TEXT PRIMARY KEY,
   gig_id TEXT NOT NULL REFERENCES gigs(id) ON DELETE CASCADE,
   artist_id TEXT NOT NULL REFERENCES artists(id) ON DELETE CASCADE,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', rejected')),
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'rejected')),
   applied_at TEXT NOT NULL,
   responded_at TEXT,
   UNIQUE(gig_id, artist_id)
