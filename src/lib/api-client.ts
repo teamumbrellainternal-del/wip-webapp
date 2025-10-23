@@ -3,6 +3,13 @@
  * Handles authentication, error handling, and API communication
  */
 
+// Import types from Session 3 models
+import type { User, UserProfile } from '../../api/models/user'
+import type { Artist, ArtistPublicProfile, UpdateArtistInput } from '../../api/models/artist'
+import type { Gig } from '../../api/models/gig'
+import type { Conversation } from '../../api/models/conversation'
+import type { Message, CreateMessageInput } from '../../api/models/message'
+
 interface APIResponse<T> {
   success: boolean;
   data?: T;
@@ -13,11 +20,16 @@ interface APIResponse<T> {
   };
 }
 
-function getSession() {
+interface SessionData {
+  token: string;
+  user: UserProfile;
+}
+
+function getSession(): SessionData | null {
   try {
     const sessionData = localStorage.getItem('umbrella_session');
     if (!sessionData) return null;
-    return JSON.parse(sessionData);
+    return JSON.parse(sessionData) as SessionData;
   } catch {
     return null;
   }
@@ -86,8 +98,8 @@ class APIClient {
   }
 
   // Auth endpoints
-  async checkSession(): Promise<any> {
-    return this.request<any>('/auth/session');
+  async checkSession(): Promise<{ user: UserProfile; valid: boolean }> {
+    return this.request<{ user: UserProfile; valid: boolean }>('/auth/session');
   }
 
   async logout(): Promise<void> {
@@ -97,45 +109,45 @@ class APIClient {
   }
 
   // Profile endpoints (stubs for future implementation)
-  async getProfile(): Promise<any> {
-    return this.request<any>('/profile');
+  async getProfile(): Promise<Artist> {
+    return this.request<Artist>('/profile');
   }
 
-  async updateProfile(data: any): Promise<any> {
-    return this.request<any>('/profile', {
+  async updateProfile(data: UpdateArtistInput): Promise<Artist> {
+    return this.request<Artist>('/profile', {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
   // Marketplace endpoints (stubs for future implementation)
-  async listGigs(): Promise<any[]> {
-    return this.request<any[]>('/gigs');
+  async listGigs(): Promise<Gig[]> {
+    return this.request<Gig[]>('/gigs');
   }
 
-  async getGig(gigId: string): Promise<any> {
-    return this.request<any>(`/gigs/${gigId}`);
+  async getGig(gigId: string): Promise<Gig> {
+    return this.request<Gig>(`/gigs/${gigId}`);
   }
 
-  async listArtists(): Promise<any[]> {
-    return this.request<any[]>('/artists');
+  async listArtists(): Promise<ArtistPublicProfile[]> {
+    return this.request<ArtistPublicProfile[]>('/artists');
   }
 
-  async getArtist(artistId: string): Promise<any> {
-    return this.request<any>(`/artists/${artistId}`);
+  async getArtist(artistId: string): Promise<ArtistPublicProfile> {
+    return this.request<ArtistPublicProfile>(`/artists/${artistId}`);
   }
 
   // Messaging endpoints (stubs for future implementation)
-  async listConversations(): Promise<any[]> {
-    return this.request<any[]>('/conversations');
+  async listConversations(): Promise<Conversation[]> {
+    return this.request<Conversation[]>('/conversations');
   }
 
-  async getMessages(conversationId: string): Promise<any[]> {
-    return this.request<any[]>(`/conversations/${conversationId}/messages`);
+  async getMessages(conversationId: string): Promise<Message[]> {
+    return this.request<Message[]>(`/conversations/${conversationId}/messages`);
   }
 
-  async sendMessage(conversationId: string, content: string): Promise<any> {
-    return this.request<any>(`/conversations/${conversationId}/messages`, {
+  async sendMessage(conversationId: string, content: string): Promise<Message> {
+    return this.request<Message>(`/conversations/${conversationId}/messages`, {
       method: 'POST',
       body: JSON.stringify({ content }),
     });

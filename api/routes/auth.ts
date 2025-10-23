@@ -39,6 +39,7 @@ export async function handleAuthCallback(request: Request, env: Env): Promise<Re
       'SELECT * FROM users WHERE oauth_provider = ? AND oauth_id = ?'
     )
       .bind(oauth_provider, oauth_id)
+      .first() as User | null
       .first<User>()
 
     if (existingUser) {
@@ -66,7 +67,9 @@ export async function handleAuthCallback(request: Request, env: Env): Promise<Re
         { expirationTtl: 7 * 24 * 60 * 60 } // 7 days
       )
 
+      // Return sanitized user profile
       return successResponse({
+        user: sanitizeUser(existingUser),
         user: {
           id: existingUser.id,
           oauth_provider: existingUser.oauth_provider,
