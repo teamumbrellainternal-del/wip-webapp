@@ -68,7 +68,6 @@ export async function handleAuthCallback(request: Request, env: Env): Promise<Re
 
       // Return sanitized user profile
       return successResponse({
-        user: sanitizeUser(existingUser),
         user: {
           id: existingUser.id,
           oauth_provider: existingUser.oauth_provider,
