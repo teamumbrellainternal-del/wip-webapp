@@ -3,7 +3,7 @@
  * Main Worker that handles all API routes
  */
 
-import { handleAuthCallback, handleSessionCheck, handleLogout } from './routes/auth'
+import { handleAuthCallback, handleSessionCheck, handleLogout, handleSessionRefresh } from './routes/auth'
 import { handleHealthCheck } from './routes/health'
 import { handleCorsPrelight, addCorsHeaders } from './middleware/cors'
 import { handleError } from './middleware/error-handler'
@@ -58,6 +58,11 @@ export default {
 
       if (url.pathname === '/v1/auth/logout' && request.method === 'POST') {
         response = await handleLogout(request, env)
+        return addCorsHeaders(response)
+      }
+
+      if (url.pathname === '/v1/auth/refresh' && request.method === 'POST') {
+        response = await handleSessionRefresh(request, env)
         return addCorsHeaders(response)
       }
 
