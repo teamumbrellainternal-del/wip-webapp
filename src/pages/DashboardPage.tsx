@@ -1,45 +1,17 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { ThemeToggle } from '@/components/theme-toggle'
-import { Calendar, TrendingUp, LogOut } from 'lucide-react'
+import { Calendar, TrendingUp } from 'lucide-react'
+import AppLayout from '@/components/layout/AppLayout'
 
 export default function DashboardPage() {
-  const { user, signOut } = useAuth()
+  const { user } = useAuth()
 
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Top Navigation */}
-      <div className="border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-purple-600">
-              <span className="text-lg font-bold text-white">U</span>
-            </div>
-            <nav className="flex space-x-4">
-              <Button variant="ghost">Dashboard</Button>
-              <Button variant="ghost">Discover</Button>
-              <Button variant="ghost">Messages</Button>
-              <Button variant="ghost">Violet</Button>
-            </nav>
-          </div>
-          <div className="flex items-center space-x-4">
-            <ThemeToggle />
-            <Avatar>
-              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <Button variant="ghost" size="sm" onClick={signOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </div>
-
+    <AppLayout>
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Welcome Section */}
         <div>
@@ -163,6 +135,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AppLayout>
   )
 }
