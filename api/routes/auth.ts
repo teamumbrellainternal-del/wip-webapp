@@ -66,9 +66,27 @@ export async function handleAuthCallback(request: Request, env: Env): Promise<Re
         { expirationTtl: 7 * 24 * 60 * 60 } // 7 days
       )
 
-      // Return sanitized user profile
+      // Determine redirect URL based on onboarding state
+      let redirectUrl = '/dashboard'
+      if (!existingUser.onboarding_complete) {
+        // Check if artist profile exists to determine onboarding step
+        const artist = await env.DB.prepare(
+          'SELECT id FROM artists WHERE user_id = ?'
+        )
+          .bind(existingUser.id)
+          .first()
+
+        if (!artist) {
+          // No artist profile - start onboarding
+          redirectUrl = '/onboarding/role-selection'
+        } else {
+          // Artist profile exists but onboarding incomplete
+          redirectUrl = '/onboarding/artists/step1'
+        }
+      }
+
+      // Return user profile with redirect
       return successResponse({
-        user: sanitizeUser(existingUser),
         user: {
           id: existingUser.id,
           oauth_provider: existingUser.oauth_provider,
@@ -80,6 +98,7 @@ export async function handleAuthCallback(request: Request, env: Env): Promise<Re
         },
         token,
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        redirect_url: redirectUrl,
       })
     }
 
@@ -131,6 +150,7 @@ export async function handleAuthCallback(request: Request, env: Env): Promise<Re
         },
         token,
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        redirect_url: '/onboarding/role-selection',
       },
       201
     )
@@ -208,5 +228,63 @@ export async function handleLogout(request: Request, env: Env): Promise<Response
     return successResponse({
       message: 'Logged out successfully',
     })
+  }
+}
+
+/**
+ * POST /v1/auth/refresh
+ * Refresh session token
+ * @param request - Request with auth header
+ * @param env - Worker environment
+ * @returns New session token
+ */
+export async function handleSessionRefresh(request: Request, env: Env): Promise<Response> {
+  try {
+    const user = await authenticateRequest(request, env)
+
+    // Fetch current user from database
+    const dbUser = await env.DB.prepare(
+      'SELECT * FROM users WHERE id = ?'
+    )
+      .bind(user.userId)
+      .first<User>()
+
+    if (!dbUser) {
+      return errorResponse('user_not_found', 'User not found', 404)
+    }
+
+    // Create new session token with extended expiry
+    const token = await createJWT(
+      {
+        sub: dbUser.id,
+        email: dbUser.email,
+        oauth_provider: dbUser.oauth_provider,
+        oauth_id: dbUser.oauth_id,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days
+      },
+      env.JWT_SECRET
+    )
+
+    // Update session in KV
+    await env.KV.put(
+      `session:${dbUser.id}`,
+      JSON.stringify({
+        userId: dbUser.id,
+        email: dbUser.email,
+        oauthProvider: dbUser.oauth_provider,
+      }),
+      { expirationTtl: 7 * 24 * 60 * 60 } // 7 days
+    )
+
+    return successResponse({
+      token,
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    })
+  } catch (error) {
+    if (error instanceof Error) {
+      return errorResponse('authentication_failed', error.message, 401)
+    }
+    return errorResponse('authentication_failed', 'Session refresh failed', 401)
   }
 }
