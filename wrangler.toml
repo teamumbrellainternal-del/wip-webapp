@@ -1,7 +1,29 @@
 name = "umbrella-api"
 main = "api/index.ts"
 compatibility_date = "2024-01-01"
-pages_build_output_dir = "dist"
+
+# Assets configuration for serving frontend (Workers, not Pages!)
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+# Preview environment (for PR deployments)
+[env.preview]
+name = "umbrella-api-preview"
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "umbrella-dev-db"  # Use dev DB for preview
+database_id = "TBD"
+
+[[env.preview.kv_namespaces]]
+binding = "KV"
+id = "TBD"
+
+[[env.preview.r2_buckets]]
+binding = "BUCKET"
+bucket_name = "umbrella-dev-media"  # Use dev bucket for preview
 
 # Development environment
 [env.dev]
