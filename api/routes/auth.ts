@@ -39,7 +39,6 @@ export async function handleAuthCallback(request: Request, env: Env): Promise<Re
       'SELECT * FROM users WHERE oauth_provider = ? AND oauth_id = ?'
     )
       .bind(oauth_provider, oauth_id)
-      .first() as User | null
       .first<User>()
 
     if (existingUser) {
