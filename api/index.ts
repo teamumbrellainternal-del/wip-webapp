@@ -32,6 +32,7 @@ import * as searchController from './controllers/search'
  * Worker environment bindings
  */
 export interface Env {
+  ASSETS: Fetcher // Assets binding for serving frontend
   DB: D1Database // D1 database binding
   KV: KVNamespace // KV namespace binding
   BUCKET: R2Bucket // R2 bucket binding
@@ -205,19 +206,14 @@ export default {
       // Try to match route
       const response = await router.handle(request, env)
 
-      // If no route matched, return 404
-      if (!response) {
-        const notFoundResponse = errorResponse(
-          ErrorCodes.ENDPOINT_NOT_FOUND,
-          `API endpoint not found: ${request.method} ${url.pathname}`,
-          404,
-          undefined,
-          'unknown'
-        )
-        return addCorsHeaders(notFoundResponse)
+      // If route matched, return the response
+      if (response) {
+        return addCorsHeaders(response)
       }
 
-      return addCorsHeaders(response)
+      // If no API route matched, serve static assets (SPA)
+      // This allows the frontend to handle client-side routing
+      return env.ASSETS.fetch(request)
     } catch (error) {
       // Global error handler
       const response = handleError(error)
