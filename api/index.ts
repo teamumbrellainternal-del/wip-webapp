@@ -3,8 +3,7 @@
  * Main Worker that handles all API routes using the Router system
  */
 
-import { Router } from './router'
-import { handleAuthCallback, handleSessionCheck, handleLogout } from './routes/auth'
+import { handleAuthCallback, handleSessionCheck, handleLogout, handleSessionRefresh } from './routes/auth'
 import { handleHealthCheck } from './routes/health'
 import { handleCorsPrelight, addCorsHeaders } from './middleware/cors'
 import { handleError } from './middleware/error-handler'
@@ -193,6 +192,110 @@ export default {
           ErrorCodes.ENDPOINT_NOT_FOUND,
           `API endpoint not found: ${request.method} ${url.pathname}`,
           404
+      let response: Response
+
+      // Health check endpoint (public, no auth)
+      if (url.pathname === '/v1/health') {
+        response = await handleHealthCheck(env)
+        return addCorsHeaders(response)
+      }
+
+      // Authentication routes
+      if (url.pathname === '/v1/auth/callback' && request.method === 'POST') {
+        response = await handleAuthCallback(request, env)
+        return addCorsHeaders(response)
+      }
+
+      if (url.pathname === '/v1/auth/session' && request.method === 'GET') {
+        response = await handleSessionCheck(request, env)
+        return addCorsHeaders(response)
+      }
+
+      if (url.pathname === '/v1/auth/logout' && request.method === 'POST') {
+        response = await handleLogout(request, env)
+        return addCorsHeaders(response)
+      }
+
+      if (url.pathname === '/v1/auth/refresh' && request.method === 'POST') {
+        response = await handleSessionRefresh(request, env)
+        return addCorsHeaders(response)
+      }
+
+      // Profile routes (placeholder - to be implemented by future sessions)
+      if (url.pathname === '/v1/profile' && request.method === 'GET') {
+        response = errorResponse(
+          'not_implemented',
+          'Profile endpoints will be implemented in future sessions',
+          501
+        )
+        return addCorsHeaders(response)
+      }
+
+      // Marketplace routes (placeholder - to be implemented by future sessions)
+      if (url.pathname.startsWith('/v1/gigs')) {
+        response = errorResponse(
+          'not_implemented',
+          'Marketplace endpoints will be implemented in future sessions',
+          501
+        )
+        return addCorsHeaders(response)
+      }
+
+      if (url.pathname.startsWith('/v1/artists')) {
+        response = errorResponse(
+          'not_implemented',
+          'Artist discovery endpoints will be implemented in future sessions',
+          501
+        )
+        return addCorsHeaders(response)
+      }
+
+      // Messaging routes (placeholder - to be implemented by future sessions)
+      if (url.pathname.startsWith('/v1/conversations') || url.pathname.startsWith('/v1/messages')) {
+        response = errorResponse(
+          'not_implemented',
+          'Messaging endpoints will be implemented in future sessions',
+          501
+        )
+        return addCorsHeaders(response)
+      }
+
+      // File management routes (placeholder - to be implemented by future sessions)
+      if (url.pathname.startsWith('/v1/files')) {
+        response = errorResponse(
+          'not_implemented',
+          'File management endpoints will be implemented in future sessions',
+          501
+        )
+        return addCorsHeaders(response)
+      }
+
+      // Analytics routes (placeholder - to be implemented by future sessions)
+      if (url.pathname.startsWith('/v1/analytics')) {
+        response = errorResponse(
+          'not_implemented',
+          'Analytics endpoints will be implemented in future sessions',
+          501
+        )
+        return addCorsHeaders(response)
+      }
+
+      // Violet AI routes (placeholder - to be implemented by future sessions)
+      if (url.pathname.startsWith('/v1/violet')) {
+        response = errorResponse(
+          'not_implemented',
+          'Violet AI endpoints will be implemented in future sessions',
+          501
+        )
+        return addCorsHeaders(response)
+      }
+
+      // Search routes (placeholder - to be implemented by future sessions)
+      if (url.pathname.startsWith('/v1/search')) {
+        response = errorResponse(
+          'not_implemented',
+          'Search endpoints will be implemented in future sessions',
+          501
         )
         return addCorsHeaders(notFoundResponse)
       }
