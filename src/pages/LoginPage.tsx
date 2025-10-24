@@ -15,7 +15,7 @@ export default function LoginPage() {
     setError(null)
     try {
       await signInWithApple()
-    } catch (err) {
+    } catch {
       setError('Failed to sign in with Apple. Please try again.')
     } finally {
       setIsLoading(false)
@@ -27,7 +27,7 @@ export default function LoginPage() {
     setError(null)
     try {
       await signInWithGoogle()
-    } catch (err) {
+    } catch {
       setError('Failed to sign in with Google. Please try again.')
     } finally {
       setIsLoading(false)

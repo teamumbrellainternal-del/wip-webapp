@@ -108,11 +108,11 @@ class MockD1Database implements D1Database {
     throw new Error('Not implemented')
   }
 
-  batch<T = unknown>(statements: D1PreparedStatement[]): Promise<D1Result<T>[]> {
+  batch<T = unknown>(_statements: D1PreparedStatement[]): Promise<D1Result<T>[]> {
     throw new Error('Not implemented')
   }
 
-  exec(query: string): Promise<D1ExecResult> {
+  exec(_query: string): Promise<D1ExecResult> {
     throw new Error('Not implemented')
   }
 

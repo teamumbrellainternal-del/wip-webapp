@@ -3,7 +3,7 @@
  * Umbrella MVP - Storage Layer Tests
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import {
   setSession,
   getSession,
@@ -19,7 +19,7 @@ import {
   getUploadUrlMetadata,
   deleteUploadUrlMetadata,
 } from '../../../api/storage/kv'
-import type { SessionData, ProfileCache, UploadUrlMetadata } from '../../../api/storage/types'
+import type { SessionData, UploadUrlMetadata } from '../../../api/storage/types'
 
 // Mock KV Namespace
 class MockKVNamespace implements KVNamespace {

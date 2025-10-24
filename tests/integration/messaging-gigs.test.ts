@@ -8,7 +8,7 @@ import { handleAuthCallback } from '../../api/routes/auth'
 import * as messagesController from '../../api/controllers/messages'
 import * as gigsController from '../../api/controllers/gigs'
 import { createMockEnv } from '../helpers/mock-env'
-import { createTestUser, createTestArtist, createTestGig, createLargeText } from '../helpers/test-data'
+import { createTestArtist, createTestGig, createLargeText } from '../helpers/test-data'
 import type { Env } from '../../api/index'
 import type { RequestContext } from '../../api/router'
 

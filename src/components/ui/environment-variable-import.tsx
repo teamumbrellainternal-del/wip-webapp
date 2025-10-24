@@ -37,7 +37,7 @@ export function EnvironmentVariableImport({ onImport, onCancel }: EnvironmentVar
       })
       setParsedVariables(variables)
       return variables.length > 0
-    } catch (error) {
+    } catch {
       setParseError("Failed to parse .env file. Please check the format.")
       setParsedVariables([])
       return false

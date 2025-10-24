@@ -14,7 +14,8 @@ export default tseslint.config(
       'api/**',
       'docs/**',
       'scripts/**',
-      '*.cjs'
+      '*.cjs',
+      'inspiration/**'
     ]
   },
   js.configs.recommended,
@@ -40,13 +41,36 @@ export default tseslint.config(
         { allowConstantExport: true }
       ],
       '@typescript-eslint/no-unused-vars': [
-        'warn',
+        'error',
         {
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_'
         }
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
+    },
+  },
+  {
+    files: ['tests/**/*.{ts,tsx}'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      parser: tseslint.parser,
+      globals: {
+        ...globals.node,
+        ...globals.es2020,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        }
+      ],
+      '@typescript-eslint/no-explicit-any': 'off', // Allow any in tests for mocking
+      '@typescript-eslint/ban-ts-comment': 'off', // Allow ts-ignore in tests
     },
   }
 );

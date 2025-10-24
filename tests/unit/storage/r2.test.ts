@@ -18,7 +18,6 @@ import {
   generateUploadSignedUrl,
   generateDownloadSignedUrl,
 } from '../../../api/storage/r2'
-import { STORAGE_QUOTAS } from '../../../api/storage/types'
 
 // Mock R2 Bucket
 class MockR2Bucket implements R2Bucket {

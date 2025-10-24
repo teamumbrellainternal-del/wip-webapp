@@ -598,7 +598,7 @@ describe('Onboarding Flow Integration Tests', () => {
         startTime: Date.now(),
       }
 
-      const duplicateResponse = await onboardingController.submitStep5(ctxDuplicate)
+      const _duplicateResponse = await onboardingController.submitStep5(ctxDuplicate)
 
       // Should either succeed idempotently or reject
       const artistsAfter = mocks.db.getTable('artists')

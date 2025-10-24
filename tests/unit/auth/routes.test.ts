@@ -3,7 +3,7 @@
  * Umbrella MVP - OAuth Flow Tests
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { handleAuthCallback, handleSessionCheck, handleLogout, handleSessionRefresh } from '../../../api/routes/auth'
 import { createJWT } from '../../../api/utils/jwt'
 import type { Env } from '../../../api/index'
@@ -111,11 +111,11 @@ class MockD1Database implements D1Database {
     throw new Error('Not implemented')
   }
 
-  batch<T = unknown>(statements: D1PreparedStatement[]): Promise<D1Result<T>[]> {
+  batch<T = unknown>(_statements: D1PreparedStatement[]): Promise<D1Result<T>[]> {
     throw new Error('Not implemented')
   }
 
-  exec(query: string): Promise<D1ExecResult> {
+  exec(_query: string): Promise<D1ExecResult> {
     throw new Error('Not implemented')
   }
 }
