@@ -1,35 +1,34 @@
 import { useState } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
+import { buildOAuthUrl } from '@/utils/auth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
-  const { signInWithApple, signInWithGoogle } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleAppleSignIn = async () => {
+  const handleAppleSignIn = () => {
     setIsLoading(true)
     setError(null)
     try {
-      await signInWithApple()
-    } catch {
-      setError('Failed to sign in with Apple. Please try again.')
-    } finally {
+      const oauthUrl = buildOAuthUrl('apple')
+      window.location.href = oauthUrl
+    } catch (err) {
+      setError('Failed to initiate Apple sign in. Please try again.')
       setIsLoading(false)
     }
   }
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = () => {
     setIsLoading(true)
     setError(null)
     try {
-      await signInWithGoogle()
-    } catch {
-      setError('Failed to sign in with Google. Please try again.')
-    } finally {
+      const oauthUrl = buildOAuthUrl('google')
+      window.location.href = oauthUrl
+    } catch (err) {
+      setError('Failed to initiate Google sign in. Please try again.')
       setIsLoading(false)
     }
   }
@@ -99,10 +98,10 @@ export default function LoginPage() {
               Sign in with Google
             </Button>
 
-            {/* Demo Note */}
+            {/* Info Note */}
             <div className="pt-4 border-t">
               <p className="text-xs text-center text-muted-foreground">
-                <strong>Demo Mode:</strong> Both buttons work. Apple → Complete profile, Google → Needs onboarding
+                Sign in via Cloudflare Access with Apple or Google authentication
               </p>
             </div>
           </CardContent>

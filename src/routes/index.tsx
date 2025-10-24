@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import LoginPage from '@/pages/LoginPage'
+import CallbackPage from '@/pages/auth/CallbackPage'
 import DashboardPage from '@/pages/DashboardPage'
 import PlaceholderPage from '@/pages/placeholders/PlaceholderPage'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
@@ -26,6 +27,10 @@ export const router = createBrowserRouter([
   {
     path: '/auth',
     element: <LoginPage />,
+  },
+  {
+    path: '/auth/callback',
+    element: <CallbackPage />,
   },
 
   // Public: Legal pages

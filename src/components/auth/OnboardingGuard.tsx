@@ -1,3 +1,15 @@
+/**
+ * OnboardingGuard - Onboarding Completion Guard
+ * Ensures users have completed onboarding before accessing main app routes
+ * Per D-006: Incomplete OAuth users redirected to Step 1 on return
+ *
+ * Features:
+ * - Shows loading state while checking onboarding status
+ * - Redirects to /onboarding/role-selection if no role selected
+ * - Redirects to /onboarding/artists/step1 if onboarding incomplete (D-006)
+ * - Allows users with completed onboarding to access route
+ */
+
 import { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
@@ -6,12 +18,17 @@ interface OnboardingGuardProps {
   children: ReactNode
 }
 
-/**
- * OnboardingGuard ensures users have completed onboarding before accessing protected routes
- * Per D-006: Incomplete OAuth users redirected to Step 1 on return
- */
 export default function OnboardingGuard({ children }: OnboardingGuardProps) {
-  const { user } = useAuth()
+  const { user, isOnboardingComplete, loading } = useAuth()
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+      </div>
+    )
+  }
 
   // This guard assumes user is already authenticated (use with ProtectedRoute)
   if (!user) {
@@ -19,13 +36,13 @@ export default function OnboardingGuard({ children }: OnboardingGuardProps) {
   }
 
   // Check if onboarding is complete
-  if (!user.onboarding_complete) {
-    // TODO: When user role field is added, check for role selection:
-    // if (!user.role) return <Navigate to="/onboarding/role-selection" replace />
+  if (!isOnboardingComplete) {
+    // If no role selected, redirect to role selection
+    if (!user.role) {
+      return <Navigate to="/onboarding/role-selection" replace />
+    }
 
     // D-006: Redirect incomplete users to step 1
-    // For now, redirect all incomplete users to step 1
-    // In the future, this could check user.onboarding_step to redirect to the correct step
     return <Navigate to="/onboarding/artists/step1" replace />
   }
 

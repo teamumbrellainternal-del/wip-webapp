@@ -16,7 +16,7 @@ export default function DashboardPage() {
         {/* Welcome Section */}
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Welcome back, {user.name}!
+            Welcome back, {user.full_name}!
           </h1>
           <p className="text-muted-foreground">
             Here's what's happening in your music world
@@ -24,7 +24,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Onboarding Alert */}
-        {!user.onboarding_complete && (
+        {!user.onboarding_completed && (
           <Card className="border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">

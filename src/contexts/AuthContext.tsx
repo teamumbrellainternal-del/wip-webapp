@@ -1,57 +1,81 @@
+/**
+ * AuthContext - Authentication State Management
+ * Handles JWT tokens from Cloudflare Access and user profile data
+ *
+ * Features:
+ * - Store user profile and JWT token
+ * - Persist auth state to localStorage
+ * - Restore auth state on page reload
+ * - Provide authentication helpers
+ */
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { MockAuthService, User } from '@/lib/mock-auth'
+import { UserProfile } from '@/types'
+import { isTokenExpired } from '@/utils/auth'
 
 interface AuthContextType {
-  user: User | null
-  isLoading: boolean
-  signInWithApple: () => Promise<void>
-  signInWithGoogle: () => Promise<void>
-  signOut: () => void
+  user: UserProfile | null
+  token: string | null
+  isAuthenticated: boolean
+  isOnboardingComplete: boolean
+  setUser: (user: UserProfile, token: string) => void
+  logout: () => void
+  loading: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUserState] = useState<UserProfile | null>(null)
+  const [token, setToken] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
 
+  // Restore auth state on mount
   useEffect(() => {
-    // Check for existing session on mount
-    const session = MockAuthService.getSession()
-    setUser(session)
-    setIsLoading(false)
+    const savedUser = localStorage.getItem('umbrella_user')
+    const savedToken = localStorage.getItem('umbrella_token')
+
+    if (savedUser && savedToken) {
+      // Check if token is expired
+      if (!isTokenExpired(savedToken)) {
+        setUserState(JSON.parse(savedUser))
+        setToken(savedToken)
+      } else {
+        // Token expired, clear storage
+        localStorage.removeItem('umbrella_user')
+        localStorage.removeItem('umbrella_token')
+      }
+    }
+
+    setLoading(false)
   }, [])
 
-  const signInWithApple = async () => {
-    setIsLoading(true)
-    try {
-      const user = await MockAuthService.signInWithApple()
-      setUser(user)
-    } finally {
-      setIsLoading(false)
-    }
+  const setUser = (newUser: UserProfile, newToken: string) => {
+    setUserState(newUser)
+    setToken(newToken)
+    localStorage.setItem('umbrella_user', JSON.stringify(newUser))
+    localStorage.setItem('umbrella_token', newToken)
   }
 
-  const signInWithGoogle = async () => {
-    setIsLoading(true)
-    try {
-      const user = await MockAuthService.signInWithGoogle()
-      setUser(user)
-    } finally {
-      setIsLoading(false)
-    }
+  const logout = () => {
+    setUserState(null)
+    setToken(null)
+    localStorage.removeItem('umbrella_user')
+    localStorage.removeItem('umbrella_token')
+    window.location.href = '/auth'
   }
 
-  const signOut = () => {
-    MockAuthService.clearSession()
-    setUser(null)
+  const value = {
+    user,
+    token,
+    isAuthenticated: !!user && !!token,
+    isOnboardingComplete: user?.onboarding_completed ?? false,
+    setUser,
+    logout,
+    loading,
   }
 
-  return (
-    <AuthContext.Provider value={{ user, isLoading, signInWithApple, signInWithGoogle, signOut }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
