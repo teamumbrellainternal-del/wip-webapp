@@ -224,11 +224,11 @@ export class MockR2Bucket implements R2Bucket {
     }
   }
 
-  async createMultipartUpload(key: string): Promise<R2MultipartUpload> {
+  async createMultipartUpload(_key: string): Promise<R2MultipartUpload> {
     throw new Error('Multipart upload not implemented in mock')
   }
 
-  async resumeMultipartUpload(key: string, uploadId: string): Promise<R2MultipartUpload> {
+  async resumeMultipartUpload(_key: string, _uploadId: string): Promise<R2MultipartUpload> {
     throw new Error('Multipart upload not implemented in mock')
   }
 
@@ -267,21 +267,20 @@ export class MockD1Database implements D1Database {
   }
 
   prepare(query: string): D1PreparedStatement {
-    const self = this
     const mockStatement: any = {
       bind: (...values: any[]) => {
         return {
           ...mockStatement,
-          first: async () => self.executeQuery(query, values, 'first'),
+          first: async () => this.executeQuery(query, values, 'first'),
           all: async () => {
-            const results = self.executeQuery(query, values, 'all')
+            const results = this.executeQuery(query, values, 'all')
             return { results, success: true, meta: {} }
           },
           run: async () => {
-            const result = self.executeQuery(query, values, 'run')
+            const result = this.executeQuery(query, values, 'run')
             return { success: true, meta: { changes: result?.changes || 0 } }
           },
-          raw: async () => self.executeQuery(query, values, 'raw'),
+          raw: async () => this.executeQuery(query, values, 'raw'),
         }
       },
     }
@@ -507,7 +506,7 @@ export class MockD1Database implements D1Database {
     return Promise.all(statements.map((stmt: any) => stmt.run()))
   }
 
-  async exec(query: string): Promise<D1ExecResult> {
+  async exec(_query: string): Promise<D1ExecResult> {
     return { count: 0, duration: 0 }
   }
 

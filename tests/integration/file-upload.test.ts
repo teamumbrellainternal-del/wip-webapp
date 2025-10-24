@@ -8,7 +8,7 @@ import { handleAuthCallback } from '../../api/routes/auth'
 import * as filesController from '../../api/controllers/files'
 import * as tracksController from '../../api/controllers/tracks'
 import { createMockEnv } from '../helpers/mock-env'
-import { createTestUser, createTestArtist } from '../helpers/test-data'
+import { createTestArtist } from '../helpers/test-data'
 import type { Env } from '../../api/index'
 import type { RequestContext } from '../../api/router'
 

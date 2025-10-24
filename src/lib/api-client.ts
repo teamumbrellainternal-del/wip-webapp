@@ -4,11 +4,11 @@
  */
 
 // Import types from Session 3 models
-import type { User, UserProfile } from '../../api/models/user'
+import type { UserProfile } from '../../api/models/user'
 import type { Artist, ArtistPublicProfile, UpdateArtistInput } from '../../api/models/artist'
 import type { Gig } from '../../api/models/gig'
 import type { Conversation } from '../../api/models/conversation'
-import type { Message, CreateMessageInput } from '../../api/models/message'
+import type { Message } from '../../api/models/message'
 
 interface APIResponse<T> {
   success: boolean;
@@ -62,39 +62,35 @@ class APIClient {
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
 
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          ...this.getHeaders(),
-          ...options?.headers,
-        },
-      });
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...this.getHeaders(),
+        ...options?.headers,
+      },
+    });
 
-      // Handle 401 specially (don't toast, just redirect)
-      if (response.status === 401) {
-        clearSession();
-        window.location.href = '/?error=session_expired';
-        throw new Error('Unauthorized');
-      }
-
-      // Try to parse JSON
-      let data: APIResponse<T>;
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error('Invalid JSON response');
-      }
-
-      // Handle API errors
-      if (!data.success) {
-        throw new Error(data.error?.message || 'Request failed');
-      }
-
-      return data.data as T;
-    } catch (error) {
-      throw error;
+    // Handle 401 specially (don't toast, just redirect)
+    if (response.status === 401) {
+      clearSession();
+      window.location.href = '/?error=session_expired';
+      throw new Error('Unauthorized');
     }
+
+    // Try to parse JSON
+    let data: APIResponse<T>;
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error('Invalid JSON response');
+    }
+
+    // Handle API errors
+    if (!data.success) {
+      throw new Error(data.error?.message || 'Request failed');
+    }
+
+    return data.data as T;
   }
 
   // Auth endpoints

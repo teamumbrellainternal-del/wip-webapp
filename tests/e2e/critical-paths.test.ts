@@ -8,7 +8,6 @@ import { handleAuthCallback } from '../../api/routes/auth'
 import * as onboardingController from '../../api/controllers/onboarding'
 import * as tracksController from '../../api/controllers/tracks'
 import * as gigsController from '../../api/controllers/gigs'
-import * as messagesController from '../../api/controllers/messages'
 import * as broadcastController from '../../api/controllers/broadcast'
 import { createMockEnv } from '../helpers/mock-env'
 import {

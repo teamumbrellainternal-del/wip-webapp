@@ -8,7 +8,7 @@ import { handleAuthCallback } from '../../api/routes/auth'
 import * as violetController from '../../api/controllers/violet'
 import * as analyticsController from '../../api/controllers/analytics'
 import { createMockEnv } from '../helpers/mock-env'
-import { createTestUser, createTestArtist, wait } from '../helpers/test-data'
+import { createTestArtist } from '../helpers/test-data'
 import type { Env } from '../../api/index'
 import type { RequestContext } from '../../api/router'
 
