@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,6 +8,7 @@ import { Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
   const { signInWithApple, signInWithGoogle } = useAuth()
+  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -15,6 +17,8 @@ export default function LoginPage() {
     setError(null)
     try {
       await signInWithApple()
+      // Mock user has onboarding_complete: true, redirect to dashboard
+      navigate('/dashboard')
     } catch {
       setError('Failed to sign in with Apple. Please try again.')
     } finally {
@@ -27,6 +31,8 @@ export default function LoginPage() {
     setError(null)
     try {
       await signInWithGoogle()
+      // Mock user has onboarding_complete: false, redirect to onboarding
+      navigate('/onboarding/role-selection')
     } catch {
       setError('Failed to sign in with Google. Please try again.')
     } finally {
