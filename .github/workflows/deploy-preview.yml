@@ -3,6 +3,7 @@ name: Deploy Preview
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  workflow_dispatch: # allows manual trigger from the Actions tab
 
 jobs:
   deploy:
