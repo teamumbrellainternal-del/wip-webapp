@@ -489,3 +489,16 @@ export class ResendEmailService {
 export function createResendService(apiKey: string, db: D1Database): ResendEmailService {
   return new ResendEmailService(apiKey, db)
 }
+
+/**
+ * Helper function for sending email (for convenience imports)
+ * Note: In production, use createResendService and the class methods
+ */
+export async function sendEmail(
+  apiKey: string,
+  db: D1Database,
+  params: EmailParams
+): Promise<ServiceResult<EmailResult>> {
+  const service = createResendService(apiKey, db)
+  return service.sendEmail(params)
+}
