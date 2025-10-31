@@ -2,7 +2,7 @@ name = "umbrella-api"
 main = "api/index.ts"
 compatibility_date = "2024-01-01"
 
-# Assets configuration for serving frontend (Workers, not Pages!)
+# Assets configuration for serving frontend as SPA from Workers
 [assets]
 directory = "./dist"
 binding = "ASSETS"
@@ -14,65 +14,58 @@ name = "umbrella-api-preview"
 
 [[env.preview.d1_databases]]
 binding = "DB"
-database_name = "umbrella-dev-db"  # Use dev DB for preview
-database_id = "TBD"
+database_name = "umbrella-dev-db"
+database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
 
 [[env.preview.kv_namespaces]]
 binding = "KV"
-id = "TBD"
+id = "04fceb9a09054bbd991d5252a9a169cf"
 
-[[env.preview.r2_buckets]]
-binding = "BUCKET"
-bucket_name = "umbrella-dev-media"  # Use dev bucket for preview
+# R2 bucket commented out - will add when credit card is available
+# [[env.preview.r2_buckets]]
+# binding = "BUCKET"
+# bucket_name = "umbrella-dev-media"
 
-# Development environment
+# Development environment (for local testing)
 [env.dev]
 name = "umbrella-api-dev"
 
 [[env.dev.d1_databases]]
 binding = "DB"
 database_name = "umbrella-dev-db"
-database_id = "TBD"  # Add after creation with: wrangler d1 create umbrella-dev-db
+database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
 
 [[env.dev.kv_namespaces]]
 binding = "KV"
-id = "TBD"  # Add after creation with: wrangler kv:namespace create KV --preview
+id = "04fceb9a09054bbd991d5252a9a169cf"
 
-[[env.dev.r2_buckets]]
-binding = "BUCKET"
-bucket_name = "umbrella-dev-media"
-# Note: Create with: wrangler r2 bucket create umbrella-dev-media
+# R2 bucket commented out
+# [[env.dev.r2_buckets]]
+# binding = "BUCKET"
+# bucket_name = "umbrella-dev-media"
 
-# Staging environment
+# Staging environment (for future use)
 [env.staging]
 name = "umbrella-api-staging"
 
 [[env.staging.d1_databases]]
 binding = "DB"
-database_name = "umbrella-staging-db"
-database_id = "TBD"  # Add after creation
+database_name = "umbrella-dev-db"
+database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
 
 [[env.staging.kv_namespaces]]
 binding = "KV"
-id = "TBD"  # Add after creation
+id = "04fceb9a09054bbd991d5252a9a169cf"
 
-[[env.staging.r2_buckets]]
-binding = "BUCKET"
-bucket_name = "umbrella-staging-media"
-
-# Production environment
+# Production environment (for future use)
 [env.production]
 name = "umbrella-api-production"
 
 [[env.production.d1_databases]]
 binding = "DB"
-database_name = "umbrella-prod-db"
-database_id = "TBD"  # Add after creation
+database_name = "umbrella-dev-db"
+database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
 
 [[env.production.kv_namespaces]]
 binding = "KV"
-id = "TBD"  # Add after creation
-
-[[env.production.r2_buckets]]
-binding = "BUCKET"
-bucket_name = "umbrella-prod-media"
+id = "04fceb9a09054bbd991d5252a9a169cf"
