@@ -3,6 +3,7 @@
  * Main Worker that handles all API routes using the Router system
  */
 
+import { Router } from './router'
 import { handleAuthCallback, handleSessionCheck, handleLogout, handleSessionRefresh } from './routes/auth'
 import { handleHealthCheck } from './routes/health'
 import { handleCorsPrelight, addCorsHeaders } from './middleware/cors'
