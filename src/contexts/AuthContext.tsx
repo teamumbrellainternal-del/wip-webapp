@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { useUser, useClerk } from '@clerk/clerk-react'
+import { useUser, useClerk, useSession } from '@clerk/clerk-react'
 
 interface User {
   id: string
@@ -21,6 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { user: clerkUser, isLoaded: clerkLoaded } = useUser()
+  const { session } = useSession()
   const { signOut: clerkSignOut, openSignIn } = useClerk()
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -42,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserProfile = async () => {
     try {
-      const token = await clerkUser?.getToken()
+      const token = await session?.getToken()
       if (!token) {
         setUser(null)
         setIsLoading(false)
