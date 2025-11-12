@@ -1,166 +1,174 @@
 /**
  * Authentication routes
- * Handles OAuth callback, session management, and logout
+ * Handles Clerk authentication, session management, and user provisioning
  */
 
 import { successResponse, errorResponse } from '../utils/response'
-import { createJWT } from '../utils/jwt'
 import { generateUUIDv4 } from '../utils/uuid'
 import { authenticateRequest, checkOnboardingComplete, type Env } from '../middleware/auth'
 import type { User } from '../models/user'
+import { Webhook } from 'svix'
 
 /**
- * POST /v1/auth/callback
- * OAuth callback handler - creates or retrieves user after OAuth
- * @param request - Request with OAuth data
+ * POST /v1/auth/webhook
+ * Clerk webhook handler - creates/updates user when Clerk events occur
+ * @param request - Request with Clerk webhook data
  * @param env - Worker environment
- * @returns User data and session token
+ * @returns Success response
  */
-export async function handleAuthCallback(request: Request, env: Env): Promise<Response> {
+export async function handleClerkWebhook(request: Request, env: Env): Promise<Response> {
   try {
-    const body = await request.json() as {
-      email: string
-      oauth_provider: 'apple' | 'google'
-      oauth_id: string
+    // Verify webhook signature
+    const webhookSecret = env.CLERK_WEBHOOK_SECRET
+
+    if (!webhookSecret) {
+      return errorResponse('configuration_error', 'Webhook secret not configured', 500)
     }
 
-    const { email, oauth_provider, oauth_id } = body
+    const svixId = request.headers.get('svix-id')
+    const svixTimestamp = request.headers.get('svix-timestamp')
+    const svixSignature = request.headers.get('svix-signature')
 
-    if (!email || !oauth_provider || !oauth_id) {
-      return errorResponse(
-        'validation_error',
-        'Missing required fields: email, oauth_provider, oauth_id',
-        400
-      )
+    if (!svixId || !svixTimestamp || !svixSignature) {
+      return errorResponse('validation_error', 'Missing webhook headers', 400)
     }
 
-    // Check if user exists
+    const payload = await request.text()
+    const wh = new Webhook(webhookSecret)
+
+    let evt: any
+    try {
+      evt = wh.verify(payload, {
+        'svix-id': svixId,
+        'svix-timestamp': svixTimestamp,
+        'svix-signature': svixSignature,
+      })
+    } catch (err) {
+      console.error('Webhook verification failed:', err)
+      return errorResponse('validation_error', 'Invalid webhook signature', 400)
+    }
+
+    const eventType = evt.type
+    const userData = evt.data
+
+    switch (eventType) {
+      case 'user.created':
+        return await handleUserCreated(userData, env)
+      case 'user.updated':
+        return await handleUserUpdated(userData, env)
+      case 'user.deleted':
+        return await handleUserDeleted(userData, env)
+      default:
+        console.log(`Unhandled webhook event: ${eventType}`)
+        return successResponse({ message: 'Event received but not processed' })
+    }
+  } catch (error) {
+    console.error('Webhook error:', error)
+    return errorResponse('internal_error', 'Failed to process webhook', 500)
+  }
+}
+
+/**
+ * Handle user.created webhook event
+ */
+async function handleUserCreated(userData: any, env: Env): Promise<Response> {
+  try {
+    const clerkId = userData.id
+    const email = userData.email_addresses?.[0]?.email_address || ''
+
+    // Determine OAuth provider from external accounts
+    let oauthProvider = 'google' // Default to Google
+    const externalAccounts = userData.external_accounts || []
+    if (externalAccounts.length > 0) {
+      const provider = externalAccounts[0].provider
+      oauthProvider = provider === 'oauth_apple' ? 'apple' : 'google'
+    }
+
+    // Check if user already exists
     const existingUser = await env.DB.prepare(
-      'SELECT * FROM users WHERE oauth_provider = ? AND oauth_id = ?'
+      'SELECT * FROM users WHERE clerk_id = ?'
     )
-      .bind(oauth_provider, oauth_id)
+      .bind(clerkId)
       .first<User>()
 
     if (existingUser) {
-      // User exists - create session token
-      const token = await createJWT(
-        {
-          sub: existingUser.id,
-          email: existingUser.email,
-          oauth_provider: existingUser.oauth_provider,
-          oauth_id: existingUser.oauth_id,
-          iat: Math.floor(Date.now() / 1000),
-          exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days
-        },
-        env.JWT_SECRET
-      )
-
-      // Store session in KV
-      await env.KV.put(
-        `session:${existingUser.id}`,
-        JSON.stringify({
-          userId: existingUser.id,
-          email: existingUser.email,
-          oauthProvider: existingUser.oauth_provider,
-        }),
-        { expirationTtl: 7 * 24 * 60 * 60 } // 7 days
-      )
-
-      // Determine redirect URL based on onboarding state
-      let redirectUrl = '/dashboard'
-      if (!existingUser.onboarding_complete) {
-        // Check if artist profile exists to determine onboarding step
-        const artist = await env.DB.prepare(
-          'SELECT id FROM artists WHERE user_id = ?'
-        )
-          .bind(existingUser.id)
-          .first()
-
-        if (!artist) {
-          // No artist profile - start onboarding
-          redirectUrl = '/onboarding/role-selection'
-        } else {
-          // Artist profile exists but onboarding incomplete
-          redirectUrl = '/onboarding/artists/step1'
-        }
-      }
-
-      // Return user profile with redirect
-      return successResponse({
-        user: {
-          id: existingUser.id,
-          oauth_provider: existingUser.oauth_provider,
-          oauth_id: existingUser.oauth_id,
-          email: existingUser.email,
-          onboarding_complete: existingUser.onboarding_complete,
-          created_at: existingUser.created_at,
-          updated_at: existingUser.updated_at,
-        },
-        token,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        redirect_url: redirectUrl,
-      })
+      console.log(`User ${clerkId} already exists, skipping creation`)
+      return successResponse({ message: 'User already exists' })
     }
 
-    // New user - create user record
+    // Create new user
     const userId = generateUUIDv4()
     const now = new Date().toISOString()
+    const oauthId = userData.external_accounts?.[0]?.id || clerkId
 
     await env.DB.prepare(
-      `INSERT INTO users (id, oauth_provider, oauth_id, email, onboarding_complete, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO users (id, clerk_id, oauth_provider, oauth_id, email, onboarding_complete, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
     )
-      .bind(userId, oauth_provider, oauth_id, email, 0, now, now)
+      .bind(userId, clerkId, oauthProvider, oauthId, email, 0, now, now)
       .run()
 
-    // Create session token
-    const token = await createJWT(
-      {
-        sub: userId,
-        email,
-        oauth_provider,
-        oauth_id,
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days
-      },
-      env.JWT_SECRET
-    )
-
-    // Store session in KV
-    await env.KV.put(
-      `session:${userId}`,
-      JSON.stringify({
-        userId,
-        email,
-        oauthProvider: oauth_provider,
-      }),
-      { expirationTtl: 7 * 24 * 60 * 60 } // 7 days
-    )
-
-    return successResponse(
-      {
-        user: {
-          id: userId,
-          oauth_provider,
-          oauth_id,
-          email,
-          onboarding_complete: false,
-          created_at: now,
-          updated_at: now,
-        },
-        token,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        redirect_url: '/onboarding/role-selection',
-      },
-      201
-    )
+    console.log(`Created user ${userId} for Clerk ID ${clerkId}`)
+    return successResponse({ message: 'User created successfully', userId }, 201)
   } catch (error) {
-    console.error('Auth callback error:', error)
-    return errorResponse(
-      'internal_error',
-      'Failed to process authentication',
-      500
+    console.error('Error creating user:', error)
+    return errorResponse('internal_error', 'Failed to create user', 500)
+  }
+}
+
+/**
+ * Handle user.updated webhook event
+ */
+async function handleUserUpdated(userData: any, env: Env): Promise<Response> {
+  try {
+    const clerkId = userData.id
+    const email = userData.email_addresses?.[0]?.email_address || ''
+    const now = new Date().toISOString()
+
+    const result = await env.DB.prepare(
+      'UPDATE users SET email = ?, updated_at = ? WHERE clerk_id = ?'
     )
+      .bind(email, now, clerkId)
+      .run()
+
+    if (result.meta.changes === 0) {
+      console.warn(`User ${clerkId} not found for update`)
+      return errorResponse('user_not_found', 'User not found', 404)
+    }
+
+    console.log(`Updated user for Clerk ID ${clerkId}`)
+    return successResponse({ message: 'User updated successfully' })
+  } catch (error) {
+    console.error('Error updating user:', error)
+    return errorResponse('internal_error', 'Failed to update user', 500)
+  }
+}
+
+/**
+ * Handle user.deleted webhook event
+ */
+async function handleUserDeleted(userData: any, env: Env): Promise<Response> {
+  try {
+    const clerkId = userData.id
+
+    // Soft delete or hard delete - for now we'll delete the user
+    // In production you might want to soft delete and cascade
+    const result = await env.DB.prepare(
+      'DELETE FROM users WHERE clerk_id = ?'
+    )
+      .bind(clerkId)
+      .run()
+
+    if (result.meta.changes === 0) {
+      console.warn(`User ${clerkId} not found for deletion`)
+      return errorResponse('user_not_found', 'User not found', 404)
+    }
+
+    console.log(`Deleted user for Clerk ID ${clerkId}`)
+    return successResponse({ message: 'User deleted successfully' })
+  } catch (error) {
+    console.error('Error deleting user:', error)
+    return errorResponse('internal_error', 'Failed to delete user', 500)
   }
 }
 

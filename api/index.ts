@@ -4,7 +4,7 @@
  */
 
 import { Router } from './router'
-import { handleAuthCallback, handleSessionCheck, handleLogout, handleSessionRefresh } from './routes/auth'
+import { handleClerkWebhook, handleSessionCheck, handleLogout, handleSessionRefresh } from './routes/auth'
 import { handleHealthCheck } from './routes/health'
 import { handleCorsPrelight, addCorsHeaders } from './middleware/cors'
 import { handleError } from './middleware/error-handler'
@@ -38,6 +38,9 @@ export interface Env {
   KV: KVNamespace // KV namespace binding
   BUCKET: R2Bucket // R2 bucket binding
   JWT_SECRET: string // JWT signing secret
+  CLERK_SECRET_KEY: string // Clerk secret key
+  CLERK_PUBLISHABLE_KEY: string // Clerk publishable key
+  CLERK_WEBHOOK_SECRET: string // Clerk webhook secret
   CLAUDE_API_KEY: string // Claude API key for Violet
   RESEND_API_KEY: string // Resend API key for emails
   TWILIO_ACCOUNT_SID: string // Twilio account SID
@@ -77,9 +80,10 @@ function setupRouter(): Router {
   router.get('/v1/health', async (ctx) => handleHealthCheck(ctx.env))
 
   // Auth routes
-  router.post('/v1/auth/callback', async (ctx) => handleAuthCallback(ctx.request, ctx.env))
+  router.post('/v1/auth/webhook', async (ctx) => handleClerkWebhook(ctx.request, ctx.env))
   router.get('/v1/auth/session', async (ctx) => handleSessionCheck(ctx.request, ctx.env))
   router.post('/v1/auth/logout', async (ctx) => handleLogout(ctx.request, ctx.env))
+  router.post('/v1/auth/refresh', async (ctx) => handleSessionRefresh(ctx.request, ctx.env))
 
   // Profile routes (auth required)
   router.get('/v1/profile', profileController.getProfile, [authMiddleware])

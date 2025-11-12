@@ -1,54 +1,110 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { MockAuthService, User } from '@/lib/mock-auth'
+import { useUser, useClerk } from '@clerk/clerk-react'
+
+interface User {
+  id: string
+  email: string
+  name: string
+  onboarding_complete: boolean
+}
 
 interface AuthContextType {
   user: User | null
   isLoading: boolean
   signInWithApple: () => Promise<void>
   signInWithGoogle: () => Promise<void>
-  signOut: () => void
+  signOut: () => Promise<void>
+  clerkUser: any // Clerk user object
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { user: clerkUser, isLoaded: clerkLoaded } = useUser()
+  const { signOut: clerkSignOut, openSignIn } = useClerk()
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check for existing session on mount
-    const session = MockAuthService.getSession()
-    setUser(session)
-    setIsLoading(false)
-  }, [])
+    if (!clerkLoaded) {
+      setIsLoading(true)
+      return
+    }
 
-  const signInWithApple = async () => {
-    setIsLoading(true)
+    if (clerkUser) {
+      // Fetch user from backend to get onboarding status
+      fetchUserProfile()
+    } else {
+      setUser(null)
+      setIsLoading(false)
+    }
+  }, [clerkUser, clerkLoaded])
+
+  const fetchUserProfile = async () => {
     try {
-      const user = await MockAuthService.signInWithApple()
-      setUser(user)
+      const token = await clerkUser?.getToken()
+      if (!token) {
+        setUser(null)
+        setIsLoading(false)
+        return
+      }
+
+      const response = await fetch('/v1/auth/session', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setUser({
+          id: data.user.id,
+          email: data.user.email,
+          name: clerkUser?.fullName || clerkUser?.primaryEmailAddress?.emailAddress || '',
+          onboarding_complete: data.user.onboarding_complete,
+        })
+      } else {
+        // User exists in Clerk but not in our DB yet - webhook might be processing
+        console.warn('User not found in database, waiting for webhook...')
+        setUser(null)
+      }
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error)
+      setUser(null)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const signInWithApple = async () => {
+    openSignIn({
+      redirectUrl: '/dashboard',
+      appearance: {
+        elements: {
+          rootBox: 'w-full',
+        },
+      },
+    })
   }
 
   const signInWithGoogle = async () => {
-    setIsLoading(true)
-    try {
-      const user = await MockAuthService.signInWithGoogle()
-      setUser(user)
-    } finally {
-      setIsLoading(false)
-    }
+    openSignIn({
+      redirectUrl: '/onboarding/role-selection',
+      appearance: {
+        elements: {
+          rootBox: 'w-full',
+        },
+      },
+    })
   }
 
-  const signOut = () => {
-    MockAuthService.clearSession()
+  const signOut = async () => {
+    await clerkSignOut()
     setUser(null)
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signInWithApple, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, isLoading, signInWithApple, signInWithGoogle, signOut, clerkUser }}>
       {children}
     </AuthContext.Provider>
   )

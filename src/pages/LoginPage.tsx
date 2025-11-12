@@ -1,43 +1,43 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
+import { useSignIn } from '@clerk/clerk-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
-  const { signInWithApple, signInWithGoogle } = useAuth()
+  const { signIn, isLoaded } = useSignIn()
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleAppleSignIn = async () => {
+  const handleGoogleSignIn = async () => {
+    if (!isLoaded || !signIn) {
+      setError('Authentication system is loading. Please wait.')
+      return
+    }
+
     setIsLoading(true)
     setError(null)
+
     try {
-      await signInWithApple()
-      // Mock user has onboarding_complete: true, redirect to dashboard
-      navigate('/dashboard')
-    } catch {
-      setError('Failed to sign in with Apple. Please try again.')
-    } finally {
+      // Initiate Google OAuth flow
+      await signIn.authenticateWithRedirect({
+        strategy: 'oauth_google',
+        redirectUrl: '/sso-callback',
+        redirectUrlComplete: '/dashboard',
+      })
+    } catch (err: any) {
+      console.error('Google sign-in error:', err)
+      setError(err.errors?.[0]?.message || 'Failed to sign in with Google. Please try again.')
       setIsLoading(false)
     }
   }
 
-  const handleGoogleSignIn = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      await signInWithGoogle()
-      // Mock user has onboarding_complete: false, redirect to onboarding
-      navigate('/onboarding/role-selection')
-    } catch {
-      setError('Failed to sign in with Google. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
+  const handleAppleSignIn = async () => {
+    setError('Apple Sign-In is not enabled. Please use Google Sign-In.')
+    // Note: Apple OAuth can be enabled in Clerk dashboard if needed
   }
 
   return (
@@ -105,10 +105,10 @@ export default function LoginPage() {
               Sign in with Google
             </Button>
 
-            {/* Demo Note */}
+            {/* Info Note */}
             <div className="pt-4 border-t">
               <p className="text-xs text-center text-muted-foreground">
-                <strong>Demo Mode:</strong> Both buttons work. Apple → Complete profile, Google → Needs onboarding
+                <strong>Authentication:</strong> Sign in with your Google account to get started
               </p>
             </div>
           </CardContent>
