@@ -2,8 +2,13 @@
 # Copy this file to .dev.vars and fill in your actual values
 # Never commit .dev.vars to git!
 
-# JWT Secret for signing session tokens
+# JWT Secret for signing session tokens (legacy, kept for backwards compatibility)
 JWT_SECRET=your-jwt-secret-here-use-a-long-random-string
+
+# Clerk Authentication (obtain from clerk.com dashboard)
+CLERK_SECRET_KEY=sk_test_...
+CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_WEBHOOK_SECRET=whsec_...
 
 # Claude API Key (for Violet AI toolkit)
 CLAUDE_API_KEY=sk-ant-api03-...

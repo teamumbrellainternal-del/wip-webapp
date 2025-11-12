@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import LoginPage from '@/pages/LoginPage'
+import SSOCallbackPage from '@/pages/SSOCallbackPage'
 import DashboardPage from '@/pages/DashboardPage'
 import PlaceholderPage from '@/pages/placeholders/PlaceholderPage'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
@@ -26,6 +27,10 @@ export const router = createBrowserRouter([
   {
     path: '/auth',
     element: <LoginPage />,
+  },
+  {
+    path: '/sso-callback',
+    element: <SSOCallbackPage />,
   },
 
   // Public: Legal pages
