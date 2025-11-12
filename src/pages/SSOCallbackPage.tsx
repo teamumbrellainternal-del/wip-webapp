@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useClerk } from '@clerk/clerk-react'
+import { useUser } from '@clerk/clerk-react'
 import { Loader2 } from 'lucide-react'
 
 /**
@@ -9,26 +9,22 @@ import { Loader2 } from 'lucide-react'
  */
 export default function SSOCallbackPage() {
   const navigate = useNavigate()
-  const { handleRedirectCallback } = useClerk()
+  const { isLoaded, isSignedIn } = useUser()
 
   useEffect(() => {
-    async function handleCallback() {
-      try {
-        // Complete the OAuth flow
-        await handleRedirectCallback()
+    if (!isLoaded) return
 
-        // The AuthContext will automatically fetch user data
-        // and redirect based on onboarding status
-        // For now, just redirect to dashboard and let the router handle it
-        navigate('/dashboard')
-      } catch (error) {
-        console.error('SSO callback error:', error)
-        navigate('/auth?error=callback_failed')
-      }
+    // Clerk automatically handles the OAuth callback
+    // We just need to redirect based on sign-in status
+    if (isSignedIn) {
+      // The AuthContext will automatically fetch user data
+      // and redirect based on onboarding status
+      navigate('/dashboard')
+    } else {
+      // If not signed in, redirect to auth page
+      navigate('/auth?error=callback_failed')
     }
-
-    handleCallback()
-  }, [handleRedirectCallback, navigate])
+  }, [isLoaded, isSignedIn, navigate])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950">
