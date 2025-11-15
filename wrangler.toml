@@ -2,6 +2,10 @@ name = "umbrella-api"
 main = "api/index.ts"
 compatibility_date = "2024-01-01"
 
+# Environment variables
+[vars]
+USE_MOCKS = "true"  # Use mock services for development (set to "false" in M10 for real services)
+
 # Assets configuration for serving frontend as SPA from Workers
 [assets]
 directory = "./dist"
