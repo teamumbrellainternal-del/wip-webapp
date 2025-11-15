@@ -42,3 +42,5 @@ Implement the endpoint that retrieves artist profile data for both public viewin
 **Priority:** P0 - Required for profile viewing
 **File:** api/controllers/profile/index.ts
 **Can Run Parallel With:** task-3.2, task-3.3, task-3.4, task-3.7
+
+**DEPENDENCY NOTE:** Requires task-1.4 (Authentication Middleware) complete. Cannot implement authenticated endpoints without the requireAuth middleware.

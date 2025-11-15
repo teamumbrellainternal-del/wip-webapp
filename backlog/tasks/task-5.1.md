@@ -52,3 +52,5 @@ Implement the endpoint for browsing gigs in the marketplace with filters (genre,
 **Priority:** P1 - Core marketplace feature
 **File:** api/controllers/marketplace/gigs.ts
 **Can Run Parallel With:** task-5.2, task-5.3, task-5.4, task-5.5
+
+**DEPENDENCY NOTE:** Requires task-1.4 (Authentication Middleware) complete. Cannot implement authenticated endpoints without the requireAuth middleware.

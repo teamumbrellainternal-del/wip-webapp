@@ -42,3 +42,5 @@ Implement the endpoint for fetching detailed information about a single gig, dis
 **Priority:** P1 - Required for gig details
 **File:** api/controllers/marketplace/gigs.ts
 **Can Run Parallel With:** task-5.1, task-5.3, task-5.4, task-5.5
+
+**DEPENDENCY NOTE:** Requires task-1.4 (Authentication Middleware) complete. Cannot implement authenticated endpoints without the requireAuth middleware.

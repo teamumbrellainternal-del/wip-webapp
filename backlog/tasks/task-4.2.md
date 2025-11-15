@@ -22,6 +22,11 @@ Implement the cron job that runs daily at midnight UTC to aggregate analytics da
 - [ ] Uses D1 transactions for atomicity
 - [ ] Logs completion time and artist count processed
 - [ ] Error handling and retry logic for failed aggregations
+- [ ] **Timezone conversion:** Store all data in UTC, display in user's local time on frontend
+- [ ] **Retry logic:** 3 attempts with exponential backoff (2s, 4s, 8s) if cron execution fails
+- [ ] **Alerting:** Email CTO/admin if all retries fail (critical system failure)
+- [ ] **Manual trigger endpoint:** /cron/analytics?force=true for testing and emergency runs
+- [ ] **Cron execution logging:** Track start_time, end_time, duration, records_processed, errors_count in cron_logs table
 
 ## Implementation Plan
 1. Add cron trigger to wrangler.toml: `0 0 * * *` (midnight UTC)

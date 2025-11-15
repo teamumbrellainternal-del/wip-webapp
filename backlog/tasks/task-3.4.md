@@ -49,3 +49,5 @@ Implement endpoints for uploading tracks (audio files) to artist profiles, inclu
 **Priority:** P0 - Core profile feature
 **File:** api/controllers/profile/tracks.ts
 **Can Run Parallel With:** task-3.1, task-3.2, task-3.3, task-3.7
+
+**DEPENDENCY NOTE:** Requires task-1.4 (Authentication Middleware) complete. Cannot implement authenticated endpoints without the requireAuth middleware.

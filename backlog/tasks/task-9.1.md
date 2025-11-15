@@ -57,3 +57,7 @@ Implement the endpoint that proxies prompts to Claude API with context-specific 
 **Priority:** P2 - Core Violet feature
 **File:** api/controllers/violet/index.ts
 **Can Run Parallel With:** task-9.2, task-9.3
+
+**DEPENDENCY NOTE:** Requires task-1.4 (Authentication Middleware) complete. Cannot implement authenticated endpoints without the requireAuth middleware.
+
+**EXTERNAL SERVICE INTEGRATION:** Initial development can use mocked Claude API responses for testing. Real AI integration requires task-10.7 (External Service Config) complete for production use.

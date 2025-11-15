@@ -50,3 +50,5 @@ Implement endpoints for the review system: fetching reviews, inviting reviewers 
 **Priority:** P0 - Important for artist credibility
 **File:** api/controllers/profile/reviews.ts
 **Can Run Parallel With:** task-3.1, task-3.2, task-3.3, task-3.4
+
+**DEPENDENCY NOTE:** Requires task-1.4 (Authentication Middleware) complete. Cannot implement authenticated endpoints without the requireAuth middleware.

@@ -62,3 +62,5 @@ Implement endpoints for managing contact lists and individual contacts for the b
 **Priority:** P2 - Required for broadcast feature
 **File:** api/controllers/contacts/index.ts
 **Can Run Parallel With:** task-8.1, task-8.3
+
+**DEPENDENCY NOTE:** Requires task-1.4 (Authentication Middleware) complete. Cannot implement authenticated endpoints without the requireAuth middleware.

@@ -26,6 +26,7 @@ Create the Violet Toolkit page with 10 categories, 30+ sub-tools, hero section, 
 - [ ] Free-form question input in modal
 - [ ] Usage counter: "X/50 prompts used today"
 - [ ] Responsive layout (mobile + desktop)
+- [ ] **✓ CHECKPOINT:** Test Violet prompt→usage counter→rate limit enforcement before proceeding to M10
 
 ## Implementation Plan
 1. Create VioletPage.tsx in src/pages/

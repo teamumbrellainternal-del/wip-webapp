@@ -49,3 +49,5 @@ Implement the global search endpoint that searches both artists and gigs (D-071)
 **Priority:** P1 - Important for discovery
 **File:** api/controllers/search/index.ts
 **Can Run Parallel With:** task-5.1, task-5.2, task-5.3, task-5.4
+
+**DEPENDENCY NOTE:** Requires task-1.4 (Authentication Middleware) complete. Cannot implement authenticated endpoints without the requireAuth middleware.

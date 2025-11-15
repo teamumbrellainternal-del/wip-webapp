@@ -25,6 +25,7 @@ Create the marketplace page with two tabs (Find Gigs, Discover Artists), search,
 - [ ] Favorite/heart icon on cards
 - [ ] Apply button on gig cards (D-077: single-click)
 - [ ] Responsive layout (mobile + desktop)
+- [ ] **✓ CHECKPOINT:** Test marketplace browse→filter→apply flow before proceeding to M6
 
 ## Implementation Plan
 1. Create MarketplacePage.tsx in src/pages/

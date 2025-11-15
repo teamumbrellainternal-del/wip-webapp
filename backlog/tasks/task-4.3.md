@@ -24,6 +24,7 @@ Create the main dashboard page showing welcome message, metrics cards, opportuni
 - [ ] Violet prompt at bottom (D-058: opens intent picker modal)
 - [ ] All metrics updated from daily batch (D-008)
 - [ ] Responsive layout (mobile + desktop)
+- [ ] **✓ CHECKPOINT:** Test dashboard displays metrics correctly before proceeding to M5
 
 ## Implementation Plan
 1. Create DashboardPage.tsx in src/pages/

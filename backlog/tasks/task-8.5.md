@@ -27,6 +27,7 @@ Create the Creative Studio page with unified entry editor, 3 tabs (Song Ideas, S
 - [ ] Block counter in footer
 - [ ] "Save Entry" button
 - [ ] Responsive layout (mobile + desktop)
+- [ ] **✓ CHECKPOINT:** Test broadcast send→journal create flow before proceeding to M9
 
 ## Implementation Plan
 1. Create CreativeStudioPage.tsx in src/pages/
