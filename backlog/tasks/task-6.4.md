@@ -69,3 +69,5 @@ Create the messages page with conversation list sidebar, message thread view, qu
 **Priority:** P1 - Core messaging UX
 **File:** src/pages/MessagesPage.tsx
 **Dependencies:** Requires task-6.2 (message endpoints)
+
+**CRITICAL DEPENDENCY:** This task requires task-6.2 (Message Send/Receive) to be tested and returning valid data before UI can be built.

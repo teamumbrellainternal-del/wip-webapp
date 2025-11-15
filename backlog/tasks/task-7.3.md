@@ -25,6 +25,7 @@ Create the file manager page with upload zone, file categories, grid/list view, 
 - [ ] File cards with thumbnails, names, sizes, dates
 - [ ] Context menu for file actions (rename, move, delete, download)
 - [ ] Responsive layout (mobile + desktop)
+- [ ] **✓ CHECKPOINT:** Test upload→quota display→delete flow before proceeding to M8
 
 ## Implementation Plan
 1. Create FilesPage.tsx in src/pages/

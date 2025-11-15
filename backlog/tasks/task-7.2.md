@@ -22,6 +22,8 @@ Implement endpoints for confirming uploads, listing files, organizing into folde
 - [ ] DELETE /v1/files/:fileId endpoint deletes file
 - [ ] File deletion removes from R2 and updates storage quota
 - [ ] Proper error handling
+- [ ] **On file confirm:** Delete reserved quota entry from KV (quota:reserved:{artist_id}:{upload_id})
+- [ ] **On file confirm:** Add actual file size to artist's total usage in files table
 
 ## Implementation Plan
 1. Create POST /v1/files route (confirm upload)

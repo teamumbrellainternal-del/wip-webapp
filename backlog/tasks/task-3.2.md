@@ -43,3 +43,5 @@ Implement the endpoint for updating artist profile information. Allows editing o
 **Priority:** P0 - Required for profile editing
 **File:** api/controllers/profile/index.ts
 **Can Run Parallel With:** task-3.1, task-3.3, task-3.4, task-3.7
+
+**DEPENDENCY NOTE:** Requires task-1.4 (Authentication Middleware) complete. Cannot implement authenticated endpoints without the requireAuth middleware.

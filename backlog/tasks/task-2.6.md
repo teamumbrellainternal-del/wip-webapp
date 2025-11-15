@@ -36,3 +36,5 @@ Implement an endpoint that returns the current onboarding status for a user, sho
 **Priority:** P0 - Required by frontend onboarding flow
 **File:** api/controllers/onboarding/index.ts
 **Can Run Parallel With:** All other M2 backend tasks
+
+**DEPENDENCY NOTE:** Requires task-1.4 (Authentication Middleware) complete. Cannot implement authenticated endpoints without the requireAuth middleware.

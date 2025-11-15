@@ -40,3 +40,5 @@ Implement authentication middleware that validates sessions for protected routes
 **File:** api/middleware/auth.ts
 **Dependencies:** Requires task-1.2 (session validation logic)
 **Unblocks:** All onboarding, profile, marketplace, messaging tasks
+
+**CRITICAL BOTTLENECK:** This task BLOCKS all backend endpoints in M2-M9 (~40 tasks). After task-1.2 completes, this becomes the HIGHEST priority task in the project. Every backend API endpoint depends on this middleware for authentication.

@@ -44,3 +44,5 @@ Implement the "Book Artist" flow that opens a message composer with a pre-filled
 **Priority:** P1 - Important booking flow
 **File:** api/controllers/messages/index.ts
 **Dependencies:** Requires task-6.1 (conversations) and task-6.2 (messages)
+
+**CRITICAL DEPENDENCY:** This task MUST wait for task-6.1 (Conversation Management) and task-6.2 (Message Send/Receive) to complete. Serial dependency enforced.

@@ -70,3 +70,5 @@ Create the Message Fans tool page with contact list selection, message composer,
 **Priority:** P2 - Fan communication UX
 **File:** src/pages/MessageFansPage.tsx
 **Dependencies:** Requires task-8.1 (broadcast endpoint) and task-8.2 (contact lists)
+
+**EXTERNAL SERVICE INTEGRATION:** Initial development can use mocked Claude API responses for "Ask Violet to Draft" feature. Real AI integration requires task-10.7 (External Service Config) complete for production use.

@@ -41,3 +41,5 @@ Create an endpoint that validates session tokens and returns current user data. 
 **Priority:** P0 - Required for protected routes
 **File:** api/routes/auth.ts
 **Can Run Parallel With:** task-1.1, task-1.3, task-1.5
+
+**CRITICAL PATH:** This task MUST complete before task-1.4 (Authentication Middleware). Task-1.4 blocks all backend endpoints in M2-M9 (~40 tasks), making this one of the most critical tasks in the entire project.

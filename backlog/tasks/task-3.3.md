@@ -44,3 +44,5 @@ Implement the endpoint for generating R2 signed URLs for avatar uploads and upda
 **Priority:** P0 - Required for profile photos
 **File:** api/controllers/profile/index.ts
 **Can Run Parallel With:** task-3.1, task-3.2, task-3.4, task-3.7
+
+**DEPENDENCY NOTE:** Requires task-1.4 (Authentication Middleware) complete. Cannot implement authenticated endpoints without the requireAuth middleware.

@@ -55,3 +55,7 @@ Implement the endpoint for sending broadcast messages (text-only in MVP, D-049) 
 **Priority:** P2 - Fan communication tool
 **File:** api/controllers/broadcast/index.ts
 **Can Run Parallel With:** task-8.2, task-8.3
+
+**DEPENDENCY NOTE:** Requires task-1.4 (Authentication Middleware) complete. Cannot implement authenticated endpoints without the requireAuth middleware.
+
+**EXTERNAL SERVICE INTEGRATION:** Initial development can use mocked Resend/Twilio responses for testing. Real email/SMS integration requires task-10.7 (External Service Config) complete for production use.

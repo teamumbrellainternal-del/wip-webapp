@@ -24,6 +24,7 @@ Create the profile edit page as a separate route (D-022) allowing artists to upd
 - [ ] Shows profile completion percentage
 - [ ] "Save Changes" button with optimistic UI update
 - [ ] "Cancel" button returns to public profile view
+- [ ] **✓ CHECKPOINT:** Test profile create→view→edit→track upload flow before proceeding to M4
 
 ## Implementation Plan
 1. Create ProfileEditPage.tsx in src/pages/

@@ -61,3 +61,5 @@ Implement CRUD endpoints for journal entries in the Creative Studio tool, suppor
 **Priority:** P2 - Creative tool
 **File:** api/controllers/journal/index.ts
 **Can Run Parallel With:** task-8.1, task-8.2
+
+**DEPENDENCY NOTE:** Requires task-1.4 (Authentication Middleware) complete. Cannot implement authenticated endpoints without the requireAuth middleware.

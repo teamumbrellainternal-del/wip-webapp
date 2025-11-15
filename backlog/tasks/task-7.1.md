@@ -33,14 +33,19 @@ Implement the endpoint that generates R2 signed upload URLs for file uploads, wi
    - Audio: audio/mpeg, audio/wav, audio/flac
    - Video: video/mp4, video/quicktime
    - Documents: application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document
-5. Query D1 for current storage usage: SELECT SUM(file_size) FROM files WHERE artist_id = ?
-6. Check if total_usage + file_size <= 50GB (D-026)
-7. If quota exceeded: return 400 Bad Request "Storage quota exceeded"
-8. Generate upload_id (UUID)
-9. Generate R2 signed upload URL for files/{artist_id}/{upload_id}-{filename}
-10. Set constraints: expiresIn=900 (15 min), maxSize=50MB, contentType
-11. Store upload metadata in KV: upload:{upload_id} → {artist_id, filename, file_size, content_type, expires_at}
-12. Return JSON with upload_id and signed_url
+5. **Pessimistic quota locking to prevent race conditions:**
+   - Query D1 for current storage usage: SELECT SUM(file_size) FROM files WHERE artist_id = ?
+   - Query KV for all reserved uploads: SCAN quota:reserved:{artist_id}:*
+   - Calculate total_reserved = sum of all reserved file sizes
+   - Check quota: current_usage + total_reserved + new_file_size <= 50GB (D-026)
+   - If quota exceeded: return 400 Bad Request "Storage quota exceeded"
+6. Generate upload_id (UUID)
+7. **Reserve quota in KV:** SET quota:reserved:{artist_id}:{upload_id} = file_size (TTL: 15 minutes)
+8. Generate R2 signed upload URL for files/{artist_id}/{upload_id}-{filename}
+9. Set constraints: expiresIn=900 (15 min), maxSize=50MB, contentType
+10. Store upload metadata in KV: upload:{upload_id} → {artist_id, filename, file_size, content_type, expires_at}
+11. Return JSON with upload_id and signed_url
+12. **Note:** Reserved quota auto-releases after 15 minutes if upload not confirmed (task-7.2)
 
 ## Notes & Comments
 **References:**
@@ -52,3 +57,5 @@ Implement the endpoint that generates R2 signed upload URLs for file uploads, wi
 **Priority:** P2 - File management feature
 **File:** api/controllers/files/index.ts
 **Can Run Parallel With:** task-7.2
+
+**EXTERNAL SERVICE INTEGRATION:** Initial development can use mocked R2 responses for testing. Real R2 integration requires task-10.7 (External Service Config) complete for production use.

@@ -40,3 +40,5 @@ Implement the backend endpoint for onboarding step 5 that collects final yes/no 
 **Priority:** P0 - Blocks user onboarding completion
 **File:** api/controllers/onboarding/index.ts
 **Can Run Parallel With:** task-2.1, task-2.2, task-2.3, task-2.4, task-2.6
+
+**DEPENDENCY NOTE:** Requires task-1.4 (Authentication Middleware) complete. Cannot implement authenticated endpoints without the requireAuth middleware.

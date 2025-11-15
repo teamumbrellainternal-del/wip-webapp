@@ -56,3 +56,5 @@ Implement endpoints for sending messages within conversations, fetching message 
 **Priority:** P1 - Core messaging feature
 **File:** api/controllers/messages/messages.ts
 **Dependencies:** Requires task-6.1 (conversations management)
+
+**CRITICAL DEPENDENCY:** This task MUST wait for task-6.1 (Conversation Management) to complete. Messages cannot exist without conversations. Serial dependency enforced.

@@ -43,3 +43,5 @@ Implement the endpoint that returns spotlight artists for the Growth page: rando
 **Priority:** P1 - Nice-to-have for Growth page
 **File:** api/controllers/analytics/spotlight.ts
 **Can Run Parallel With:** task-4.1
+
+**DEPENDENCY NOTE:** Requires task-1.4 (Authentication Middleware) complete. Cannot implement authenticated endpoints without the requireAuth middleware.
