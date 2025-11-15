@@ -11,17 +11,19 @@ estimated_hours: 2
 ---
 
 ## Description
-Implement authentication middleware that validates sessions for protected routes. This middleware will be used across all endpoints that require authentication.
+Implement authentication middleware that validates Clerk session tokens for protected routes. This middleware will be used across all endpoints that require authentication.
 
 ## Acceptance Criteria
 
 ### Authentication Middleware
 - [ ] requireAuth() middleware function created in api/middleware/auth.ts
+- [ ] Uses `@clerk/backend` SDK for Clerk token verification
 - [ ] Validates session token from Authorization header
-- [ ] Calls session validation logic (reuse from task-1.2)
+- [ ] Fetches user from D1 by clerk_user_id
 - [ ] Attaches user object to request context
 - [ ] Returns 401 for invalid/missing tokens
 - [ ] Returns 403 for valid tokens but incomplete onboarding (when required)
+- [ ] Returns 404 if user not found in D1 (webhook sync issue)
 - [ ] Exports middleware for use in other route handlers
 
 ### Error Handling Middleware (NEW - from REFINEMENT_REPORT_pt2.md Issue #6)
@@ -50,12 +52,60 @@ Implement authentication middleware that validates sessions for protected routes
 ## Implementation Plan
 
 ### 1. Authentication Middleware (api/middleware/auth.ts)
-1. Create requireAuth() middleware function that accepts Request and Env
-2. Extract token from Authorization header (Bearer format)
-3. Call session validation logic (reuse from task-1.2)
-4. On success: attach user object to request context, call next()
-5. On failure: throw appropriate error (handled by error middleware)
-6. Create optional requireOnboarding() variant for routes needing complete profiles
+
+```typescript
+import { verifyToken } from '@clerk/backend'
+
+async function requireAuth(request: Request, env: Env): Promise<User> {
+  // 1. Extract token
+  const token = request.headers.get('Authorization')?.replace('Bearer ', '')
+
+  if (!token) {
+    throw new AuthError('Missing token', 401)
+  }
+
+  try {
+    // 2. Verify Clerk token
+    const session = await verifyToken(token, {
+      secretKey: env.CLERK_SECRET_KEY
+    })
+
+    // 3. Fetch user from D1
+    const user = await env.DB.prepare(
+      'SELECT * FROM users WHERE clerk_user_id = ?'
+    ).bind(session.sub).first()
+
+    if (!user) {
+      throw new AuthError('User not found', 404)
+    }
+
+    // 4. Attach to request context
+    return user
+
+  } catch (error) {
+    if (error instanceof AuthError) throw error
+    throw new AuthError('Invalid token', 401)
+  }
+}
+
+// Optional: Variant that requires completed onboarding
+async function requireOnboarding(request: Request, env: Env): Promise<User> {
+  const user = await requireAuth(request, env)
+
+  if (!user.onboarding_complete) {
+    throw new AuthError('Onboarding incomplete', 403)
+  }
+
+  return user
+}
+```
+
+**Key Changes from Original:**
+- ❌ **Removed:** Cloudflare Access JWT validation
+- ❌ **Removed:** Custom JWT parsing
+- ✅ **Added:** Clerk token verification via SDK
+- ✅ **Added:** Standard Authorization header
+- ✅ **Added:** D1 query by clerk_user_id
 
 ### 2. Error Handling Middleware (api/middleware/error.ts)
 1. Create global error handler that wraps all route handlers
@@ -91,7 +141,7 @@ Implement authentication middleware that validates sessions for protected routes
 - docs/initial-spec/architecture.md - Middleware patterns
 - api/middleware/auth.ts
 - api/middleware/error.ts (NEW)
-- api/utils/jwt.ts
+- `@clerk/backend` SDK documentation
 - docs/API_CONTRACT.md - Error response format (from task-0.2)
 
 **Priority:** P0 - Blocks all protected endpoints
@@ -100,6 +150,22 @@ Implement authentication middleware that validates sessions for protected routes
 **Unblocks:** All onboarding, profile, marketplace, messaging tasks
 
 **CRITICAL BOTTLENECK:** This task BLOCKS all backend endpoints in M2-M9 (~40 tasks). After task-1.2 completes, this becomes the HIGHEST priority task in the project. Every backend API endpoint depends on this middleware for authentication.
+
+**CLERK MIGRATION CHANGES:**
+- ❌ **Removed:** Custom JWT validation logic
+- ❌ **Removed:** `api/utils/jwt.ts` dependency
+- ❌ **Removed:** Cloudflare Access JWT validation
+- ✅ **Added:** Clerk token verification via `@clerk/backend` SDK
+- ✅ **Added:** D1 user lookup by `clerk_user_id`
+- ✅ **Simplified:** No custom session storage/retrieval
+
+**How Middleware Works with Clerk:**
+1. Extract Bearer token from Authorization header
+2. Verify token using Clerk SDK (`verifyToken`)
+3. Extract `clerk_user_id` from verified session
+4. Query D1 for user record
+5. Attach user to request context
+6. Return user or throw appropriate error
 
 **ERROR HANDLING MIDDLEWARE ADDITION (REFINEMENT_REPORT_pt2.md Issue #6):**
 Originally, this task only included authentication middleware. However, Issue #6 identified that there's no standardized error handling for routes in M2-M9. Without error handling middleware:
