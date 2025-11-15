@@ -1,30 +1,32 @@
 ---
 id: task-0.2
 title: "Define API Contracts (OpenAPI/JSON Schema)"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-15"
 labels: ["backend", "frontend", "P0", "documentation", "api-design"]
 milestone: "M0 - Pre-Development Setup"
 dependencies: []
 estimated_hours: 2
+actual_hours: 2
 ---
 
 ## Description
 Create comprehensive API contract documentation for all 50+ endpoints in the Umbrella MVP. This contract defines request/response schemas, field names, types, validation rules, and error responses. Frontend and backend teams use this contract as the single source of truth to prevent integration failures during parallel development.
 
 ## Acceptance Criteria
-- [ ] API contract document created: `docs/API_CONTRACT.md` OR `openapi.yaml`
-- [ ] All endpoints from M1-M10 documented (50+ endpoints)
-- [ ] For each endpoint, document:
+- [x] API contract document created: `docs/API_CONTRACT.md` OR `openapi.yaml`
+- [x] All endpoints from M1-M10 documented (50+ endpoints)
+- [x] For each endpoint, document:
   - HTTP method and path
   - Request schema (headers, body, query params)
   - Response schema (success and error cases)
   - Field names, types, required/optional status
   - Validation rules (min/max length, format, enums)
   - Authentication requirements
-- [ ] Common error responses documented (400, 401, 403, 404, 500)
-- [ ] Session structure documented in `docs/SESSIONS.md`
+- [x] Common error responses documented (400, 401, 403, 404, 500)
+- [x] Session structure documented in `docs/SESSIONS.md`
 - [ ] Contract reviewed and approved by frontend and backend leads
 - [ ] Contract shared with all developers before M1 starts
 
