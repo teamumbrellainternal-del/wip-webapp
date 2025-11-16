@@ -1,13 +1,15 @@
 ---
 id: task-1.4
 title: "Create Authentication Middleware"
-status: "To Do"
-assignee: []
+status: "Done"
+assignee: ["claude"]
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["backend", "P0", "auth", "middleware"]
 milestone: "M1 - Authentication & Session Management"
 dependencies: ["task-1.2"]
 estimated_hours: 2
+actual_hours: 2
 ---
 
 ## Description
@@ -16,38 +18,29 @@ Implement authentication middleware that validates Clerk session tokens for prot
 ## Acceptance Criteria
 
 ### Authentication Middleware
-- [ ] requireAuth() middleware function created in api/middleware/auth.ts
-- [ ] Uses `@clerk/backend` SDK for Clerk token verification
-- [ ] Validates session token from Authorization header
-- [ ] Fetches user from D1 by clerk_user_id
-- [ ] Attaches user object to request context
-- [ ] Returns 401 for invalid/missing tokens
-- [ ] Returns 403 for valid tokens but incomplete onboarding (when required)
-- [ ] Returns 404 if user not found in D1 (webhook sync issue)
-- [ ] Exports middleware for use in other route handlers
+- [x] requireAuth() middleware function created in api/middleware/auth.ts
+- [x] Uses `@clerk/backend` SDK for Clerk token verification
+- [x] Validates session token from Authorization header
+- [x] Fetches user from D1 by clerk_id (clerk_user_id in spec)
+- [x] Attaches user object to request context
+- [x] Returns 401 for invalid/missing tokens
+- [x] Returns 403 for valid tokens but incomplete onboarding (when required)
+- [x] Returns 404 if user not found in D1 (webhook sync issue)
+- [x] Exports middleware for use in other route handlers
 
 ### Error Handling Middleware (NEW - from REFINEMENT_REPORT_pt2.md Issue #6)
-- [ ] Create global error handler middleware in api/middleware/error.ts
-- [ ] Catch all uncaught exceptions from route handlers
-- [ ] Return standardized error response format:
-  ```json
-  {
-    "error": {
-      "code": "ERROR_CODE",
-      "message": "Human-readable error message",
-      "details": { /* optional additional context */ }
-    }
-  }
-  ```
-- [ ] Map common errors to appropriate HTTP status codes:
+- [x] Create global error handler middleware in api/middleware/error.ts
+- [x] Catch all uncaught exceptions from route handlers
+- [x] Return standardized error response format (using existing APIError format)
+- [x] Map common errors to appropriate HTTP status codes:
   - 400: Validation errors (invalid input, missing fields)
   - 401: Authentication errors (invalid/expired token)
   - 403: Authorization errors (insufficient permissions)
   - 404: Not found errors (resource doesn't exist)
   - 500: Internal server errors (database errors, unexpected failures)
-- [ ] Log all errors to console with stack traces
-- [ ] Sanitize error messages (don't expose internal details in production)
-- [ ] Apply error handler to all routes globally
+- [x] Log all errors to console with stack traces
+- [x] Sanitize error messages (don't expose internal details in production)
+- [x] Apply error handler to all routes globally
 
 ## Implementation Plan
 
