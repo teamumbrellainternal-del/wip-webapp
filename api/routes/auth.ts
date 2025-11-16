@@ -8,6 +8,7 @@ import { generateUUIDv4 } from '../utils/uuid'
 import { authenticateRequest, checkOnboardingComplete, type Env } from '../middleware/auth'
 import type { User } from '../models/user'
 import { Webhook } from 'svix'
+import { createJWT } from '../utils/jwt'
 
 /**
  * POST /v1/auth/webhook
@@ -58,6 +59,8 @@ export async function handleClerkWebhook(request: Request, env: Env): Promise<Re
         return await handleUserUpdated(userData, env)
       case 'user.deleted':
         return await handleUserDeleted(userData, env)
+      case 'session.created':
+        return await handleSessionCreated(userData, env)
       default:
         console.log(`Unhandled webhook event: ${eventType}`)
         return successResponse({ message: 'Event received but not processed' })
@@ -169,6 +172,26 @@ async function handleUserDeleted(userData: any, env: Env): Promise<Response> {
   } catch (error) {
     console.error('Error deleting user:', error)
     return errorResponse('internal_error', 'Failed to delete user', 500)
+  }
+}
+
+/**
+ * Handle session.created webhook event
+ */
+async function handleSessionCreated(sessionData: any, env: Env): Promise<Response> {
+  try {
+    const userId = sessionData.user_id
+
+    // Clerk manages sessions - we just log for monitoring
+    console.log(`Session created for Clerk user: ${userId}`)
+
+    // Optionally, you could update user's last_login timestamp
+    // or track session metadata in your database
+
+    return successResponse({ message: 'Session logged successfully' })
+  } catch (error) {
+    console.error('Error handling session creation:', error)
+    return errorResponse('internal_error', 'Failed to handle session creation', 500)
   }
 }
 
