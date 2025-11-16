@@ -1,28 +1,30 @@
 ---
 id: task-3.4
 title: "Implement Track Upload & Management Endpoints"
-status: "To Do"
-assignee: []
+status: "Done"
+assignee: ["claude"]
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["backend", "P0", "profile", "storage"]
 milestone: "M3 - Profile Management"
 dependencies: ["task-1.4"]
 estimated_hours: 4
+actual_hours: 2
 ---
 
 ## Description
 Implement endpoints for uploading tracks (audio files) to artist profiles, including signed URL generation, metadata management, and track deletion. No upload limit enforced (D-026).
 
 ## Acceptance Criteria
-- [ ] POST /v1/profile/tracks/upload endpoint generates signed R2 URL
-- [ ] Requires authentication
-- [ ] Returns signed URL for direct R2 upload (15 min expiry, 50MB max)
-- [ ] POST /v1/profile/tracks endpoint saves track metadata after upload
-- [ ] GET /v1/profile/:artistId/tracks endpoint lists all tracks
-- [ ] DELETE /v1/profile/tracks/:trackId endpoint removes track
-- [ ] No upload limit enforced (D-026: constrained by 50GB storage only)
-- [ ] Validates audio file types (mp3, wav, flac)
-- [ ] Updates storage quota tracking
+- [x] POST /v1/profile/tracks/upload endpoint generates signed R2 URL
+- [x] Requires authentication
+- [x] Returns signed URL for direct R2 upload (15 min expiry, 50MB max)
+- [x] POST /v1/profile/tracks endpoint saves track metadata after upload
+- [x] GET /v1/profile/:artistId/tracks endpoint lists all tracks
+- [x] DELETE /v1/profile/tracks/:trackId endpoint removes track
+- [x] No upload limit enforced (D-026: constrained by 50GB storage only)
+- [x] Validates audio file types (mp3, wav, flac)
+- [x] Updates storage quota tracking
 
 ## Implementation Plan
 1. Create POST /v1/profile/tracks/upload route
