@@ -62,4 +62,7 @@ wrangler.toml.local
 # Cache
 .eslintcache
 .cache/
+
+# Generated seed data output files
 db/seed-output.sql
+db/seed-production-output.sql

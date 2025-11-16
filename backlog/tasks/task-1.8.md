@@ -1,9 +1,10 @@
 ---
 id: task-1.8
 title: "Production Seed Data"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["backend", "P0", "data-seeding", "production"]
 milestone: "M1 - Authentication & Session Management"
 dependencies: ["task-0.1"]
@@ -14,15 +15,15 @@ estimated_hours: 2
 Create production seed data required for the application to function: genres, tags, default settings, and system configuration values. This differs from task-1.7 (test fixtures) which creates development/test data. Production seed data is the reference data that must exist in production for features to work.
 
 ## Acceptance Criteria
-- [ ] Production seeding script created in `db/seed-production.ts`
-- [ ] Genres table seeded with all 20+ genres from eng-spec
-- [ ] Tags table seeded with skills and vibe tags for onboarding
-- [ ] Default settings created for new users
-- [ ] System configuration values seeded
-- [ ] Script is idempotent (safe to run multiple times)
-- [ ] Script can be run via: `npm run seed:production`
-- [ ] Documentation in `db/README.md` on production seed data
-- [ ] All seeded data validated (no duplicates, correct format)
+- [x] Production seeding script created in `db/seed-production.ts`
+- [x] Genres table seeded with all 20+ genres from eng-spec
+- [x] Tags table seeded with skills and vibe tags for onboarding
+- [x] Default settings created for new users
+- [x] System configuration values seeded
+- [x] Script is idempotent (safe to run multiple times)
+- [x] Script can be run via: `npm run seed:production`
+- [x] Documentation in `db/README.md` on production seed data
+- [x] All seeded data validated (no duplicates, correct format)
 
 ## Implementation Plan
 
