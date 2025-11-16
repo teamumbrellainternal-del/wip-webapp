@@ -178,6 +178,7 @@ function setupRouter(): Router {
   router.get('/v1/analytics/messages', analyticsController.getMessageAnalytics, [authMiddleware])
   router.get('/v1/analytics/violet', analyticsController.getVioletAnalytics, [authMiddleware])
   router.get('/v1/analytics/storage', analyticsController.getStorageAnalytics, [authMiddleware])
+  router.get('/v1/analytics/spotlight', analyticsController.getSpotlightArtists) // Public (task-4.4)
 
   // Broadcast routes (auth required)
   router.get('/v1/broadcasts', broadcastController.listBroadcasts, [authMiddleware])

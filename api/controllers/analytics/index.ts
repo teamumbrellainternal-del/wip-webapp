@@ -348,3 +348,96 @@ export const getStorageAnalytics: RouteHandler = async (ctx) => {
     ctx.requestId
   )
 }
+
+/**
+ * Get spotlight artists for Growth page
+ * GET /v1/analytics/spotlight
+ *
+ * Per D-068: Returns 10 random verified artists with rating > 4.5
+ * Public endpoint (no auth required)
+ * Uses KV cache with 24-hour TTL
+ */
+export const getSpotlightArtists: RouteHandler = async (ctx) => {
+  try {
+    // 1. Calculate cache key with today's date (UTC)
+    const today = new Date()
+    const dateKey = today.toISOString().split('T')[0] // YYYY-MM-DD format
+    const cacheKey = `spotlight:${dateKey}`
+
+    // 2. Check KV cache for spotlight data
+    const cachedData = await ctx.env.KV.get(cacheKey, 'json')
+    if (cachedData) {
+      console.log(`Spotlight cache hit for ${dateKey}`)
+      return successResponse(
+        {
+          spotlight_artists: cachedData,
+          cached: true,
+          date: dateKey,
+        },
+        200,
+        ctx.requestId
+      )
+    }
+
+    // 3. Cache miss - query database for spotlight artists
+    console.log(`Spotlight cache miss for ${dateKey}, fetching from DB`)
+
+    // Query: SELECT random verified artists with rating > 4.5
+    // SQLite uses RANDOM() for random ordering
+    const result = await ctx.env.DB.prepare(`
+      SELECT
+        id,
+        stage_name as name,
+        primary_genre as genre,
+        avg_rating as rating,
+        total_gigs as gig_count,
+        verified,
+        avatar_url
+      FROM artists
+      WHERE verified = 1 AND avg_rating > 4.5
+      ORDER BY RANDOM()
+      LIMIT 10
+    `).all()
+
+    const spotlightArtists = (result.results || []).map((artist: any) => ({
+      id: artist.id,
+      name: artist.name,
+      genre: artist.genre || 'Unknown',
+      rating: Number(artist.rating) || 0,
+      gig_count: artist.gig_count || 0,
+      verified: Boolean(artist.verified),
+      avatar_url: artist.avatar_url || null,
+    }))
+
+    // 4. Store in KV cache with 24-hour TTL (86400 seconds)
+    // Cache will expire at midnight UTC tomorrow
+    const expirationTtl = 86400 // 24 hours in seconds
+    await ctx.env.KV.put(
+      cacheKey,
+      JSON.stringify(spotlightArtists),
+      { expirationTtl }
+    )
+
+    console.log(`Cached ${spotlightArtists.length} spotlight artists for ${dateKey}`)
+
+    // 5. Return spotlight artists
+    return successResponse(
+      {
+        spotlight_artists: spotlightArtists,
+        cached: false,
+        date: dateKey,
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error fetching spotlight artists:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to fetch spotlight artists',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}

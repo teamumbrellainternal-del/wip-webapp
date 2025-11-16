@@ -130,6 +130,55 @@ async function aggregateArtistMetrics(
 }
 
 /**
+ * Generate spotlight artists and cache in KV
+ * Called by cron job to pre-populate the cache at midnight UTC
+ */
+async function generateSpotlightArtists(db: D1Database, kv: KVNamespace, today: string): Promise<number> {
+  try {
+    // Query: SELECT random verified artists with rating > 4.5
+    const result = await db.prepare(`
+      SELECT
+        id,
+        stage_name as name,
+        primary_genre as genre,
+        avg_rating as rating,
+        total_gigs as gig_count,
+        verified,
+        avatar_url
+      FROM artists
+      WHERE verified = 1 AND avg_rating > 4.5
+      ORDER BY RANDOM()
+      LIMIT 10
+    `).all()
+
+    const spotlightArtists = (result.results || []).map((artist: any) => ({
+      id: artist.id,
+      name: artist.name,
+      genre: artist.genre || 'Unknown',
+      rating: Number(artist.rating) || 0,
+      gig_count: artist.gig_count || 0,
+      verified: Boolean(artist.verified),
+      avatar_url: artist.avatar_url || null,
+    }))
+
+    // Store in KV cache with 24-hour TTL
+    const cacheKey = `spotlight:${today}`
+    const expirationTtl = 86400 // 24 hours in seconds
+    await kv.put(
+      cacheKey,
+      JSON.stringify(spotlightArtists),
+      { expirationTtl }
+    )
+
+    console.log(`Cached ${spotlightArtists.length} spotlight artists for ${today}`)
+    return spotlightArtists.length
+  } catch (error) {
+    console.error('Error generating spotlight artists:', error)
+    throw error
+  }
+}
+
+/**
  * Aggregate analytics for all artists
  * Runs daily at midnight UTC via cron trigger
  */
@@ -146,6 +195,9 @@ export async function aggregateAnalytics(env: Env): Promise<Response> {
     const yesterday = new Date(startTime)
     yesterday.setUTCDate(yesterday.getUTCDate() - 1)
     const yesterdayStr = yesterday.toISOString().split('T')[0] // YYYY-MM-DD
+
+    // Calculate today's date for spotlight generation
+    const todayStr = startTime.toISOString().split('T')[0] // YYYY-MM-DD
 
     // Log job start
     await createCronLog(env.DB, 'analytics_aggregation', 'running', {
@@ -253,6 +305,19 @@ export async function aggregateAnalytics(env: Env): Promise<Response> {
       }
     }
 
+    // Generate and cache spotlight artists for today (task-4.4)
+    let spotlightCount = 0
+    try {
+      spotlightCount = await generateSpotlightArtists(env.DB, env.KV, todayStr)
+      console.log(`Generated ${spotlightCount} spotlight artists for ${todayStr}`)
+    } catch (spotlightError) {
+      errorsCount++
+      const errorMsg = spotlightError instanceof Error ? spotlightError.message : 'Unknown error'
+      errors.push(`Spotlight generation: ${errorMsg}`)
+      console.error('Error generating spotlight artists:', spotlightError)
+      // Don't fail the entire job if spotlight generation fails
+    }
+
     // Calculate duration
     const endTime = new Date()
     const duration = endTime.getTime() - startTime.getTime()
@@ -270,6 +335,7 @@ export async function aggregateAnalytics(env: Env): Promise<Response> {
         date: yesterdayStr,
         totalArtists: artists.length,
         successRate: `${((recordsProcessed / artists.length) * 100).toFixed(2)}%`,
+        spotlightCount,
       },
     })
 
