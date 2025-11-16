@@ -1,9 +1,10 @@
 ---
 id: task-2.5
 title: "Implement Onboarding Step 5 Endpoint (Quick Questions)"
-status: "To Do"
+status: "Completed"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["backend", "P0", "onboarding"]
 milestone: "M2 - Onboarding Flow Implementation"
 dependencies: ["task-1.4"]
@@ -14,13 +15,13 @@ estimated_hours: 3
 Implement the backend endpoint for onboarding step 5 that collects final yes/no toggles, marks onboarding as complete, and redirects user to dashboard.
 
 ## Acceptance Criteria
-- [ ] POST /v1/onboarding/artists/step5 endpoint implemented
-- [ ] Requires authentication
-- [ ] Accepts 6 yes/no questions as boolean fields
-- [ ] Updates user record: onboarding_complete = true
-- [ ] Marks step_5_complete = true
-- [ ] Returns updated artist profile with redirect_url = /dashboard
-- [ ] Transaction safety: wrap updates in single D1 transaction
+- [x] POST /v1/onboarding/artists/step5 endpoint implemented
+- [x] Requires authentication
+- [x] Accepts 6 yes/no questions as boolean fields
+- [x] Updates user record: onboarding_complete = true
+- [x] Marks step_5_complete = true
+- [x] Returns updated artist profile with redirect_url = /dashboard
+- [x] Transaction safety: wrap updates in single D1 transaction
 
 ## Implementation Plan
 1. Create route handler in api/controllers/onboarding/index.ts

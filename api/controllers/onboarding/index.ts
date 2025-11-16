@@ -709,6 +709,216 @@ export const submitStep5: RouteHandler = async (ctx) => {
 }
 
 /**
+ * Submit step 5 for artists: Quick Questions
+ * POST /v1/onboarding/artists/step5
+ * This is the final step - creates the artist profile in D1 with transaction safety
+ * Returns artist profile with redirect to dashboard
+ */
+export const submitArtistStep5: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    const body = await ctx.request.json()
+
+    // Validate step 5 data
+    const validation = validateStep5(body)
+    if (!validation.valid) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        JSON.stringify(validation.errors),
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Get onboarding session
+    const session = await getOnboardingSession(ctx.env.KV, ctx.userId)
+
+    if (!session || !session.completedSteps.includes(4)) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'Step 4 must be completed first',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Save step 5 data to session
+    session.data.step5 = body
+
+    // Combine all steps to create artist profile
+    const artistData = {
+      ...session.data.step1,
+      ...session.data.step2,
+      ...session.data.step3,
+      ...session.data.step4,
+      ...session.data.step5,
+    }
+
+    // Generate artist ID
+    const artistId = generateUUIDv4()
+    const now = new Date().toISOString()
+
+    // Serialize array fields to JSON
+    const secondaryGenres = artistData.secondary_genres
+      ? serializeArrayField(artistData.secondary_genres)
+      : null
+    const influences = artistData.influences ? serializeArrayField(artistData.influences) : null
+    const artistType = artistData.artist_type ? serializeArrayField(artistData.artist_type) : null
+    const equipment = artistData.equipment ? serializeArrayField(artistData.equipment) : null
+    const daw = artistData.daw ? serializeArrayField(artistData.daw) : null
+    const platforms = artistData.platforms ? serializeArrayField(artistData.platforms) : null
+    const subscriptions = artistData.subscriptions
+      ? serializeArrayField(artistData.subscriptions)
+      : null
+    const struggles = artistData.struggles ? serializeArrayField(artistData.struggles) : null
+    const availableDates = artistData.available_dates
+      ? serializeArrayField(artistData.available_dates)
+      : null
+
+    // Use D1 batch for transaction safety
+    const insertArtistStmt = ctx.env.DB.prepare(
+      `INSERT INTO artists (
+        id, user_id,
+        stage_name, legal_name, pronouns, location_city, location_state, location_country, location_zip, phone_number,
+        bio, story, tagline,
+        primary_genre, secondary_genres, influences, artist_type, equipment, daw, platforms, subscriptions, struggles,
+        base_rate_flat, base_rate_hourly, rates_negotiable, largest_show_capacity, travel_radius_miles,
+        available_weekdays, available_weekends, advance_booking_weeks, available_dates,
+        time_split_creative, time_split_logistics,
+        currently_making_music, confident_online_presence, struggles_creative_niche,
+        knows_where_find_gigs, paid_fairly_performing, understands_royalties,
+        tasks_outsource, sound_uniqueness, dream_venue, biggest_inspiration, favorite_create_time, platform_pain_point,
+        website_url, instagram_handle, tiktok_handle, youtube_url, spotify_url, apple_music_url,
+        soundcloud_url, facebook_url, twitter_url, bandcamp_url,
+        verified, avatar_url, banner_url, avg_rating, total_reviews, total_gigs, total_earnings, profile_views, follower_count,
+        created_at, updated_at
+      ) VALUES (
+        ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?,
+        ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        ?, ?,
+        ?, ?, ?,
+        ?, ?, ?,
+        ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        0, NULL, NULL, 0, 0, 0, 0, 0, 0,
+        ?, ?
+      )`
+    ).bind(
+      artistId,
+      ctx.userId,
+      artistData.stage_name,
+      artistData.legal_name || null,
+      artistData.pronouns || null,
+      artistData.location_city || null,
+      artistData.location_state || null,
+      artistData.location_country || 'US',
+      artistData.location_zip || null,
+      artistData.phone_number || null,
+      artistData.bio || null,
+      artistData.story || null,
+      artistData.tagline || null,
+      artistData.primary_genre,
+      secondaryGenres,
+      influences,
+      artistType,
+      equipment,
+      daw,
+      platforms,
+      subscriptions,
+      struggles,
+      artistData.base_rate_flat || null,
+      artistData.base_rate_hourly || null,
+      artistData.rates_negotiable !== undefined ? artistData.rates_negotiable : true,
+      artistData.largest_show_capacity || null,
+      artistData.travel_radius_miles || null,
+      artistData.available_weekdays !== undefined ? artistData.available_weekdays : true,
+      artistData.available_weekends !== undefined ? artistData.available_weekends : true,
+      artistData.advance_booking_weeks || 2,
+      availableDates,
+      artistData.time_split_creative || null,
+      artistData.time_split_logistics || null,
+      artistData.currently_making_music || null,
+      artistData.confident_online_presence || null,
+      artistData.struggles_creative_niche || null,
+      artistData.knows_where_find_gigs || null,
+      artistData.paid_fairly_performing || null,
+      artistData.understands_royalties || null,
+      artistData.tasks_outsource || null,
+      artistData.sound_uniqueness || null,
+      artistData.dream_venue || null,
+      artistData.biggest_inspiration || null,
+      artistData.favorite_create_time || null,
+      artistData.platform_pain_point || null,
+      artistData.website_url || null,
+      artistData.instagram_handle || null,
+      artistData.tiktok_handle || null,
+      artistData.youtube_url || null,
+      artistData.spotify_url || null,
+      artistData.apple_music_url || null,
+      artistData.soundcloud_url || null,
+      artistData.facebook_url || null,
+      artistData.twitter_url || null,
+      artistData.bandcamp_url || null,
+      now,
+      now
+    )
+
+    const updateUserStmt = ctx.env.DB.prepare(
+      'UPDATE users SET onboarding_complete = 1, updated_at = ? WHERE id = ?'
+    ).bind(now, ctx.userId)
+
+    const insertStorageQuotaStmt = ctx.env.DB.prepare(
+      'INSERT INTO storage_quotas (artist_id, used_bytes, limit_bytes, updated_at) VALUES (?, 0, 53687091200, ?)'
+    ).bind(artistId, now)
+
+    // Execute all statements in a single transaction
+    await ctx.env.DB.batch([insertArtistStmt, updateUserStmt, insertStorageQuotaStmt])
+
+    // Fetch the created artist profile
+    const artist = await ctx.env.DB.prepare('SELECT * FROM artists WHERE id = ?')
+      .bind(artistId)
+      .first()
+
+    // Delete onboarding session from KV (no longer needed per D-004)
+    await deleteOnboardingSession(ctx.env.KV, ctx.userId)
+
+    return successResponse(
+      {
+        artist,
+        redirect_url: '/dashboard',
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error submitting artist step 5:', error)
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Failed to complete artist onboarding',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
  * Reset onboarding (for testing/debugging)
  * POST /v1/onboarding/reset
  * Deletes KV session and resets user's onboarding_complete flag
