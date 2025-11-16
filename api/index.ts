@@ -124,11 +124,11 @@ function setupRouter(): Router {
   router.put('/v1/tracks/:id', tracksController.updateTrack, [authMiddleware])
   router.delete('/v1/tracks/:id', tracksController.deleteTrack, [authMiddleware])
 
-  // Reviews routes
-  router.post('/v1/reviews/invite', reviewsController.inviteReviewer, [authMiddleware])
-  router.post('/v1/reviews/submit', reviewsController.submitReview) // Public (token-based)
-  router.get('/v1/reviews/artist/:artistId', reviewsController.listArtistReviews) // Public
-  router.get('/v1/reviews/invite/:token', reviewsController.getReviewByToken) // Public
+  // Reviews routes (task-3.7)
+  router.get('/v1/profile/:artistId/reviews', reviewsController.listArtistReviews) // Public
+  router.post('/v1/profile/reviews/invite', reviewsController.inviteReviewer, [authMiddleware])
+  router.post('/v1/reviews', reviewsController.submitReview) // Public (token-based)
+  router.get('/v1/reviews/invite/:token', reviewsController.getReviewByToken) // Public (for pre-filling form)
 
   // Gigs routes
   router.get('/v1/gigs', gigsController.listGigs) // Public
