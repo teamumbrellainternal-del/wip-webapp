@@ -29,6 +29,7 @@ import * as analyticsController from './controllers/analytics'
 import * as broadcastController from './controllers/broadcast'
 import * as violetController from './controllers/violet'
 import * as searchController from './controllers/search'
+import { aggregateAnalytics, handleAnalyticsCron } from './controllers/cron/analytics'
 
 /**
  * Worker environment bindings
@@ -202,6 +203,9 @@ function setupRouter(): Router {
   router.get('/v1/search/tracks', searchController.searchTracks)
   router.get('/v1/search/suggestions', searchController.getSearchSuggestions)
 
+  // Cron routes (manual trigger with ?force=true)
+  router.get('/cron/analytics', async (ctx) => handleAnalyticsCron(ctx.request, ctx.env))
+
   return router
 }
 
@@ -237,5 +241,52 @@ export default {
       const response = handleError(error)
       return addCorsHeaders(response)
     }
+  },
+
+  /**
+   * Scheduled cron handler
+   * Runs daily at midnight UTC (configured in wrangler.toml)
+   */
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+    // Run analytics aggregation with retry logic
+    const maxRetries = 3
+    const retryDelays = [2000, 4000, 8000] // Exponential backoff: 2s, 4s, 8s
+
+    let lastError: Error | null = null
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        console.log(`Analytics cron attempt ${attempt + 1}/${maxRetries}`)
+        const response = await aggregateAnalytics(env)
+
+        // Check if successful
+        const result = await response.json()
+        if (response.ok || result.success) {
+          console.log('Analytics cron completed successfully')
+          return
+        }
+
+        // If not successful, treat as error
+        lastError = new Error(result.error || 'Analytics aggregation failed')
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error('Unknown error')
+        console.error(`Analytics cron attempt ${attempt + 1} failed:`, lastError.message)
+      }
+
+      // If not the last attempt, wait before retrying
+      if (attempt < maxRetries - 1) {
+        const delay = retryDelays[attempt]
+        console.log(`Retrying in ${delay}ms...`)
+        await new Promise((resolve) => setTimeout(resolve, delay))
+      }
+    }
+
+    // All retries failed - log critical error
+    console.error('Analytics cron failed after all retries:', lastError?.message)
+
+    // TODO: Send alert email to CTO/admin
+    // This would require implementing email alerting via Resend
+    // For now, we log the critical failure
+    console.error('CRITICAL: Analytics aggregation failed after 3 retries. Manual intervention required.')
   },
 }
