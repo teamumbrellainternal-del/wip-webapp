@@ -1,7 +1,7 @@
 ---
 id: task-4.4
 title: "Implement Spotlight Artists Feature"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
 labels: ["backend", "P1", "analytics"]
@@ -14,13 +14,13 @@ estimated_hours: 2
 Implement the endpoint that returns spotlight artists for the Growth page: random verified artists with >4.5 rating (D-068).
 
 ## Acceptance Criteria
-- [ ] GET /v1/analytics/spotlight endpoint implemented
-- [ ] Returns 10 random verified artists with rating > 4.5
-- [ ] Artist data includes: name, genre, rating, gig_count, verification badge
-- [ ] Uses random selection (D-068: no algorithm)
-- [ ] Caches result in KV with 24-hour TTL
-- [ ] Refreshes daily at midnight UTC (same as analytics cron)
-- [ ] Public endpoint (no auth required)
+- [x] GET /v1/analytics/spotlight endpoint implemented
+- [x] Returns 10 random verified artists with rating > 4.5
+- [x] Artist data includes: name, genre, rating, gig_count, verification badge
+- [x] Uses random selection (D-068: no algorithm)
+- [x] Caches result in KV with 24-hour TTL
+- [x] Refreshes daily at midnight UTC (same as analytics cron)
+- [x] Public endpoint (no auth required)
 
 ## Implementation Plan
 1. Create GET /v1/analytics/spotlight route
