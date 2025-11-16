@@ -1,7 +1,7 @@
 ---
 id: task-1.2
 title: "Implement Session Validation Endpoint"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
 labels: ["backend", "P0", "auth"]
@@ -14,15 +14,15 @@ estimated_hours: 2
 Create an endpoint that validates Clerk session tokens and returns current user data. This endpoint is called by the frontend on app load to restore authenticated sessions.
 
 ## Acceptance Criteria
-- [ ] GET /v1/auth/session endpoint implemented in api/routes/auth.ts
-- [ ] Extracts Clerk session token from Authorization header (Bearer format)
-- [ ] Uses `@clerk/backend` SDK for token verification
-- [ ] Validates token signature and expiration via Clerk
-- [ ] Fetches current user record from D1 (by clerk_user_id)
-- [ ] Returns user object and session metadata
-- [ ] Returns 401 error for invalid/expired tokens
-- [ ] Handles missing tokens gracefully
-- [ ] Works with Clerk's session token format
+- [x] GET /v1/auth/session endpoint implemented in api/routes/auth.ts
+- [x] Extracts Clerk session token from Authorization header (Bearer format)
+- [x] Uses `@clerk/backend` SDK for token verification
+- [x] Validates token signature and expiration via Clerk
+- [x] Fetches current user record from D1 (by clerk_id)
+- [x] Returns user object and session metadata
+- [x] Returns 401 error for invalid/expired tokens
+- [x] Handles missing tokens gracefully
+- [x] Works with Clerk's session token format
 
 ## Implementation Plan
 1. Extract Bearer token from Authorization header

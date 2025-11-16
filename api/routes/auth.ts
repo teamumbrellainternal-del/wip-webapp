@@ -197,43 +197,61 @@ async function handleSessionCreated(sessionData: any, env: Env): Promise<Respons
 
 /**
  * GET /v1/auth/session
- * Check current session validity
- * @param request - Request with auth header
+ * Validates Clerk session token and returns current user data
+ * @param request - Request with Authorization header (Bearer format)
  * @param env - Worker environment
- * @returns Current user session info
+ * @returns Current user session info with Clerk session metadata
  */
 export async function handleSessionCheck(request: Request, env: Env): Promise<Response> {
-  try {
-    const user = await authenticateRequest(request, env)
+  // Extract Bearer token from Authorization header
+  const authHeader = request.headers.get('Authorization')
+  const token = authHeader?.replace('Bearer ', '')
 
-    // Fetch complete user data from database
+  if (!token) {
+    return errorResponse('MISSING_TOKEN', 'Authorization header required', 401)
+  }
+
+  try {
+    // Verify Clerk token and get full payload
+    const { verifyToken } = await import('@clerk/backend/jwt')
+    const payload = await verifyToken(token, {
+      secretKey: env.CLERK_SECRET_KEY,
+    })
+
+    if (!payload || !payload.sub) {
+      return errorResponse('INVALID_TOKEN', 'Invalid token payload', 401)
+    }
+
+    // Extract Clerk user ID from token
+    const clerkId = payload.sub
+
+    // Fetch user from D1 by clerk_id
     const dbUser = await env.DB.prepare(
-      'SELECT * FROM users WHERE id = ?'
+      'SELECT * FROM users WHERE clerk_id = ?'
     )
-      .bind(user.userId)
+      .bind(clerkId)
       .first()
 
     if (!dbUser) {
-      return errorResponse('user_not_found', 'User not found', 404)
+      return errorResponse('USER_NOT_FOUND', 'User not found', 404)
     }
 
+    // Return user and session data with Clerk session metadata
     return successResponse({
       user: {
         id: dbUser.id,
-        oauth_provider: dbUser.oauth_provider,
-        oauth_id: dbUser.oauth_id,
+        clerk_user_id: dbUser.clerk_id,
         email: dbUser.email,
-        onboarding_complete: dbUser.onboarding_complete,
-        created_at: dbUser.created_at,
-        updated_at: dbUser.updated_at,
+        onboarding_complete: Boolean(dbUser.onboarding_complete),
       },
-      valid: true,
+      session: {
+        clerk_session_id: payload.sid as string,
+        expires_at: new Date((payload.exp as number) * 1000).toISOString(),
+      },
     })
   } catch (error) {
-    if (error instanceof Error) {
-      return errorResponse('authentication_failed', error.message, 401)
-    }
-    return errorResponse('authentication_failed', 'Invalid session', 401)
+    console.error('Token verification failed:', error)
+    return errorResponse('INVALID_TOKEN', 'Invalid or expired token', 401)
   }
 }
 
