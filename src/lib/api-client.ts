@@ -166,6 +166,20 @@ class APIClient {
       body: JSON.stringify(data),
     });
   }
+
+  async submitOnboardingStep4(data: {
+    largest_show_capacity: number;
+    flat_rate: number;
+    hourly_rate: number;
+    time_split_creative: number;
+    time_split_logistics: number;
+    available_dates: string[];
+  }): Promise<{ message: string; artist: any }> {
+    return this.request<{ message: string; artist: any }>('/onboarding/artists/step4', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 // Export singleton instance
