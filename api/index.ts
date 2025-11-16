@@ -154,6 +154,7 @@ function setupRouter(): Router {
   router.post('/v1/conversations/:id/messages', messagesController.sendMessage, [authMiddleware])
   router.post('/v1/conversations/:id/read', messagesController.markAsRead, [authMiddleware])
   router.delete('/v1/conversations/:id', messagesController.deleteConversation, [authMiddleware])
+  router.post('/v1/messages/booking-inquiry', messagesController.createBookingInquiry, [authMiddleware])
 
   // Files routes (auth required)
   router.get('/v1/files', filesController.listFiles, [authMiddleware])
