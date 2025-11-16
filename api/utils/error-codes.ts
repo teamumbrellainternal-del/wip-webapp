@@ -32,6 +32,10 @@ export const ErrorCodes = {
   ENDPOINT_NOT_FOUND: 'endpoint_not_found',
   USER_NOT_FOUND: 'user_not_found',
 
+  // 409 - Conflict
+  CONFLICT: 'conflict',
+  DUPLICATE_RESOURCE: 'duplicate_resource',
+
   // 429 - Rate Limit
   RATE_LIMIT_EXCEEDED: 'rate_limit_exceeded',
   QUOTA_EXCEEDED: 'quota_exceeded',
@@ -83,6 +87,10 @@ export const ErrorMessages: Record<ErrorCode, string> = {
   [ErrorCodes.ENDPOINT_NOT_FOUND]: 'API endpoint not found',
   [ErrorCodes.USER_NOT_FOUND]: 'User not found',
 
+  // 409
+  [ErrorCodes.CONFLICT]: 'Resource conflict',
+  [ErrorCodes.DUPLICATE_RESOURCE]: 'Duplicate resource',
+
   // 429
   [ErrorCodes.RATE_LIMIT_EXCEEDED]: 'Rate limit exceeded',
   [ErrorCodes.QUOTA_EXCEEDED]: 'Quota exceeded',
@@ -118,6 +126,9 @@ export function getStatusCodeForError(code: ErrorCode): number {
   }
   if (code.includes('not_found')) {
     return 404
+  }
+  if (code.includes('conflict') || code.includes('duplicate')) {
+    return 409
   }
   if (code.includes('limit') || code.includes('quota')) {
     return 429
