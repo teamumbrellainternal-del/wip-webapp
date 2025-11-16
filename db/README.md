@@ -11,10 +11,15 @@ db/
 │   ├── 0002_tracks_gigs.sql
 │   ├── 0003_messaging.sql
 │   ├── 0004_files_reviews.sql
-│   └── 0005_analytics.sql
-├── schema.sql           # Consolidated full schema (for reference)
-├── seed.sql             # Development seed data
-└── README.md            # This file
+│   ├── 0005_analytics.sql
+│   ├── 0006_delivery_queues.sql
+│   ├── 0007_clerk_integration.sql
+│   └── 0008_reference_data_tables.sql
+├── schema.sql                    # Consolidated full schema (for reference)
+├── seed.sql                      # Legacy development seed data
+├── seed.ts                       # Test fixtures for development (task-1.7)
+├── seed-production.ts            # Production reference data (task-1.8)
+└── README.md                     # This file
 ```
 
 ## Database Overview
@@ -50,7 +55,30 @@ wrangler d1 migrations apply umbrella-dev-db --local
 wrangler d1 migrations apply umbrella-dev-db --remote
 ```
 
-### 2. Seed Development Data
+### 2. Seed Production Reference Data (Required)
+
+**IMPORTANT:** Production seed data must be applied before the application can function. This includes genres, tags, and system configuration values required for onboarding and core features.
+
+```bash
+# Generate and apply production seed data
+npm run seed:production
+
+# Or generate SQL file only (without applying)
+npm run seed:production:generate
+
+# Then manually apply if needed
+wrangler d1 execute umbrella-dev-db --local --file=db/seed-production-output.sql
+```
+
+**What Gets Seeded:**
+- **20 genres** - Music genres for onboarding step 1 and marketplace filtering
+- **22 tags** - Skills and vibe tags for artist profile creation (onboarding step 3)
+- **Default user settings** - Email/SMS notification defaults, privacy settings
+- **System configuration** - File upload limits, AI usage limits, pagination settings
+
+**Idempotency:** Safe to run multiple times. Uses `INSERT OR IGNORE` to prevent duplicates.
+
+### 3. Seed Development/Test Data (Optional - For Frontend Development)
 
 **Option A: Comprehensive Test Fixtures (Recommended for Frontend Development)**
 
@@ -75,7 +103,7 @@ wrangler d1 execute umbrella-dev-db --local --file=db/seed.sql
 wrangler d1 execute umbrella-dev-db --remote --file=db/seed.sql
 ```
 
-### 3. Verify Schema Integrity
+### 4. Verify Schema Integrity
 
 ```bash
 # Run verification script (local)
@@ -120,7 +148,83 @@ Migrations are applied sequentially in order. Each migration is idempotent (uses
 - **broadcast_messages** - Fan blasts (text-only in MVP)
 - **journal_entries** - Creative Studio content
 
+### 0006_delivery_queues.sql
+- Delivery queues for background jobs and messaging
+
+### 0007_clerk_integration.sql
+- Clerk authentication integration tables
+
+### 0008_reference_data_tables.sql
+- **genres** - Music genres for onboarding and marketplace (20 genres)
+- **tags** - Skills and vibe tags for artist profiles (22 tags)
+- **system_config** - Application-wide configuration and settings
+
 ## Seed Data Summary
+
+### Production Seed Data (seed-production.ts)
+
+**New in task-1.8:** The `db/seed-production.ts` TypeScript script generates production reference data required for the application to function.
+
+**Purpose:** Unlike test fixtures which create sample users/artists/gigs for development, production seed data creates the reference data that must exist in production for features to work.
+
+**What Gets Seeded:**
+
+- **20 genres** (Afro-House, Blues, Classical, Country, EDM, Electronica, Folk, Funk, Hip-Hop, House, Jazz, Latin, Metal, Pop, R&B, Reggae, Rock, Soul, Techno, Other)
+  - Required for onboarding step 1 (genre selection)
+  - Used for marketplace filtering
+
+- **22 tags** - 12 skills + 10 vibe tags
+  - **Skills:** Mixing, Mastering, Production, Songwriting, Beat Making, Session Musician, Vocals, Guitar, Piano/Keys, Drums, Bass, DJ
+  - **Vibes:** Chill, Energetic, Experimental, Melodic, Dark, Uplifting, Groovy, Atmospheric, Raw, Polished
+  - Required for onboarding step 3 (multi-select tags)
+
+- **Default user settings** (stored as JSON in system_config)
+  - Email notifications (gig bookings, new messages, marketplace updates, weekly digest)
+  - SMS notifications (gig bookings, new messages)
+  - Privacy settings (profile visibility, email visibility, phone visibility)
+  - Preferences (timezone, language)
+
+- **System configuration values** (15+ settings)
+  - File upload limits: 50GB quota per artist, 100MB max per file, 24hr download TTL
+  - AI usage limits: 25k tokens/month, 50 prompts/day
+  - Messaging limits: 2000 chars max, no rate limits
+  - Pagination: 20 gigs/page, 20 artists/page
+  - Analytics: cron schedules, retry settings
+  - Session: 24hr TTL, refresh disabled
+
+**Features:**
+- ✅ **Idempotent** - Safe to run multiple times (uses `INSERT OR IGNORE`)
+- ✅ **Production-ready** - Data designed for production deployment
+- ✅ **Well-documented** - Each config value includes description
+- ✅ **Type-safe** - TypeScript with exported constants for testing
+
+**Usage:**
+```bash
+# Generate and apply production seed data
+npm run seed:production
+
+# Or just generate SQL file
+npm run seed:production:generate
+```
+
+**Critical:** Without production seed data:
+- ❌ Onboarding step 1 cannot display genre options
+- ❌ Onboarding step 3 cannot display tag options
+- ❌ Marketplace filtering by genre will fail
+- ❌ New users will not have default settings
+
+### Difference: Production Seed vs Test Fixtures
+
+| Aspect | Production Seed (task-1.8) | Test Fixtures (task-1.7) |
+|--------|---------------------------|--------------------------|
+| **Purpose** | Required reference data | Frontend development data |
+| **Content** | Genres, tags, config | Sample users, artists, gigs |
+| **Environment** | Production + Development | Development only |
+| **Frequency** | Run on every deployment | Run once per dev setup |
+| **Idempotency** | Required | Required |
+| **Size** | Small (20-30 records) | Large (50+ records) |
+| **File** | `db/seed-production.ts` | `db/seed.ts` |
+| **Script** | `npm run seed:production` | `npm run seed` |
 
 ### Comprehensive Test Fixtures (seed.ts)
 

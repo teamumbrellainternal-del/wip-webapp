@@ -32,6 +32,8 @@
     "db:create": "wrangler d1 create umbrella-dev-db",
     "seed:generate": "tsx db/seed.ts",
     "seed": "tsx db/seed.ts && wrangler d1 execute umbrella-dev-db --local --file=db/seed-output.sql",
+    "seed:production:generate": "tsx db/seed-production.ts",
+    "seed:production": "tsx db/seed-production.ts && wrangler d1 execute umbrella-dev-db --local --file=db/seed-production-output.sql",
     "kv:create": "wrangler kv:namespace create KV --preview",
     "r2:create": "wrangler r2 bucket create umbrella-dev-media",
     "validate:env": "node scripts/validate-env.js",
