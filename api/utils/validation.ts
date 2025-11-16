@@ -57,6 +57,82 @@ export function validateStep1(data: any): ValidationResult {
 }
 
 /**
+ * Validate Artist Onboarding Step 1: Identity & Basics
+ * For /v1/onboarding/artists/step1 endpoint
+ * Required fields: stage_name, location_city, location_state
+ * Optional fields: inspirations, genre_primary (up to 3 genres)
+ */
+export function validateArtistStep1(data: any): ValidationResult {
+  const errors: Record<string, string> = {}
+
+  // Required: stage_name
+  if (!data.stage_name || typeof data.stage_name !== 'string' || data.stage_name.trim().length === 0) {
+    errors.stage_name = 'Artist/stage name is required'
+  } else if (data.stage_name.length > 100) {
+    errors.stage_name = 'Artist/stage name must be 100 characters or less'
+  }
+
+  // Required: location_city
+  if (!data.location_city || typeof data.location_city !== 'string' || data.location_city.trim().length === 0) {
+    errors.location_city = 'City is required'
+  } else if (data.location_city.length > 100) {
+    errors.location_city = 'City must be 100 characters or less'
+  }
+
+  // Required: location_state
+  if (!data.location_state || typeof data.location_state !== 'string' || data.location_state.trim().length === 0) {
+    errors.location_state = 'State is required'
+  } else if (data.location_state.length > 50) {
+    errors.location_state = 'State must be 50 characters or less'
+  }
+
+  // Optional: location_zip
+  if (data.location_zip && data.location_zip.length > 10) {
+    errors.location_zip = 'ZIP code must be 10 characters or less'
+  }
+
+  // Optional: phone_number
+  if (data.phone_number && !isValidPhoneNumber(data.phone_number)) {
+    errors.phone_number = 'Invalid phone number format'
+  }
+
+  // Optional: pronouns
+  if (data.pronouns && data.pronouns.length > 50) {
+    errors.pronouns = 'Pronouns must be 50 characters or less'
+  }
+
+  // Optional: legal_name (full_name from spec)
+  if (data.legal_name && data.legal_name.length > 100) {
+    errors.legal_name = 'Full name must be 100 characters or less'
+  }
+
+  // Optional: inspirations (array of strings)
+  if (data.inspirations) {
+    if (!Array.isArray(data.inspirations)) {
+      errors.inspirations = 'Inspirations must be an array'
+    } else if (data.inspirations.length > 20) {
+      errors.inspirations = 'Maximum 20 inspirations allowed'
+    }
+  }
+
+  // Optional: genre_primary (array of up to 3 genres)
+  if (data.genre_primary) {
+    if (!Array.isArray(data.genre_primary)) {
+      errors.genre_primary = 'Genres must be an array'
+    } else if (data.genre_primary.length > 3) {
+      errors.genre_primary = 'Maximum 3 genres allowed'
+    } else if (data.genre_primary.length > 0 && data.genre_primary.some((g: any) => typeof g !== 'string')) {
+      errors.genre_primary = 'All genres must be strings'
+    }
+  }
+
+  return {
+    valid: Object.keys(errors).length === 0,
+    errors: Object.keys(errors).length > 0 ? errors : undefined,
+  }
+}
+
+/**
  * Validate Step 2: Links & Your Story
  * Minimum 3 social links required per spec
  */
@@ -140,6 +216,37 @@ export function validateStep2(data: any): ValidationResult {
     errors.tagline = 'Tagline must be 100 characters or less'
   }
 
+  // Optional qualitative questions (Step 2 per eng-spec Screen 6)
+  // Tasks you'd outsource
+  if (data.tasks_outsource && data.tasks_outsource.length > 500) {
+    errors.tasks_outsource = 'Tasks outsource answer must be 500 characters or less'
+  }
+
+  // What makes your sound unique
+  if (data.sound_uniqueness && data.sound_uniqueness.length > 500) {
+    errors.sound_uniqueness = 'Sound uniqueness answer must be 500 characters or less'
+  }
+
+  // Dream performance venue
+  if (data.dream_venue && data.dream_venue.length > 200) {
+    errors.dream_venue = 'Dream venue must be 200 characters or less'
+  }
+
+  // Biggest inspiration
+  if (data.biggest_inspiration && data.biggest_inspiration.length > 200) {
+    errors.biggest_inspiration = 'Biggest inspiration must be 200 characters or less'
+  }
+
+  // Favorite time to create
+  if (data.favorite_create_time && data.favorite_create_time.length > 200) {
+    errors.favorite_create_time = 'Favorite create time must be 200 characters or less'
+  }
+
+  // Platform pain point to solve
+  if (data.platform_pain_point && data.platform_pain_point.length > 500) {
+    errors.platform_pain_point = 'Platform pain point must be 500 characters or less'
+  }
+
   return {
     valid: Object.keys(errors).length === 0,
     errors: Object.keys(errors).length > 0 ? errors : undefined,
@@ -148,75 +255,261 @@ export function validateStep2(data: any): ValidationResult {
 
 /**
  * Validate Step 3: Creative Profile Tags
+ * Validates tag selections across 7 categories against predefined lists
  */
 export function validateStep3(data: any): ValidationResult {
   const errors: Record<string, string> = {}
 
+  // Import allowed values (dynamic import not supported, so we'll validate inline)
+  // These constants are defined in api/constants/creative-profile.ts
+  const ALLOWED_ARTIST_TYPES = [
+    'solo',
+    'band',
+    'duo',
+    'trio',
+    'dj',
+    'producer',
+    'songwriter',
+    'vocalist',
+    'session-musician',
+    'multi-instrumentalist',
+  ]
+
+  const ALLOWED_DAWS = [
+    'Ableton Live',
+    'Logic Pro',
+    'Pro Tools',
+    'FL Studio',
+    'Cubase',
+    'Studio One',
+    'Reaper',
+    'GarageBand',
+    'Reason',
+    'Bitwig',
+    'Cakewalk',
+    'Audacity',
+    'Other',
+  ]
+
+  const ALLOWED_PLATFORMS = [
+    'Spotify',
+    'Apple Music',
+    'SoundCloud',
+    'Bandcamp',
+    'YouTube',
+    'YouTube Music',
+    'TikTok',
+    'Instagram',
+    'Facebook',
+    'Twitter/X',
+    'Twitch',
+    'Mixcloud',
+    'Beatport',
+    'Tidal',
+    'Amazon Music',
+    'Other',
+  ]
+
+  const ALLOWED_SUBSCRIPTIONS = [
+    'Spotify Premium',
+    'Apple Music',
+    'Splice',
+    'Sounds.com',
+    'LANDR',
+    'DistroKid',
+    'CD Baby',
+    'TuneCore',
+    'Amuse',
+    'Ditto Music',
+    'iZotope',
+    'Native Instruments',
+    'Waves',
+    'Plugin Boutique',
+    'Slate Digital',
+    'Universal Audio',
+    'Soundtrap',
+    'BandLab',
+    'None',
+    'Other',
+  ]
+
+  const ALLOWED_EQUIPMENT = [
+    'Audio Interface',
+    'Focusrite Scarlett',
+    'Universal Audio Apollo',
+    'PreSonus AudioBox',
+    'MOTU',
+    'Condenser Microphone',
+    'Dynamic Microphone',
+    'USB Microphone',
+    'Shure SM7B',
+    'Rode NT1',
+    'Blue Yeti',
+    'Studio Monitors',
+    'KRK Rokit',
+    'Yamaha HS Series',
+    'JBL Studio Monitors',
+    'Studio Headphones',
+    'Audio-Technica',
+    'Beyerdynamic',
+    'Sennheiser',
+    'MIDI Controller',
+    'MIDI Keyboard',
+    'Drum Pad Controller',
+    'Akai MPC',
+    'Native Instruments Maschine',
+    'Ableton Push',
+    'Electric Guitar',
+    'Acoustic Guitar',
+    'Bass Guitar',
+    'Synthesizer',
+    'Piano/Keyboard',
+    'Drum Kit',
+    'DJ Controller',
+    'Turntables',
+    'Mixing Console',
+    'Preamp',
+    'Compressor',
+    'EQ',
+    'Other',
+  ]
+
+  const ALLOWED_STRUGGLES = [
+    'Finding gigs',
+    'Marketing myself',
+    'Social media presence',
+    'Building a fanbase',
+    'Getting discovered',
+    'Networking',
+    'Pricing my services',
+    'Contract negotiations',
+    'Time management',
+    'Creative block',
+    'Finding collaborators',
+    'Music production quality',
+    'Mixing and mastering',
+    'Studio access',
+    'Equipment costs',
+    'Understanding royalties',
+    'Distribution',
+    'Getting radio play',
+    'Getting press coverage',
+    'Managing finances',
+    'Work-life balance',
+    'Imposter syndrome',
+    'Staying motivated',
+    'None',
+    'Other',
+  ]
+
   // Validate secondary_genres (JSON array)
+  // Note: Genres should be validated against the genres table in the database
+  // For now, we accept any string values but enforce limits
   if (data.secondary_genres) {
     if (!Array.isArray(data.secondary_genres)) {
       errors.secondary_genres = 'Secondary genres must be an array'
     } else if (data.secondary_genres.length > 5) {
       errors.secondary_genres = 'Maximum 5 secondary genres allowed'
+    } else if (data.secondary_genres.some((g: any) => typeof g !== 'string' || g.trim().length === 0)) {
+      errors.secondary_genres = 'All genres must be non-empty strings'
     }
   }
 
-  // Validate influences (JSON array)
+  // Validate influences (JSON array of artist names)
+  // Free-form text, no predefined list
   if (data.influences) {
     if (!Array.isArray(data.influences)) {
       errors.influences = 'Influences must be an array'
     } else if (data.influences.length > 10) {
       errors.influences = 'Maximum 10 influences allowed'
+    } else if (data.influences.some((i: any) => typeof i !== 'string' || i.trim().length === 0)) {
+      errors.influences = 'All influences must be non-empty strings'
     }
   }
 
-  // Validate artist_type (JSON array)
+  // Validate artist_type (JSON array) - against predefined list
   if (data.artist_type) {
     if (!Array.isArray(data.artist_type)) {
       errors.artist_type = 'Artist type must be an array'
+    } else if (data.artist_type.length === 0) {
+      errors.artist_type = 'At least one artist type is required'
+    } else if (data.artist_type.length > 5) {
+      errors.artist_type = 'Maximum 5 artist types allowed'
     } else {
-      const validTypes = ['solo', 'band', 'dj', 'producer', 'songwriter', 'vocalist']
-      const invalidTypes = data.artist_type.filter((type: string) => !validTypes.includes(type))
+      const invalidTypes = data.artist_type.filter((type: string) => !ALLOWED_ARTIST_TYPES.includes(type))
       if (invalidTypes.length > 0) {
         errors.artist_type = `Invalid artist types: ${invalidTypes.join(', ')}`
       }
     }
   }
 
-  // Validate equipment (JSON array)
+  // Validate equipment (JSON array) - against predefined list
   if (data.equipment) {
     if (!Array.isArray(data.equipment)) {
       errors.equipment = 'Equipment must be an array'
     } else if (data.equipment.length > 20) {
       errors.equipment = 'Maximum 20 equipment items allowed'
+    } else {
+      const invalidEquipment = data.equipment.filter((item: string) => !ALLOWED_EQUIPMENT.includes(item))
+      if (invalidEquipment.length > 0) {
+        errors.equipment = `Invalid equipment items: ${invalidEquipment.join(', ')}`
+      }
     }
   }
 
-  // Validate DAW (JSON array)
+  // Validate DAW (JSON array) - against predefined list
   if (data.daw) {
     if (!Array.isArray(data.daw)) {
       errors.daw = 'DAW must be an array'
+    } else if (data.daw.length > 5) {
+      errors.daw = 'Maximum 5 DAWs allowed'
+    } else {
+      const invalidDAWs = data.daw.filter((daw: string) => !ALLOWED_DAWS.includes(daw))
+      if (invalidDAWs.length > 0) {
+        errors.daw = `Invalid DAWs: ${invalidDAWs.join(', ')}`
+      }
     }
   }
 
-  // Validate platforms (JSON array)
+  // Validate platforms (JSON array) - against predefined list
   if (data.platforms) {
     if (!Array.isArray(data.platforms)) {
       errors.platforms = 'Platforms must be an array'
+    } else if (data.platforms.length > 15) {
+      errors.platforms = 'Maximum 15 platforms allowed'
+    } else {
+      const invalidPlatforms = data.platforms.filter((platform: string) => !ALLOWED_PLATFORMS.includes(platform))
+      if (invalidPlatforms.length > 0) {
+        errors.platforms = `Invalid platforms: ${invalidPlatforms.join(', ')}`
+      }
     }
   }
 
-  // Validate subscriptions (JSON array)
+  // Validate subscriptions (JSON array) - against predefined list
   if (data.subscriptions) {
     if (!Array.isArray(data.subscriptions)) {
       errors.subscriptions = 'Subscriptions must be an array'
+    } else if (data.subscriptions.length > 15) {
+      errors.subscriptions = 'Maximum 15 subscriptions allowed'
+    } else {
+      const invalidSubs = data.subscriptions.filter((sub: string) => !ALLOWED_SUBSCRIPTIONS.includes(sub))
+      if (invalidSubs.length > 0) {
+        errors.subscriptions = `Invalid subscriptions: ${invalidSubs.join(', ')}`
+      }
     }
   }
 
-  // Validate struggles (JSON array)
+  // Validate struggles (JSON array) - against predefined list
   if (data.struggles) {
     if (!Array.isArray(data.struggles)) {
       errors.struggles = 'Struggles must be an array'
+    } else if (data.struggles.length > 10) {
+      errors.struggles = 'Maximum 10 struggles allowed'
+    } else {
+      const invalidStruggles = data.struggles.filter((struggle: string) => !ALLOWED_STRUGGLES.includes(struggle))
+      if (invalidStruggles.length > 0) {
+        errors.struggles = `Invalid struggles: ${invalidStruggles.join(', ')}`
+      }
     }
   }
 

@@ -1,27 +1,29 @@
 ---
 id: task-2.2
 title: "Implement Onboarding Step 2 Endpoint (Links & Story)"
-status: "To Do"
-assignee: []
+status: "Done"
+assignee: ["claude"]
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["backend", "P0", "onboarding"]
 milestone: "M2 - Onboarding Flow Implementation"
 dependencies: ["task-1.4"]
 estimated_hours: 3
+actual_hours: 1
 ---
 
 ## Description
 Implement the backend endpoint for onboarding step 2 that collects social platform connections (minimum 3 required) and qualitative questions about the artist's story.
 
 ## Acceptance Criteria
-- [ ] POST /v1/onboarding/artists/step2 endpoint implemented
-- [ ] Requires authentication
-- [ ] Validates minimum 3 social platform links
-- [ ] Accepts: Instagram, Facebook, YouTube, SoundCloud, Spotify, TikTok, Twitter
-- [ ] Collects qualitative questions: your_story, creative_approach, fan_connection
-- [ ] Updates artists table with step 2 data
-- [ ] Marks step_2_complete = true
-- [ ] Returns updated artist profile
+- [x] POST /v1/onboarding/artists/step2 endpoint implemented
+- [x] Requires authentication
+- [x] Validates minimum 3 social platform links
+- [x] Accepts: Instagram, Facebook, YouTube, SoundCloud, Spotify, TikTok, Twitter
+- [x] Collects qualitative questions: tasks_outsource, sound_uniqueness, dream_venue, biggest_inspiration, favorite_create_time, platform_pain_point (per eng-spec Screen 6)
+- [x] Updates artists table with step 2 data
+- [x] Marks step_2_complete = true
+- [x] Returns updated artist profile
 
 ## Implementation Plan
 1. Create route handler in api/controllers/onboarding/index.ts
