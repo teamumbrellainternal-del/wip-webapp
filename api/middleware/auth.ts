@@ -1,11 +1,18 @@
 /**
  * Authentication middleware for Clerk
  * Validates Clerk session tokens and extracts user information
+ * Implements task-1.4 requirements for authentication and authorization
  */
 
 import { verifyToken } from '@clerk/backend/jwt'
 import { verifyJWT, type JWTPayload } from '../utils/jwt'
 import type { User } from '../models/user'
+import {
+  AuthenticationError,
+  AuthorizationError,
+  NotFoundError,
+  DatabaseError,
+} from '../utils/errors'
 
 /**
  * Environment interface (defined in api/index.ts)
@@ -39,64 +46,154 @@ export interface ClerkUser {
  * @param request - Incoming request
  * @param env - Worker environment
  * @returns User info if valid
- * @throws Error with appropriate message
+ * @throws AuthenticationError, NotFoundError
+ * @deprecated Use requireAuth() instead for new code
  */
 export async function authenticateRequest(
   request: Request,
   env: Env
 ): Promise<ClerkUser> {
+  const user = await requireAuth(request, env)
+
+  // Convert User to ClerkUser format for backward compatibility
+  return {
+    userId: user.id,
+    clerkId: user.clerk_id || '',
+    email: user.email,
+    oauthProvider: user.oauth_provider,
+  }
+}
+
+/**
+ * requireAuth - Main authentication middleware function
+ * Validates Clerk session token and fetches user from D1
+ *
+ * @param request - Incoming request
+ * @param env - Worker environment
+ * @returns User object from database
+ * @throws AuthenticationError (401) for invalid/missing tokens
+ * @throws NotFoundError (404) if user not found in D1 (webhook sync issue)
+ * @throws DatabaseError (500) for database errors
+ */
+export async function requireAuth(
+  request: Request,
+  env: Env
+): Promise<User> {
+  // 1. Extract token from Authorization header
   const authHeader = request.headers.get('Authorization')
 
   if (!authHeader) {
-    throw new Error('Missing authentication header')
+    throw new AuthenticationError('Missing authentication header')
   }
 
   if (!authHeader.startsWith('Bearer ')) {
-    throw new Error('Invalid Authorization header format. Expected: Bearer <token>')
+    throw new AuthenticationError(
+      'Invalid Authorization header format. Expected: Bearer <token>'
+    )
   }
 
-  const token = authHeader.substring(7)
+  const token = authHeader.replace('Bearer ', '')
 
   if (!token) {
-    throw new Error('Missing session token')
+    throw new AuthenticationError('Missing session token')
   }
 
   try {
-    // Verify Clerk session token
+    // 2. Verify Clerk session token
     const payload = await verifyToken(token, {
       secretKey: env.CLERK_SECRET_KEY,
     })
 
     if (!payload || !payload.sub) {
-      throw new Error('Invalid token payload')
+      throw new AuthenticationError('Invalid token payload')
     }
 
     const clerkId = payload.sub
-    const email = (payload.email as string) || ''
 
-    // Look up user by Clerk ID in database
+    // 3. Fetch user from D1 by clerk_id
     const user = await env.DB.prepare(
       'SELECT * FROM users WHERE clerk_id = ?'
     )
       .bind(clerkId)
       .first<User>()
 
+    // 4. Return 404 if user not found (webhook sync issue)
     if (!user) {
-      throw new Error('User not found. Please complete sign-up.')
+      throw new NotFoundError(
+        'User not found in database. Please ensure your account is properly synchronized.',
+        { clerkId }
+      )
     }
 
-    return {
-      userId: user.id,
-      clerkId: clerkId,
-      email: email || user.email,
-      oauthProvider: user.oauth_provider,
-    }
+    // 5. Return user object
+    return user
   } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Clerk token validation failed: ${error.message}`)
+    // Re-throw our custom errors
+    if (
+      error instanceof AuthenticationError ||
+      error instanceof NotFoundError ||
+      error instanceof DatabaseError
+    ) {
+      throw error
     }
-    throw new Error('Clerk token validation failed')
+
+    // Clerk token verification errors
+    if (error instanceof Error) {
+      // Check for common Clerk token errors
+      if (
+        error.message.includes('expired') ||
+        error.message.includes('signature') ||
+        error.message.includes('invalid')
+      ) {
+        throw new AuthenticationError('Invalid or expired session token', {
+          originalError: error.message,
+        })
+      }
+
+      // Database errors
+      if (error.message.includes('D1_ERROR') || error.message.includes('database')) {
+        throw new DatabaseError('Database error during authentication', {
+          originalError: error.message,
+        })
+      }
+
+      throw new AuthenticationError(`Authentication failed: ${error.message}`)
+    }
+
+    throw new AuthenticationError('Authentication failed')
   }
+}
+
+/**
+ * requireOnboarding - Authentication middleware with onboarding check
+ * Validates Clerk session token AND ensures user has completed onboarding
+ *
+ * @param request - Incoming request
+ * @param env - Worker environment
+ * @returns User object from database with completed onboarding
+ * @throws AuthenticationError (401) for invalid/missing tokens
+ * @throws AuthorizationError (403) for valid tokens but incomplete onboarding
+ * @throws NotFoundError (404) if user not found in D1
+ */
+export async function requireOnboarding(
+  request: Request,
+  env: Env
+): Promise<User> {
+  // First, authenticate the user
+  const user = await requireAuth(request, env)
+
+  // Check if onboarding is complete
+  if (!user.onboarding_complete) {
+    throw new AuthorizationError(
+      'Onboarding incomplete. Please complete onboarding to access this resource.',
+      {
+        userId: user.id,
+        onboardingComplete: false,
+      }
+    )
+  }
+
+  return user
 }
 
 /**

@@ -8,6 +8,7 @@
  */
 export interface User {
   id: string
+  clerk_id?: string // Clerk user ID (added in migration 0007)
   oauth_provider: 'apple' | 'google'
   oauth_id: string
   email: string
