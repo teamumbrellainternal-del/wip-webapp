@@ -91,6 +91,8 @@ function setupRouter(): Router {
   router.delete('/v1/profile', profileController.deleteProfile, [authMiddleware])
   router.get('/v1/profile/completion', profileController.getProfileCompletion, [authMiddleware])
   router.get('/v1/profile/actions', profileController.getProfileActions, [authMiddleware])
+  router.post('/v1/profile/avatar/upload', profileController.uploadAvatar, [authMiddleware])
+  router.post('/v1/profile/avatar/confirm', profileController.confirmAvatarUpload, [authMiddleware])
   router.get('/v1/profile/:id', profileController.getPublicProfile) // Public profile
 
   // Onboarding routes (auth required)

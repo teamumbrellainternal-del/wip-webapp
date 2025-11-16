@@ -667,3 +667,288 @@ function generateCompletionRecommendations(
 
   return recommendations
 }
+
+/**
+ * Get avatar upload signed URL
+ * POST /v1/profile/avatar/upload
+ * Generates R2 signed URL for avatar upload with 15-minute expiry
+ */
+export const uploadAvatar: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    const body = await ctx.request.json()
+    const { filename, fileSize, contentType } = body
+
+    if (!filename || !fileSize || !contentType) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'filename, fileSize, and contentType are required',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Get artist profile
+    const artist = await ctx.env.DB.prepare(
+      'SELECT id, avatar_url FROM artists WHERE user_id = ?'
+    ).bind(ctx.userId).first<{ id: string; avatar_url: string | null }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist profile not found',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Validate file type (images only)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic']
+    if (!allowedTypes.includes(contentType)) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        `Invalid file type. Allowed types: ${allowedTypes.join(', ')}`,
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Validate file size (10MB max for avatars)
+    const MAX_AVATAR_SIZE = 10 * 1024 * 1024 // 10MB
+    if (fileSize > MAX_AVATAR_SIZE) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        `File size ${Math.round(fileSize / (1024 * 1024))}MB exceeds maximum allowed size of 10MB`,
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Generate file extension from content type
+    const extMap: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+      'image/heic': 'heic',
+    }
+    const ext = extMap[contentType] || 'jpg'
+
+    // Build R2 key for avatar (standardized naming)
+    const fileKey = `profiles/${artist.id}/avatar.${ext}`
+
+    // Generate upload ID for tracking
+    const uploadId = `avatar-${artist.id}-${Date.now()}`
+
+    // Store upload metadata in KV (for verification after upload)
+    const uploadMetadata = {
+      uploadId,
+      artistId: artist.id,
+      userId: ctx.userId,
+      filename,
+      fileSize,
+      contentType,
+      fileKey,
+      oldAvatarUrl: artist.avatar_url,
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(), // 15 minutes
+    }
+
+    await ctx.env.KV.put(
+      `upload:avatar:${uploadId}`,
+      JSON.stringify(uploadMetadata),
+      { expirationTtl: 900 } // 15 minutes
+    )
+
+    // Generate upload URL (placeholder for MVP, replace with actual R2 presigned URL)
+    const uploadUrl = `https://upload.umbrella.dev/${fileKey}?uploadId=${uploadId}`
+
+    return successResponse(
+      {
+        uploadId,
+        uploadUrl,
+        fileKey,
+        expiresAt: uploadMetadata.expiresAt,
+        maxFileSize: MAX_AVATAR_SIZE,
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error generating avatar upload URL:', error)
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Failed to generate avatar upload URL',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
+ * Confirm avatar upload and update artist record
+ * POST /v1/profile/avatar/confirm
+ * Validates file exists in R2 and updates artist avatar_url
+ */
+export const confirmAvatarUpload: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    const body = await ctx.request.json()
+    const { uploadId } = body
+
+    if (!uploadId) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'uploadId is required',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Get upload metadata from KV
+    const uploadMetadataStr = await ctx.env.KV.get(`upload:avatar:${uploadId}`)
+
+    if (!uploadMetadataStr) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Upload session not found or expired',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    const uploadMetadata = JSON.parse(uploadMetadataStr)
+
+    // Verify user owns this upload
+    if (uploadMetadata.userId !== ctx.userId) {
+      return errorResponse(
+        ErrorCodes.AUTHORIZATION_FAILED,
+        'Unauthorized to confirm this upload',
+        403,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Verify file exists in R2 via HEAD request
+    const fileExists = await ctx.env.BUCKET.head(uploadMetadata.fileKey)
+
+    if (!fileExists) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'File not found in storage. Upload may have failed.',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Delete old avatar from R2 if it exists
+    if (uploadMetadata.oldAvatarUrl) {
+      try {
+        // Extract key from URL (assumes URL format: https://.../profiles/{artistId}/avatar.{ext})
+        const urlMatch = uploadMetadata.oldAvatarUrl.match(/profiles\/[^\/]+\/avatar\.[a-z]+/)
+        if (urlMatch) {
+          const oldKey = urlMatch[0]
+          // Only delete if it's different from the new key
+          if (oldKey !== uploadMetadata.fileKey) {
+            await ctx.env.BUCKET.delete(oldKey)
+            console.log(`Deleted old avatar: ${oldKey}`)
+          }
+        }
+      } catch (error) {
+        console.error('Error deleting old avatar:', error)
+        // Continue even if deletion fails - not critical
+      }
+    }
+
+    // Build public URL for the avatar
+    const avatarUrl = `https://pub-umbrella.r2.dev/${uploadMetadata.fileKey}`
+
+    // Update artist record with new avatar_url
+    await ctx.env.DB.prepare(
+      'UPDATE artists SET avatar_url = ?, updated_at = ? WHERE user_id = ?'
+    )
+      .bind(avatarUrl, new Date().toISOString(), ctx.userId)
+      .run()
+
+    // Clean up KV upload metadata
+    await ctx.env.KV.delete(`upload:avatar:${uploadId}`)
+
+    // Get updated profile
+    const updatedArtist = await ctx.env.DB.prepare(
+      'SELECT * FROM artists WHERE user_id = ?'
+    ).bind(ctx.userId).first<Artist>()
+
+    if (!updatedArtist) {
+      return errorResponse(
+        ErrorCodes.INTERNAL_ERROR,
+        'Failed to retrieve updated profile',
+        500,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Calculate new completion percentage
+    const completionPercentage = calculateProfileCompletion(updatedArtist)
+
+    // Parse JSON array fields for response
+    const response = {
+      ...updatedArtist,
+      secondary_genres: parseArrayField(updatedArtist.secondary_genres),
+      influences: parseArrayField(updatedArtist.influences),
+      artist_type: parseArrayField(updatedArtist.artist_type),
+      equipment: parseArrayField(updatedArtist.equipment),
+      daw: parseArrayField(updatedArtist.daw),
+      platforms: parseArrayField(updatedArtist.platforms),
+      subscriptions: parseArrayField(updatedArtist.subscriptions),
+      struggles: parseArrayField(updatedArtist.struggles),
+      available_dates: parseArrayField(updatedArtist.available_dates),
+      profile_completion: completionPercentage,
+    }
+
+    return successResponse(
+      {
+        message: 'Avatar uploaded successfully',
+        avatarUrl,
+        profile: response,
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error confirming avatar upload:', error)
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Failed to confirm avatar upload',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
