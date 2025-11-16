@@ -1,9 +1,10 @@
 ---
 id: task-5.3
 title: "Implement Single-Click Gig Application"
-status: "To Do"
+status: "Completed"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["backend", "P1", "marketplace", "booking"]
 milestone: "M5 - Marketplace Discovery System"
 dependencies: ["task-1.4"]
@@ -14,16 +15,16 @@ estimated_hours: 3
 Implement the endpoint for applying to gigs with a single click. Automatically sends artist profile + rates to venue (D-077). Sends email + SMS confirmations (D-079).
 
 ## Acceptance Criteria
-- [ ] POST /v1/gigs/:gigId/apply endpoint implemented
-- [ ] Requires authentication
-- [ ] Creates gig_application record with status "Applied"
-- [ ] Fetches artist profile (name, bio, rates, portfolio)
-- [ ] Sends email to venue with artist details (via Resend)
-- [ ] Sends SMS to venue with artist details (via Twilio) (D-079)
-- [ ] Sends confirmation email to artist (D-079)
-- [ ] Sends confirmation SMS to artist (D-079)
-- [ ] Returns success confirmation
-- [ ] Prevents duplicate applications (409 if already applied)
+- [x] POST /v1/gigs/:gigId/apply endpoint implemented
+- [x] Requires authentication
+- [x] Creates gig_application record with status "pending" (matches schema)
+- [x] Fetches artist profile (name, bio, rates, portfolio)
+- [x] Sends email to venue with artist details (via Resend)
+- [x] Sends SMS to venue with artist details (via Twilio) (D-079)
+- [x] Sends confirmation email to artist (D-079)
+- [x] Sends confirmation SMS to artist (D-079)
+- [x] Returns success confirmation
+- [x] Prevents duplicate applications (409 if already applied)
 
 ## Implementation Plan
 1. Create POST /v1/gigs/:gigId/apply route in api/controllers/marketplace/gigs.ts
