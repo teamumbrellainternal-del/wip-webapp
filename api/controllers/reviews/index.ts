@@ -13,11 +13,11 @@ import { successResponse, errorResponse } from '../../utils/response'
 import { ErrorCodes } from '../../utils/error-codes'
 import { generateUUIDv4 } from '../../utils/uuid'
 import { isValidEmail } from '../../utils/validation'
-// import { sendEmail } from '../../services/resend' // TODO: Fix sendEmail signature
+import { createResendService } from '../../services/resend'
 
 /**
  * Invite reviewer via email
- * POST /v1/reviews/invite
+ * POST /v1/profile/reviews/invite
  * Per D-032: Artists can invite anyone via email to leave review
  */
 export const inviteReviewer: RouteHandler = async (ctx) => {
@@ -111,38 +111,48 @@ export const inviteReviewer: RouteHandler = async (ctx) => {
     // Send invitation email via Resend
     const inviteUrl = `https://umbrella.app/review/${inviteToken}`
 
-    // TODO: Fix sendEmail call signature
-    /*
-    const emailResult = await sendEmail(ctx.env, {
-      to: email,
-      subject: `${artist.stage_name} is requesting your review`,
-      html: `
-        <h2>Hi ${reviewerName},</h2>
-        <p>${artist.stage_name} has invited you to leave a review of their work.</p>
-        <p>Click the link below to submit your review:</p>
-        <p><a href="${inviteUrl}">Submit Review</a></p>
-        <p>This link is unique to you and will only work once.</p>
-        <p>Thanks,<br/>The Umbrella Team</p>
-      `,
-      from: 'noreply@umbrella.app',
-    })
+    // Check if RESEND_API_KEY is available
+    if (!ctx.env.RESEND_API_KEY) {
+      console.warn('RESEND_API_KEY not configured, skipping email send')
+    } else {
+      try {
+        const resendService = createResendService(ctx.env.RESEND_API_KEY, ctx.env.DB)
+        const emailResult = await resendService.sendTransactional(
+          'review_invitation',
+          email,
+          {
+            otherPartyName: artist.stage_name,
+            reviewUrl: inviteUrl,
+          },
+          artist.id
+        )
 
-    if (!emailResult.success) {
-      // Delete the review record if email fails
-      await ctx.env.DB.prepare('DELETE FROM reviews WHERE id = ?').bind(reviewId).run()
+        if (!emailResult.success) {
+          // Delete the review record if email fails
+          await ctx.env.DB.prepare('DELETE FROM reviews WHERE id = ?').bind(reviewId).run()
 
-      return errorResponse(
-        ErrorCodes.EXTERNAL_SERVICE_ERROR,
-        'Failed to send invitation email',
-        500,
-        undefined,
-        ctx.requestId
-      )
+          return errorResponse(
+            ErrorCodes.EXTERNAL_SERVICE_ERROR,
+            'Failed to send invitation email',
+            500,
+            undefined,
+            ctx.requestId
+          )
+        }
+      } catch (emailError) {
+        console.error('Error sending invitation email:', emailError)
+        // Delete the review record if email fails
+        await ctx.env.DB.prepare('DELETE FROM reviews WHERE id = ?').bind(reviewId).run()
+
+        return errorResponse(
+          ErrorCodes.EXTERNAL_SERVICE_ERROR,
+          'Failed to send invitation email',
+          500,
+          undefined,
+          ctx.requestId
+        )
+      }
     }
-    */
-
-    // Temporary: Skip email sending for demo
-    const emailResult = { success: true }
 
     return successResponse(
       {
@@ -166,7 +176,7 @@ export const inviteReviewer: RouteHandler = async (ctx) => {
 
 /**
  * Submit review via invite token
- * POST /v1/reviews/submit
+ * POST /v1/reviews
  * Public endpoint (no auth required)
  */
 export const submitReview: RouteHandler = async (ctx) => {
@@ -264,7 +274,7 @@ export const submitReview: RouteHandler = async (ctx) => {
 
 /**
  * List reviews for artist
- * GET /v1/reviews/artist/:artistId
+ * GET /v1/profile/:artistId/reviews
  * Public endpoint
  */
 export const listArtistReviews: RouteHandler = async (ctx) => {

@@ -1,9 +1,10 @@
 ---
 id: task-3.7
 title: "Implement Review System Endpoints"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["backend", "P0", "profile", "reviews"]
 milestone: "M3 - Profile Management"
 dependencies: ["task-1.4"]
@@ -14,15 +15,15 @@ estimated_hours: 4
 Implement endpoints for the review system: fetching reviews, inviting reviewers via email, and submitting reviews. No moderation in MVP (D-034).
 
 ## Acceptance Criteria
-- [ ] GET /v1/profile/:artistId/reviews endpoint lists all reviews
-- [ ] POST /v1/profile/reviews/invite endpoint sends email invitation
-- [ ] POST /v1/reviews endpoint submits a new review
-- [ ] Requires authentication for invite and submit
-- [ ] Email invitation includes review link with token
-- [ ] Anyone with token can leave review (D-032)
-- [ ] No moderation system (D-034: reviews appear immediately)
-- [ ] Reviews display reviewer name, rating, text, date
-- [ ] Calculates average rating for artist
+- [x] GET /v1/profile/:artistId/reviews endpoint lists all reviews
+- [x] POST /v1/profile/reviews/invite endpoint sends email invitation
+- [x] POST /v1/reviews endpoint submits a new review
+- [x] Requires authentication for invite and submit
+- [x] Email invitation includes review link with token
+- [x] Anyone with token can leave review (D-032)
+- [x] No moderation system (D-034: reviews appear immediately)
+- [x] Reviews display reviewer name, rating, text, date
+- [x] Calculates average rating for artist
 
 ## Implementation Plan
 1. Create GET /v1/profile/:artistId/reviews route
