@@ -134,7 +134,7 @@ function setupRouter(): Router {
   // Gigs routes
   router.get('/v1/gigs', gigsController.listGigs, [authMiddleware]) // Requires auth (task-5.1)
   router.get('/v1/gigs/applications', gigsController.getMyApplications, [authMiddleware])
-  router.get('/v1/gigs/:id', gigsController.getGig) // Public
+  router.get('/v1/gigs/:id', gigsController.getGig, [authMiddleware]) // Auth required (task-5.2)
   router.post('/v1/gigs', gigsController.createGig, [authMiddleware])
   router.post('/v1/gigs/:id/apply', gigsController.applyToGig, [authMiddleware])
   router.delete('/v1/gigs/:id/apply', gigsController.withdrawApplication, [authMiddleware])

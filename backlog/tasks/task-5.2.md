@@ -1,9 +1,10 @@
 ---
 id: task-5.2
 title: "Implement Single Gig Detail Endpoint"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["backend", "P1", "marketplace"]
 milestone: "M5 - Marketplace Discovery System"
 dependencies: ["task-1.4"]
@@ -14,14 +15,14 @@ estimated_hours: 2
 Implement the endpoint for fetching detailed information about a single gig, displayed in the right sidebar of the marketplace.
 
 ## Acceptance Criteria
-- [ ] GET /v1/gigs/:gigId endpoint implemented
-- [ ] Requires authentication
-- [ ] Returns complete gig details: venue, title, description, date, time, capacity, location, payment, requirements
-- [ ] Returns venue information: name, rating, review_count, contact_info
-- [ ] Returns urgency flag if applicable (D-010)
-- [ ] Returns application status if user already applied
-- [ ] 404 error if gig not found
-- [ ] Proper error handling
+- [x] GET /v1/gigs/:gigId endpoint implemented
+- [x] Requires authentication
+- [x] Returns complete gig details: venue, title, description, date, time, capacity, location, payment, requirements
+- [x] Returns venue information: name, rating, review_count, contact_info
+- [x] Returns urgency flag if applicable (D-010)
+- [x] Returns application status if user already applied
+- [x] 404 error if gig not found
+- [x] Proper error handling
 
 ## Implementation Plan
 1. Create GET /v1/gigs/:gigId route in api/controllers/marketplace/gigs.ts
