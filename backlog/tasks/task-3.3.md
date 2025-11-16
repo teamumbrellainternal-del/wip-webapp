@@ -1,9 +1,10 @@
 ---
 id: task-3.3
 title: "Implement Avatar Upload Endpoint"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["backend", "P0", "profile", "storage"]
 milestone: "M3 - Profile Management"
 dependencies: ["task-1.4"]
@@ -14,14 +15,14 @@ estimated_hours: 3
 Implement the endpoint for generating R2 signed URLs for avatar uploads and updating avatar metadata after successful upload.
 
 ## Acceptance Criteria
-- [ ] POST /v1/profile/avatar/upload endpoint generates signed R2 URL
-- [ ] Requires authentication
-- [ ] Returns signed URL with 15-minute expiry
-- [ ] POST /v1/profile/avatar/confirm endpoint saves avatar metadata
-- [ ] Validates file is uploaded to R2 before confirming
-- [ ] Updates artist record with new avatar_url
-- [ ] Old avatar deleted from R2 (if exists)
-- [ ] Proper error handling for upload failures
+- [x] POST /v1/profile/avatar/upload endpoint generates signed R2 URL
+- [x] Requires authentication
+- [x] Returns signed URL with 15-minute expiry
+- [x] POST /v1/profile/avatar/confirm endpoint saves avatar metadata
+- [x] Validates file is uploaded to R2 before confirming
+- [x] Updates artist record with new avatar_url
+- [x] Old avatar deleted from R2 (if exists)
+- [x] Proper error handling for upload failures
 
 ## Implementation Plan
 1. Create POST /v1/profile/avatar/upload route
