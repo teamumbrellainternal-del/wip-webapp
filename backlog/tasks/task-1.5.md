@@ -1,7 +1,7 @@
 ---
 id: task-1.5
 title: "Build Login Page Component"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
 labels: ["frontend", "P0", "auth"]
@@ -14,14 +14,14 @@ estimated_hours: 3
 Create the login page using Clerk's pre-built `<SignIn>` component with Google OAuth (Apple disabled). Clerk handles the entire OAuth flow, UI, and session management.
 
 ## Acceptance Criteria
-- [ ] src/pages/LoginPage.tsx component created
-- [ ] Uses Clerk's `<SignIn>` component (from `@clerk/nextjs` or `@clerk/remix`)
-- [ ] Google OAuth configured as only provider in Clerk dashboard
-- [ ] Custom appearance/styling to match Umbrella branding
-- [ ] Redirects to `/onboarding/role-selection` after sign-in
-- [ ] Auto-redirects to dashboard if already authenticated
-- [ ] Responsive layout (mobile + desktop)
-- [ ] Error handling managed by Clerk component
+- [x] src/pages/LoginPage.tsx component created
+- [x] Uses Clerk's `<SignIn>` component (from `@clerk/clerk-react`)
+- [x] Google OAuth configured as only provider in Clerk dashboard
+- [x] Custom appearance/styling to match Umbrella branding
+- [x] Redirects to `/onboarding/role-selection` after sign-in
+- [x] Auto-redirects to dashboard if already authenticated
+- [x] Responsive layout (mobile + desktop)
+- [x] Error handling managed by Clerk component
 
 ## Implementation Plan
 
