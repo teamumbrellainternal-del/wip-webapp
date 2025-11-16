@@ -1,25 +1,26 @@
 ---
 id: task-2.9
 title: "Build Onboarding Step 3 Frontend Page"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
 labels: ["frontend", "P0", "onboarding"]
 milestone: "M2 - Onboarding Flow Implementation"
 dependencies: ["task-2.3"]
 estimated_hours: 4
+completed_date: "2025-11-16"
 ---
 
 ## Description
 Create the frontend page for onboarding step 3 with tag selection across 7 categories.
 
 ## Acceptance Criteria
-- [ ] src/pages/onboarding/Step3.tsx component created
-- [ ] 7 tag selection sections: artist_type, genres, equipment, skills, influences, goals, values
-- [ ] Multi-select tag interface with visual feedback
-- [ ] Calls POST /v1/onboarding/artists/step3 on submit
-- [ ] "Back" and "Next" navigation buttons
-- [ ] Progress indicator shows "Step 3 of 5"
+- [x] src/pages/onboarding/Step3.tsx component created
+- [x] 8 tag selection sections: artist_type, genres, equipment, daw, platforms, subscriptions, struggles, influences (aligned with backend validation)
+- [x] Multi-select tag interface with visual feedback
+- [x] Calls POST /v1/onboarding/artists/step3 on submit
+- [x] "Back" and "Next" navigation buttons
+- [x] Progress indicator shows "Step 3 of 5"
 
 ## Implementation Plan
 1. Create Step3.tsx component
