@@ -36,6 +36,7 @@ export const listGigs: RouteHandler = async (ctx) => {
 /**
  * Get gig details by ID
  * GET /v1/gigs/:id
+ * Per task-5.2: Returns complete gig details with venue info and application status
  */
 export const getGig: RouteHandler = async (ctx) => {
   const { id } = ctx.params
@@ -50,21 +51,114 @@ export const getGig: RouteHandler = async (ctx) => {
     )
   }
 
-  // TODO: Implement gig retrieval
-  return successResponse(
-    {
-      id,
-      title: 'Sample Gig',
-      description: 'Sample gig description',
-      type: 'performance',
-      date: new Date().toISOString(),
-      location: 'Los Angeles, CA',
-      budget: 500,
-      status: 'open',
-    },
-    200,
-    ctx.requestId
-  )
+  // Require authentication to get application status
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    // Fetch gig with venue information (JOIN with users table for venue details)
+    const gig = await ctx.env.DB.prepare(
+      `SELECT
+        g.*,
+        u.email as venue_email
+      FROM gigs g
+      LEFT JOIN users u ON g.venue_id = u.id
+      WHERE g.id = ?`
+    )
+      .bind(id)
+      .first()
+
+    if (!gig) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Gig not found',
+        404,
+        'id',
+        ctx.requestId
+      )
+    }
+
+    // Calculate urgency flag (D-010: within 7 days with <50% capacity)
+    const gigDate = new Date(gig.date as string)
+    const now = new Date()
+    const daysUntilGig = Math.ceil((gigDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    const capacityFilled = gig.capacity ? ((gig.filled_slots as number) / (gig.capacity as number)) * 100 : 0
+    const urgency_flag = daysUntilGig <= 7 && daysUntilGig > 0 && capacityFilled < 50
+
+    // Check if authenticated user already applied
+    const application = await ctx.env.DB.prepare(
+      `SELECT status, applied_at
+       FROM gig_applications
+       WHERE gig_id = ? AND artist_id IN (
+         SELECT id FROM artists WHERE user_id = ?
+       )`
+    )
+      .bind(id, ctx.userId)
+      .first()
+
+    // Build response with complete gig details
+    const response = {
+      id: gig.id,
+      title: gig.title,
+      description: gig.description,
+      date: gig.date,
+      start_time: gig.start_time,
+      end_time: gig.end_time,
+      capacity: gig.capacity,
+      filled_slots: gig.filled_slots,
+      payment_amount: gig.payment_amount,
+      payment_type: gig.payment_type,
+      genre: gig.genre,
+      status: gig.status,
+      urgency_flag,
+
+      // Location information
+      location: {
+        city: gig.location_city,
+        state: gig.location_state,
+        address: gig.location_address,
+        zip: gig.location_zip,
+      },
+
+      // Venue information
+      venue: {
+        id: gig.venue_id,
+        name: gig.venue_name,
+        email: gig.venue_email || null,
+        // Note: rating and review_count would come from artists table if venue is also an artist
+        // For now, we'll return null as venues aren't artists in the current schema
+        rating: null,
+        review_count: null,
+      },
+
+      // Application status (if user already applied)
+      application_status: application ? {
+        status: application.status,
+        applied_at: application.applied_at,
+      } : null,
+
+      created_at: gig.created_at,
+      updated_at: gig.updated_at,
+    }
+
+    return successResponse(response, 200, ctx.requestId)
+  } catch (error) {
+    console.error('Error fetching gig:', error)
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Failed to fetch gig details',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
 }
 
 /**
