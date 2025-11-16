@@ -180,6 +180,20 @@ class APIClient {
       body: JSON.stringify(data),
     });
   }
+
+  async submitOnboardingStep5(data: {
+    makes_music: boolean | null;
+    confident_online: boolean | null;
+    struggles_niche: boolean | null;
+    knows_gig_sources: boolean | null;
+    paid_fairly: boolean | null;
+    understands_royalties: boolean | null;
+  }): Promise<{ message: string; artist: any }> {
+    return this.request<{ message: string; artist: any }>('/onboarding/artists/step5', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 // Export singleton instance

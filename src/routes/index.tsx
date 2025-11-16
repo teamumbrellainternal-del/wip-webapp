@@ -8,6 +8,8 @@ import OnboardingGuard from '@/components/auth/OnboardingGuard'
 import Step2 from '@/pages/onboarding/Step2'
 import Step3 from '@/pages/onboarding/Step3'
 import OnboardingStep1 from '@/pages/onboarding/Step1'
+import OnboardingStep4 from '@/pages/onboarding/Step4'
+import OnboardingStep5 from '@/pages/onboarding/Step5'
 
 /**
  * Main application router using React Router v6
@@ -83,7 +85,7 @@ export const router = createBrowserRouter([
     path: '/onboarding/artists/step4',
     element: (
       <ProtectedRoute>
-        <PlaceholderPage title="Step 4: Your Numbers" />
+        <OnboardingStep4 />
       </ProtectedRoute>
     ),
   },
@@ -91,7 +93,7 @@ export const router = createBrowserRouter([
     path: '/onboarding/artists/step5',
     element: (
       <ProtectedRoute>
-        <PlaceholderPage title="Step 5: Quick Questions" />
+        <OnboardingStep5 />
       </ProtectedRoute>
     ),
   },
