@@ -180,6 +180,45 @@ class APIClient {
       body: JSON.stringify(data),
     });
   }
+
+  // Avatar upload endpoints
+  async getAvatarUploadUrl(data: {
+    filename: string;
+    fileSize: number;
+    contentType: string;
+  }): Promise<{
+    uploadId: string;
+    uploadUrl: string;
+    fileKey: string;
+    expiresAt: string;
+    maxFileSize: number;
+  }> {
+    return this.request<{
+      uploadId: string;
+      uploadUrl: string;
+      fileKey: string;
+      expiresAt: string;
+      maxFileSize: number;
+    }>('/profile/avatar/upload', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async confirmAvatarUpload(uploadId: string): Promise<{
+    message: string;
+    avatarUrl: string;
+    profile: Artist;
+  }> {
+    return this.request<{
+      message: string;
+      avatarUrl: string;
+      profile: Artist;
+    }>('/profile/avatar/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ uploadId }),
+    });
+  }
 }
 
 // Export singleton instance
