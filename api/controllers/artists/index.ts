@@ -11,26 +11,200 @@ import { ErrorCodes } from '../../utils/error-codes'
  * Discover artists (marketplace)
  * GET /v1/artists
  * Per D-014: Random shuffle, per D-017: Infinite scroll
+ * Task-5.4: Marketplace artist discovery with filters
  */
 export const discoverArtists: RouteHandler = async (ctx) => {
-  // Query params: page, limit, genres, instruments, location
-  const page = parseInt(ctx.url.searchParams.get('page') || '1')
+  // Parse query parameters
+  const genres = ctx.url.searchParams.getAll('genre[]')
+  const location = ctx.url.searchParams.get('location') || ''
+  const verified = ctx.url.searchParams.get('verified') === 'true'
+  const availableNow = ctx.url.searchParams.get('available_now') === 'true'
   const limit = parseInt(ctx.url.searchParams.get('limit') || '20')
+  const offset = parseInt(ctx.url.searchParams.get('offset') || '0')
 
-  // TODO: Implement artist discovery with random shuffle and filters
-  return successResponse(
-    {
-      artists: [],
-      pagination: {
-        page,
+  try {
+    // Get authenticated user's location for distance calculation
+    let userLocation: { lat?: number; lon?: number; city?: string; state?: string } = {}
+
+    if (ctx.userId) {
+      // Fetch user's artist profile to get location
+      const userArtist = await ctx.env.DB.prepare(
+        'SELECT location_city, location_state FROM artists WHERE user_id = ?'
+      )
+        .bind(ctx.userId)
+        .first<{ location_city: string | null; location_state: string | null }>()
+
+      if (userArtist) {
+        userLocation.city = userArtist.location_city || undefined
+        userLocation.state = userArtist.location_state || undefined
+      }
+    }
+
+    // Build query with filters
+    let query = `
+      SELECT
+        a.id,
+        a.stage_name,
+        a.verified,
+        a.primary_genre,
+        a.location_city,
+        a.location_state,
+        a.bio,
+        a.avg_rating,
+        a.total_gigs,
+        a.base_rate_flat,
+        a.base_rate_hourly,
+        a.available_dates,
+        a.avatar_url,
+        (SELECT COUNT(*) FROM artist_followers WHERE artist_id = a.id) as follower_count
+      FROM artists a
+      WHERE 1=1
+    `
+
+    const bindings: any[] = []
+
+    // Filter by genre (if provided)
+    if (genres.length > 0) {
+      const placeholders = genres.map(() => '?').join(',')
+      query += ` AND a.primary_genre IN (${placeholders})`
+      bindings.push(...genres)
+    }
+
+    // Filter by location (city or state)
+    if (location) {
+      query += ` AND (a.location_city = ? OR a.location_state = ?)`
+      bindings.push(location, location)
+    }
+
+    // Filter by verified status
+    if (verified) {
+      query += ` AND a.verified = 1`
+    }
+
+    // Filter by available_now (has future available dates)
+    if (availableNow) {
+      const today = new Date().toISOString().split('T')[0]
+      query += ` AND a.available_dates IS NOT NULL AND a.available_dates != '[]'`
+    }
+
+    // Add random shuffle (D-014)
+    query += ` ORDER BY RANDOM()`
+
+    // Add pagination
+    query += ` LIMIT ? OFFSET ?`
+    bindings.push(limit, offset)
+
+    // Execute query
+    const results = await ctx.env.DB.prepare(query)
+      .bind(...bindings)
+      .all<{
+        id: string
+        stage_name: string
+        verified: number
+        primary_genre: string | null
+        location_city: string | null
+        location_state: string | null
+        bio: string | null
+        avg_rating: number
+        total_gigs: number
+        base_rate_flat: number | null
+        base_rate_hourly: number | null
+        available_dates: string | null
+        avatar_url: string | null
+        follower_count: number
+      }>()
+
+    // Get total count (without limit/offset)
+    let countQuery = `
+      SELECT COUNT(*) as total
+      FROM artists a
+      WHERE 1=1
+    `
+    const countBindings: any[] = []
+
+    if (genres.length > 0) {
+      const placeholders = genres.map(() => '?').join(',')
+      countQuery += ` AND a.primary_genre IN (${placeholders})`
+      countBindings.push(...genres)
+    }
+
+    if (location) {
+      countQuery += ` AND (a.location_city = ? OR a.location_state = ?)`
+      countBindings.push(location, location)
+    }
+
+    if (verified) {
+      countQuery += ` AND a.verified = 1`
+    }
+
+    if (availableNow) {
+      countQuery += ` AND a.available_dates IS NOT NULL AND a.available_dates != '[]'`
+    }
+
+    const countResult = await ctx.env.DB.prepare(countQuery)
+      .bind(...countBindings)
+      .first<{ total: number }>()
+
+    const totalCount = countResult?.total || 0
+
+    // Format artist data
+    const artists = results.results?.map((artist) => {
+      // Calculate distance from user (if user location available)
+      let distance: number | null = null
+      // Note: Distance calculation would require geocoding lat/lon from city/state
+      // For MVP, we'll return null and implement geocoding in post-MVP
+
+      // Parse price range
+      let priceRange = 'Negotiable'
+      if (artist.base_rate_flat) {
+        priceRange = `$${artist.base_rate_flat}`
+      } else if (artist.base_rate_hourly) {
+        priceRange = `$${artist.base_rate_hourly}/hr`
+      }
+
+      // Bio preview (first 150 characters)
+      const bioPreview = artist.bio
+        ? artist.bio.substring(0, 150) + (artist.bio.length > 150 ? '...' : '')
+        : null
+
+      return {
+        id: artist.id,
+        name: artist.stage_name,
+        verified: Boolean(artist.verified),
+        genre: artist.primary_genre,
+        location: [artist.location_city, artist.location_state]
+          .filter(Boolean)
+          .join(', '),
+        bioPreview,
+        rating: artist.avg_rating,
+        followers: artist.follower_count,
+        gigs: artist.total_gigs,
+        priceRange,
+        distance,
+        avatarUrl: artist.avatar_url,
+      }
+    }) || []
+
+    return successResponse(
+      {
+        artists,
+        totalCount,
         limit,
-        total: 0,
-        hasMore: false,
+        offset,
+        hasMore: offset + artists.length < totalCount,
       },
-    },
-    200,
-    ctx.requestId
-  )
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      error instanceof Error ? error.message : 'Failed to fetch artists',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
 }
 
 /**

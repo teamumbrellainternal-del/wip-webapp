@@ -140,7 +140,7 @@ function setupRouter(): Router {
   router.delete('/v1/gigs/:id/apply', gigsController.withdrawApplication, [authMiddleware])
 
   // Artists routes
-  router.get('/v1/artists', artistsController.discoverArtists) // Public
+  router.get('/v1/artists', artistsController.discoverArtists, [authMiddleware]) // Auth required for distance calculation (task-5.4)
   router.get('/v1/artists/:id', artistsController.getArtist) // Public
   router.get('/v1/artists/:id/tracks', artistsController.getArtistTracks) // Public
   router.get('/v1/artists/:id/reviews', artistsController.getArtistReviews) // Public
