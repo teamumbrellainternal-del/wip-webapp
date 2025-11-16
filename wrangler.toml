@@ -78,3 +78,8 @@ database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
 [[env.production.kv_namespaces]]
 binding = "KV"
 id = "04fceb9a09054bbd991d5252a9a169cf"
+
+# Cron triggers (scheduled jobs)
+# Analytics aggregation: Daily at midnight UTC
+[triggers]
+crons = ["0 0 * * *"]

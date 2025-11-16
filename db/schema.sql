@@ -498,9 +498,32 @@ CREATE INDEX IF NOT EXISTS idx_journal_artist ON journal_entries(artist_id);
 CREATE INDEX IF NOT EXISTS idx_journal_updated ON journal_entries(artist_id, updated_at DESC);
 
 -- ============================================================================
+-- SECTION 12: CRON JOB LOGGING
+-- ============================================================================
+
+-- Cron execution logs (tracks daily analytics aggregation runs)
+CREATE TABLE IF NOT EXISTS cron_logs (
+  id TEXT PRIMARY KEY,
+  job_name TEXT NOT NULL, -- e.g., 'analytics_aggregation'
+  start_time TEXT NOT NULL, -- ISO timestamp
+  end_time TEXT, -- ISO timestamp (null if still running)
+  duration_ms INTEGER, -- Execution time in milliseconds
+  records_processed INTEGER DEFAULT 0, -- Number of records processed
+  errors_count INTEGER DEFAULT 0, -- Number of errors encountered
+  status TEXT NOT NULL CHECK (status IN ('running', 'completed', 'failed')),
+  error_message TEXT, -- Error details if failed
+  metadata TEXT, -- JSON for additional context
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_cron_logs_job ON cron_logs(job_name, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_cron_logs_status ON cron_logs(status);
+CREATE INDEX IF NOT EXISTS idx_cron_logs_created ON cron_logs(created_at DESC);
+
+-- ============================================================================
 -- SCHEMA SUMMARY
 -- ============================================================================
--- Total Tables: 23
+-- Total Tables: 24
 --
 -- Core Entities:
 --   - users, artists, artist_followers
@@ -522,8 +545,10 @@ CREATE INDEX IF NOT EXISTS idx_journal_updated ON journal_entries(artist_id, upd
 --   - contact_lists, contact_list_members, broadcast_messages
 -- Creative Studio:
 --   - journal_entries
+-- Cron Jobs:
+--   - cron_logs
 --
--- Total Indexes: 60+
+-- Total Indexes: 63+
 -- Foreign Keys: All relationships enforced at database level
 -- Check Constraints: Enums enforced via CHECK constraints
 -- Unique Constraints: Prevent duplicate relationships
