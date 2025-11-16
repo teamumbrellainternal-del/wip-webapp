@@ -124,6 +124,13 @@ CREATE TABLE IF NOT EXISTS artists (
   profile_views INTEGER DEFAULT 0,
   follower_count INTEGER DEFAULT 0,
 
+  -- Onboarding step tracking
+  step_1_complete BOOLEAN DEFAULT 0,
+  step_2_complete BOOLEAN DEFAULT 0,
+  step_3_complete BOOLEAN DEFAULT 0,
+  step_4_complete BOOLEAN DEFAULT 0,
+  step_5_complete BOOLEAN DEFAULT 0,
+
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
 
@@ -135,6 +142,7 @@ CREATE INDEX IF NOT EXISTS idx_artists_verified ON artists(verified);
 CREATE INDEX IF NOT EXISTS idx_artists_genre ON artists(primary_genre);
 CREATE INDEX IF NOT EXISTS idx_artists_location ON artists(location_city, location_state);
 CREATE INDEX IF NOT EXISTS idx_artists_rating ON artists(avg_rating);
+CREATE INDEX IF NOT EXISTS idx_artists_onboarding_complete ON artists(step_1_complete, step_2_complete, step_3_complete, step_4_complete, step_5_complete);
 
 -- Artist followers (social following relationships)
 CREATE TABLE IF NOT EXISTS artist_followers (

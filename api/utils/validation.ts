@@ -57,6 +57,82 @@ export function validateStep1(data: any): ValidationResult {
 }
 
 /**
+ * Validate Artist Onboarding Step 1: Identity & Basics
+ * For /v1/onboarding/artists/step1 endpoint
+ * Required fields: stage_name, location_city, location_state
+ * Optional fields: inspirations, genre_primary (up to 3 genres)
+ */
+export function validateArtistStep1(data: any): ValidationResult {
+  const errors: Record<string, string> = {}
+
+  // Required: stage_name
+  if (!data.stage_name || typeof data.stage_name !== 'string' || data.stage_name.trim().length === 0) {
+    errors.stage_name = 'Artist/stage name is required'
+  } else if (data.stage_name.length > 100) {
+    errors.stage_name = 'Artist/stage name must be 100 characters or less'
+  }
+
+  // Required: location_city
+  if (!data.location_city || typeof data.location_city !== 'string' || data.location_city.trim().length === 0) {
+    errors.location_city = 'City is required'
+  } else if (data.location_city.length > 100) {
+    errors.location_city = 'City must be 100 characters or less'
+  }
+
+  // Required: location_state
+  if (!data.location_state || typeof data.location_state !== 'string' || data.location_state.trim().length === 0) {
+    errors.location_state = 'State is required'
+  } else if (data.location_state.length > 50) {
+    errors.location_state = 'State must be 50 characters or less'
+  }
+
+  // Optional: location_zip
+  if (data.location_zip && data.location_zip.length > 10) {
+    errors.location_zip = 'ZIP code must be 10 characters or less'
+  }
+
+  // Optional: phone_number
+  if (data.phone_number && !isValidPhoneNumber(data.phone_number)) {
+    errors.phone_number = 'Invalid phone number format'
+  }
+
+  // Optional: pronouns
+  if (data.pronouns && data.pronouns.length > 50) {
+    errors.pronouns = 'Pronouns must be 50 characters or less'
+  }
+
+  // Optional: legal_name (full_name from spec)
+  if (data.legal_name && data.legal_name.length > 100) {
+    errors.legal_name = 'Full name must be 100 characters or less'
+  }
+
+  // Optional: inspirations (array of strings)
+  if (data.inspirations) {
+    if (!Array.isArray(data.inspirations)) {
+      errors.inspirations = 'Inspirations must be an array'
+    } else if (data.inspirations.length > 20) {
+      errors.inspirations = 'Maximum 20 inspirations allowed'
+    }
+  }
+
+  // Optional: genre_primary (array of up to 3 genres)
+  if (data.genre_primary) {
+    if (!Array.isArray(data.genre_primary)) {
+      errors.genre_primary = 'Genres must be an array'
+    } else if (data.genre_primary.length > 3) {
+      errors.genre_primary = 'Maximum 3 genres allowed'
+    } else if (data.genre_primary.length > 0 && data.genre_primary.some((g: any) => typeof g !== 'string')) {
+      errors.genre_primary = 'All genres must be strings'
+    }
+  }
+
+  return {
+    valid: Object.keys(errors).length === 0,
+    errors: Object.keys(errors).length > 0 ? errors : undefined,
+  }
+}
+
+/**
  * Validate Step 2: Links & Your Story
  * Minimum 3 social links required per spec
  */
