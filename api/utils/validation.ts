@@ -216,6 +216,37 @@ export function validateStep2(data: any): ValidationResult {
     errors.tagline = 'Tagline must be 100 characters or less'
   }
 
+  // Optional qualitative questions (Step 2 per eng-spec Screen 6)
+  // Tasks you'd outsource
+  if (data.tasks_outsource && data.tasks_outsource.length > 500) {
+    errors.tasks_outsource = 'Tasks outsource answer must be 500 characters or less'
+  }
+
+  // What makes your sound unique
+  if (data.sound_uniqueness && data.sound_uniqueness.length > 500) {
+    errors.sound_uniqueness = 'Sound uniqueness answer must be 500 characters or less'
+  }
+
+  // Dream performance venue
+  if (data.dream_venue && data.dream_venue.length > 200) {
+    errors.dream_venue = 'Dream venue must be 200 characters or less'
+  }
+
+  // Biggest inspiration
+  if (data.biggest_inspiration && data.biggest_inspiration.length > 200) {
+    errors.biggest_inspiration = 'Biggest inspiration must be 200 characters or less'
+  }
+
+  // Favorite time to create
+  if (data.favorite_create_time && data.favorite_create_time.length > 200) {
+    errors.favorite_create_time = 'Favorite create time must be 200 characters or less'
+  }
+
+  // Platform pain point to solve
+  if (data.platform_pain_point && data.platform_pain_point.length > 500) {
+    errors.platform_pain_point = 'Platform pain point must be 500 characters or less'
+  }
+
   return {
     valid: Object.keys(errors).length === 0,
     errors: Object.keys(errors).length > 0 ? errors : undefined,
