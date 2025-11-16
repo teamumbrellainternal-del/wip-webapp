@@ -148,75 +148,261 @@ export function validateStep2(data: any): ValidationResult {
 
 /**
  * Validate Step 3: Creative Profile Tags
+ * Validates tag selections across 7 categories against predefined lists
  */
 export function validateStep3(data: any): ValidationResult {
   const errors: Record<string, string> = {}
 
+  // Import allowed values (dynamic import not supported, so we'll validate inline)
+  // These constants are defined in api/constants/creative-profile.ts
+  const ALLOWED_ARTIST_TYPES = [
+    'solo',
+    'band',
+    'duo',
+    'trio',
+    'dj',
+    'producer',
+    'songwriter',
+    'vocalist',
+    'session-musician',
+    'multi-instrumentalist',
+  ]
+
+  const ALLOWED_DAWS = [
+    'Ableton Live',
+    'Logic Pro',
+    'Pro Tools',
+    'FL Studio',
+    'Cubase',
+    'Studio One',
+    'Reaper',
+    'GarageBand',
+    'Reason',
+    'Bitwig',
+    'Cakewalk',
+    'Audacity',
+    'Other',
+  ]
+
+  const ALLOWED_PLATFORMS = [
+    'Spotify',
+    'Apple Music',
+    'SoundCloud',
+    'Bandcamp',
+    'YouTube',
+    'YouTube Music',
+    'TikTok',
+    'Instagram',
+    'Facebook',
+    'Twitter/X',
+    'Twitch',
+    'Mixcloud',
+    'Beatport',
+    'Tidal',
+    'Amazon Music',
+    'Other',
+  ]
+
+  const ALLOWED_SUBSCRIPTIONS = [
+    'Spotify Premium',
+    'Apple Music',
+    'Splice',
+    'Sounds.com',
+    'LANDR',
+    'DistroKid',
+    'CD Baby',
+    'TuneCore',
+    'Amuse',
+    'Ditto Music',
+    'iZotope',
+    'Native Instruments',
+    'Waves',
+    'Plugin Boutique',
+    'Slate Digital',
+    'Universal Audio',
+    'Soundtrap',
+    'BandLab',
+    'None',
+    'Other',
+  ]
+
+  const ALLOWED_EQUIPMENT = [
+    'Audio Interface',
+    'Focusrite Scarlett',
+    'Universal Audio Apollo',
+    'PreSonus AudioBox',
+    'MOTU',
+    'Condenser Microphone',
+    'Dynamic Microphone',
+    'USB Microphone',
+    'Shure SM7B',
+    'Rode NT1',
+    'Blue Yeti',
+    'Studio Monitors',
+    'KRK Rokit',
+    'Yamaha HS Series',
+    'JBL Studio Monitors',
+    'Studio Headphones',
+    'Audio-Technica',
+    'Beyerdynamic',
+    'Sennheiser',
+    'MIDI Controller',
+    'MIDI Keyboard',
+    'Drum Pad Controller',
+    'Akai MPC',
+    'Native Instruments Maschine',
+    'Ableton Push',
+    'Electric Guitar',
+    'Acoustic Guitar',
+    'Bass Guitar',
+    'Synthesizer',
+    'Piano/Keyboard',
+    'Drum Kit',
+    'DJ Controller',
+    'Turntables',
+    'Mixing Console',
+    'Preamp',
+    'Compressor',
+    'EQ',
+    'Other',
+  ]
+
+  const ALLOWED_STRUGGLES = [
+    'Finding gigs',
+    'Marketing myself',
+    'Social media presence',
+    'Building a fanbase',
+    'Getting discovered',
+    'Networking',
+    'Pricing my services',
+    'Contract negotiations',
+    'Time management',
+    'Creative block',
+    'Finding collaborators',
+    'Music production quality',
+    'Mixing and mastering',
+    'Studio access',
+    'Equipment costs',
+    'Understanding royalties',
+    'Distribution',
+    'Getting radio play',
+    'Getting press coverage',
+    'Managing finances',
+    'Work-life balance',
+    'Imposter syndrome',
+    'Staying motivated',
+    'None',
+    'Other',
+  ]
+
   // Validate secondary_genres (JSON array)
+  // Note: Genres should be validated against the genres table in the database
+  // For now, we accept any string values but enforce limits
   if (data.secondary_genres) {
     if (!Array.isArray(data.secondary_genres)) {
       errors.secondary_genres = 'Secondary genres must be an array'
     } else if (data.secondary_genres.length > 5) {
       errors.secondary_genres = 'Maximum 5 secondary genres allowed'
+    } else if (data.secondary_genres.some((g: any) => typeof g !== 'string' || g.trim().length === 0)) {
+      errors.secondary_genres = 'All genres must be non-empty strings'
     }
   }
 
-  // Validate influences (JSON array)
+  // Validate influences (JSON array of artist names)
+  // Free-form text, no predefined list
   if (data.influences) {
     if (!Array.isArray(data.influences)) {
       errors.influences = 'Influences must be an array'
     } else if (data.influences.length > 10) {
       errors.influences = 'Maximum 10 influences allowed'
+    } else if (data.influences.some((i: any) => typeof i !== 'string' || i.trim().length === 0)) {
+      errors.influences = 'All influences must be non-empty strings'
     }
   }
 
-  // Validate artist_type (JSON array)
+  // Validate artist_type (JSON array) - against predefined list
   if (data.artist_type) {
     if (!Array.isArray(data.artist_type)) {
       errors.artist_type = 'Artist type must be an array'
+    } else if (data.artist_type.length === 0) {
+      errors.artist_type = 'At least one artist type is required'
+    } else if (data.artist_type.length > 5) {
+      errors.artist_type = 'Maximum 5 artist types allowed'
     } else {
-      const validTypes = ['solo', 'band', 'dj', 'producer', 'songwriter', 'vocalist']
-      const invalidTypes = data.artist_type.filter((type: string) => !validTypes.includes(type))
+      const invalidTypes = data.artist_type.filter((type: string) => !ALLOWED_ARTIST_TYPES.includes(type))
       if (invalidTypes.length > 0) {
         errors.artist_type = `Invalid artist types: ${invalidTypes.join(', ')}`
       }
     }
   }
 
-  // Validate equipment (JSON array)
+  // Validate equipment (JSON array) - against predefined list
   if (data.equipment) {
     if (!Array.isArray(data.equipment)) {
       errors.equipment = 'Equipment must be an array'
     } else if (data.equipment.length > 20) {
       errors.equipment = 'Maximum 20 equipment items allowed'
+    } else {
+      const invalidEquipment = data.equipment.filter((item: string) => !ALLOWED_EQUIPMENT.includes(item))
+      if (invalidEquipment.length > 0) {
+        errors.equipment = `Invalid equipment items: ${invalidEquipment.join(', ')}`
+      }
     }
   }
 
-  // Validate DAW (JSON array)
+  // Validate DAW (JSON array) - against predefined list
   if (data.daw) {
     if (!Array.isArray(data.daw)) {
       errors.daw = 'DAW must be an array'
+    } else if (data.daw.length > 5) {
+      errors.daw = 'Maximum 5 DAWs allowed'
+    } else {
+      const invalidDAWs = data.daw.filter((daw: string) => !ALLOWED_DAWS.includes(daw))
+      if (invalidDAWs.length > 0) {
+        errors.daw = `Invalid DAWs: ${invalidDAWs.join(', ')}`
+      }
     }
   }
 
-  // Validate platforms (JSON array)
+  // Validate platforms (JSON array) - against predefined list
   if (data.platforms) {
     if (!Array.isArray(data.platforms)) {
       errors.platforms = 'Platforms must be an array'
+    } else if (data.platforms.length > 15) {
+      errors.platforms = 'Maximum 15 platforms allowed'
+    } else {
+      const invalidPlatforms = data.platforms.filter((platform: string) => !ALLOWED_PLATFORMS.includes(platform))
+      if (invalidPlatforms.length > 0) {
+        errors.platforms = `Invalid platforms: ${invalidPlatforms.join(', ')}`
+      }
     }
   }
 
-  // Validate subscriptions (JSON array)
+  // Validate subscriptions (JSON array) - against predefined list
   if (data.subscriptions) {
     if (!Array.isArray(data.subscriptions)) {
       errors.subscriptions = 'Subscriptions must be an array'
+    } else if (data.subscriptions.length > 15) {
+      errors.subscriptions = 'Maximum 15 subscriptions allowed'
+    } else {
+      const invalidSubs = data.subscriptions.filter((sub: string) => !ALLOWED_SUBSCRIPTIONS.includes(sub))
+      if (invalidSubs.length > 0) {
+        errors.subscriptions = `Invalid subscriptions: ${invalidSubs.join(', ')}`
+      }
     }
   }
 
-  // Validate struggles (JSON array)
+  // Validate struggles (JSON array) - against predefined list
   if (data.struggles) {
     if (!Array.isArray(data.struggles)) {
       errors.struggles = 'Struggles must be an array'
+    } else if (data.struggles.length > 10) {
+      errors.struggles = 'Maximum 10 struggles allowed'
+    } else {
+      const invalidStruggles = data.struggles.filter((struggle: string) => !ALLOWED_STRUGGLES.includes(struggle))
+      if (invalidStruggles.length > 0) {
+        errors.struggles = `Invalid struggles: ${invalidStruggles.join(', ')}`
+      }
     }
   }
 
