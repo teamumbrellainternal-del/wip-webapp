@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import LoginPage from '@/pages/LoginPage'
 import SSOCallbackPage from '@/pages/SSOCallbackPage'
 import DashboardPage from '@/pages/DashboardPage'
+import ProfilePage from '@/pages/ProfilePage'
 import PlaceholderPage from '@/pages/placeholders/PlaceholderPage'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import OnboardingGuard from '@/components/auth/OnboardingGuard'
@@ -138,7 +139,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <OnboardingGuard>
-          <PlaceholderPage title="Artist Profile" />
+          <ProfilePage />
         </OnboardingGuard>
       </ProtectedRoute>
     ),

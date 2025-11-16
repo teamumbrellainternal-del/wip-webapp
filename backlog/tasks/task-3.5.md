@@ -1,9 +1,10 @@
 ---
 id: task-3.5
 title: "Build Profile View Page with 6-Tab System"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["frontend", "P0", "profile"]
 milestone: "M3 - Profile Management"
 dependencies: ["task-3.1", "task-3.4"]
@@ -14,16 +15,16 @@ estimated_hours: 6
 Create the artist profile page with 6-tab navigation system: Overview, Portfolio, Explore, Journey, Reviews, Opportunities. Supports both public view and own profile view.
 
 ## Acceptance Criteria
-- [ ] src/pages/ProfilePage.tsx component created
-- [ ] Hero section with avatar, name, verification badge, location, metrics
-- [ ] Social links display (website, Facebook, Instagram, TikTok, tip jar)
-- [ ] Profile actions menu (D-023: Edit if own, Share/Report if other's)
-- [ ] Follow/unfollow button
-- [ ] Book artist button (D-076: opens message composer with pre-filled inquiry)
-- [ ] 6 tabs: Overview, Portfolio, Explore, Journey, Reviews, Opportunities
-- [ ] Tab content rendered based on active tab
-- [ ] Inline audio player for tracks (D-024)
-- [ ] Responsive layout (mobile + desktop)
+- [x] src/pages/ProfilePage.tsx component created
+- [x] Hero section with avatar, name, verification badge, location, metrics
+- [x] Social links display (website, Facebook, Instagram, TikTok, tip jar)
+- [x] Profile actions menu (D-023: Edit if own, Share/Report if other's)
+- [x] Follow/unfollow button
+- [x] Book artist button (D-076: opens message composer with pre-filled inquiry)
+- [x] 6 tabs: Overview, Portfolio, Explore, Journey, Reviews, Opportunities
+- [x] Tab content rendered based on active tab
+- [x] Inline audio player for tracks (D-024)
+- [x] Responsive layout (mobile + desktop)
 
 ## Implementation Plan
 1. Create ProfilePage.tsx in src/pages/
