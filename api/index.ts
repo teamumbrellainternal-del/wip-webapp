@@ -16,6 +16,7 @@ import { authenticateRequest } from './middleware/auth'
 
 // Import controllers
 import * as profileController from './controllers/profile'
+import * as profileTracksController from './controllers/profile/tracks'
 import * as onboardingController from './controllers/onboarding'
 import * as tracksController from './controllers/tracks'
 import * as reviewsController from './controllers/reviews'
@@ -94,6 +95,12 @@ function setupRouter(): Router {
   router.post('/v1/profile/avatar/upload', profileController.uploadAvatar, [authMiddleware])
   router.post('/v1/profile/avatar/confirm', profileController.confirmAvatarUpload, [authMiddleware])
   router.get('/v1/profile/:id', profileController.getPublicProfile) // Public profile
+
+  // Profile tracks routes (task-3.4)
+  router.post('/v1/profile/tracks/upload', profileTracksController.generateTrackUploadUrl, [authMiddleware])
+  router.post('/v1/profile/tracks', profileTracksController.createTrack, [authMiddleware])
+  router.get('/v1/profile/:artistId/tracks', profileTracksController.getArtistTracks) // Public
+  router.delete('/v1/profile/tracks/:trackId', profileTracksController.deleteTrack, [authMiddleware])
 
   // Onboarding routes (auth required)
   router.get('/v1/onboarding/status', onboardingController.getOnboardingStatus, [authMiddleware])
