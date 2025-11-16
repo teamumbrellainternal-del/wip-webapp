@@ -1,27 +1,29 @@
 ---
 id: task-2.1
 title: "Implement Onboarding Step 1 Endpoint (Identity & Basics)"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["backend", "P0", "onboarding"]
 milestone: "M2 - Onboarding Flow Implementation"
 dependencies: ["task-1.4"]
 estimated_hours: 3
+actual_hours: 3
 ---
 
 ## Description
 Implement the backend endpoint for onboarding step 1 that collects artist identity and basic information (stage name, location, inspirations, primary genres).
 
 ## Acceptance Criteria
-- [ ] POST /v1/onboarding/artists/step1 endpoint implemented
-- [ ] Requires authentication (uses requireAuth middleware)
-- [ ] Validates required fields: stage_name, location_city, location_state
-- [ ] Optional fields: inspirations (text), genre_primary (up to 3)
-- [ ] Updates artists table with step 1 data
-- [ ] Marks step_1_complete = true in onboarding tracking
-- [ ] Returns updated artist profile
-- [ ] Proper error handling for validation failures
+- [x] POST /v1/onboarding/artists/step1 endpoint implemented
+- [x] Requires authentication (uses requireAuth middleware)
+- [x] Validates required fields: stage_name, location_city, location_state
+- [x] Optional fields: inspirations (text), genre_primary (up to 3)
+- [x] Updates artists table with step 1 data
+- [x] Marks step_1_complete = true in onboarding tracking
+- [x] Returns updated artist profile
+- [x] Proper error handling for validation failures
 
 ## Implementation Plan
 1. Create route handler in api/controllers/onboarding/index.ts

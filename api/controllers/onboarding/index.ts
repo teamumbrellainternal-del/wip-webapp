@@ -25,6 +25,7 @@ import {
   validateStep3,
   validateStep4,
   validateStep5,
+  validateArtistStep1,
   sanitizeHandle,
 } from '../../utils/validation'
 import { serializeArrayField } from '../../models/artist'
@@ -701,6 +702,181 @@ export const submitStep5: RouteHandler = async (ctx) => {
     return errorResponse(
       ErrorCodes.INTERNAL_ERROR,
       'Failed to complete onboarding',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
+ * Submit Artist Onboarding Step 1: Identity & Basics
+ * POST /v1/onboarding/artists/step1
+ * Required: stage_name, location_city, location_state
+ * Optional: inspirations, genre_primary (up to 3), legal_name, phone_number, pronouns, location_zip
+ *
+ * This endpoint creates or updates the artist record directly in D1 (incremental approach)
+ * Unlike the KV-based flow, this saves progress immediately to the database.
+ */
+export const submitArtistStep1: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    const body = await ctx.request.json()
+
+    // Validate step 1 data
+    const validation = validateArtistStep1(body)
+    if (!validation.valid) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'Validation failed',
+        400,
+        validation.errors,
+        ctx.requestId
+      )
+    }
+
+    const now = new Date().toISOString()
+
+    // Check if artist record already exists for this user
+    const existingArtist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE user_id = ?'
+    )
+      .bind(ctx.userId)
+      .first<{ id: string }>()
+
+    // Process genre_primary array (first becomes primary_genre, rest become secondary_genres)
+    let primaryGenre = null
+    let secondaryGenres = null
+    if (body.genre_primary && Array.isArray(body.genre_primary) && body.genre_primary.length > 0) {
+      primaryGenre = body.genre_primary[0]
+      if (body.genre_primary.length > 1) {
+        secondaryGenres = serializeArrayField(body.genre_primary.slice(1))
+      }
+    }
+
+    // Serialize inspirations array
+    const influences = body.inspirations ? serializeArrayField(body.inspirations) : null
+
+    if (existingArtist) {
+      // Update existing artist record with step 1 data
+      await ctx.env.DB.prepare(
+        `UPDATE artists SET
+          stage_name = ?,
+          legal_name = ?,
+          pronouns = ?,
+          location_city = ?,
+          location_state = ?,
+          location_zip = ?,
+          phone_number = ?,
+          primary_genre = ?,
+          secondary_genres = ?,
+          influences = ?,
+          step_1_complete = 1,
+          updated_at = ?
+        WHERE user_id = ?`
+      )
+        .bind(
+          body.stage_name,
+          body.legal_name || null,
+          body.pronouns || null,
+          body.location_city,
+          body.location_state,
+          body.location_zip || null,
+          body.phone_number || null,
+          primaryGenre,
+          secondaryGenres,
+          influences,
+          now,
+          ctx.userId
+        )
+        .run()
+
+      // Fetch updated artist profile
+      const artist = await ctx.env.DB.prepare(
+        'SELECT * FROM artists WHERE user_id = ?'
+      )
+        .bind(ctx.userId)
+        .first()
+
+      return successResponse(
+        {
+          message: 'Step 1 completed successfully',
+          artist,
+        },
+        200,
+        ctx.requestId
+      )
+    } else {
+      // Create new artist record with step 1 data
+      const artistId = generateUUIDv4()
+
+      await ctx.env.DB.prepare(
+        `INSERT INTO artists (
+          id, user_id,
+          stage_name, legal_name, pronouns,
+          location_city, location_state, location_country, location_zip,
+          phone_number,
+          primary_genre, secondary_genres, influences,
+          step_1_complete,
+          created_at, updated_at
+        ) VALUES (
+          ?, ?,
+          ?, ?, ?,
+          ?, ?, 'US', ?,
+          ?,
+          ?, ?, ?,
+          1,
+          ?, ?
+        )`
+      )
+        .bind(
+          artistId,
+          ctx.userId,
+          body.stage_name,
+          body.legal_name || null,
+          body.pronouns || null,
+          body.location_city,
+          body.location_state,
+          body.location_zip || null,
+          body.phone_number || null,
+          primaryGenre,
+          secondaryGenres,
+          influences,
+          now,
+          now
+        )
+        .run()
+
+      // Fetch created artist profile
+      const artist = await ctx.env.DB.prepare(
+        'SELECT * FROM artists WHERE id = ?'
+      )
+        .bind(artistId)
+        .first()
+
+      return successResponse(
+        {
+          message: 'Step 1 completed successfully',
+          artist,
+        },
+        201,
+        ctx.requestId
+      )
+    }
+  } catch (error) {
+    console.error('Error submitting artist step 1:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to submit step 1',
       500,
       undefined,
       ctx.requestId
