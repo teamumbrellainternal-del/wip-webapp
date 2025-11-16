@@ -1,7 +1,7 @@
 ---
 id: task-2.7
 title: "Build Onboarding Step 1 Frontend Page"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
 labels: ["frontend", "P0", "onboarding"]
@@ -14,15 +14,15 @@ estimated_hours: 4
 Create the frontend page for onboarding step 1 that collects identity and basic information with form validation.
 
 ## Acceptance Criteria
-- [ ] src/pages/onboarding/Step1.tsx component created
-- [ ] Form fields: stage_name (required), location_city, location_state
-- [ ] Optional fields: inspirations (textarea), genre_primary (multi-select, max 3)
-- [ ] Client-side validation for required fields
-- [ ] Calls POST /v1/onboarding/artists/step1 on submit
-- [ ] Shows loading state during API call
-- [ ] Error handling with user-friendly messages
-- [ ] "Next" button navigates to step 2 on success
-- [ ] Progress indicator shows "Step 1 of 5"
+- [x] src/pages/onboarding/Step1.tsx component created
+- [x] Form fields: stage_name (required), location_city, location_state
+- [x] Optional fields: inspirations (textarea), genre_primary (multi-select, max 3)
+- [x] Client-side validation for required fields
+- [x] Calls POST /v1/onboarding/artists/step1 on submit
+- [x] Shows loading state during API call
+- [x] Error handling with user-friendly messages
+- [x] "Next" button navigates to step 2 on success
+- [x] Progress indicator shows "Step 1 of 5"
 
 ## Implementation Plan
 1. Create Step1.tsx component in src/pages/onboarding/
