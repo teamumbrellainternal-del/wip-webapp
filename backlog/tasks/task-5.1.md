@@ -1,9 +1,10 @@
 ---
 id: task-5.1
 title: "Implement Gig Listing Endpoint with Filters"
-status: "To Do"
+status: "Completed"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["backend", "P1", "marketplace"]
 milestone: "M5 - Marketplace Discovery System"
 dependencies: ["task-1.4"]
@@ -14,15 +15,15 @@ estimated_hours: 4
 Implement the endpoint for browsing gigs in the marketplace with filters (genre, location, date, price) and infinite scroll pagination. Default sort: random shuffle (D-014).
 
 ## Acceptance Criteria
-- [ ] GET /v1/gigs endpoint implemented
-- [ ] Requires authentication
-- [ ] Supports query params: genre[], location, date_start, date_end, price_min, price_max, limit, offset
-- [ ] Default sort: RANDOM() (D-014)
-- [ ] Returns gig cards with: venue, title, date, capacity, location, rating, genre, payment
-- [ ] Calculates urgency flag (D-010: within 7 days with <50% capacity)
-- [ ] Infinite scroll pagination (D-017: limit/offset params)
-- [ ] Returns total count for UI display
-- [ ] Proper error handling
+- [x] GET /v1/gigs endpoint implemented
+- [x] Requires authentication
+- [x] Supports query params: genre[], location, date_start, date_end, price_min, price_max, limit, offset
+- [x] Default sort: RANDOM() (D-014)
+- [x] Returns gig cards with: venue, title, date, capacity, location, rating, genre, payment
+- [x] Calculates urgency flag (D-010: within 7 days with <50% capacity)
+- [x] Infinite scroll pagination (D-017: limit/offset params)
+- [x] Returns total count for UI display
+- [x] Proper error handling
 
 ## Implementation Plan
 1. Create GET /v1/gigs route in api/controllers/marketplace/gigs.ts

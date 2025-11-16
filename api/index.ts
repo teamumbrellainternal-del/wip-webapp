@@ -132,7 +132,7 @@ function setupRouter(): Router {
   router.get('/v1/reviews/invite/:token', reviewsController.getReviewByToken) // Public (for pre-filling form)
 
   // Gigs routes
-  router.get('/v1/gigs', gigsController.listGigs) // Public
+  router.get('/v1/gigs', gigsController.listGigs, [authMiddleware]) // Requires auth (task-5.1)
   router.get('/v1/gigs/applications', gigsController.getMyApplications, [authMiddleware])
   router.get('/v1/gigs/:id', gigsController.getGig) // Public
   router.post('/v1/gigs', gigsController.createGig, [authMiddleware])
