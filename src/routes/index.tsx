@@ -6,6 +6,7 @@ import PlaceholderPage from '@/pages/placeholders/PlaceholderPage'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import OnboardingGuard from '@/components/auth/OnboardingGuard'
 import Step2 from '@/pages/onboarding/Step2'
+import Step3 from '@/pages/onboarding/Step3'
 import OnboardingStep1 from '@/pages/onboarding/Step1'
 
 /**
@@ -74,7 +75,7 @@ export const router = createBrowserRouter([
     path: '/onboarding/artists/step3',
     element: (
       <ProtectedRoute>
-        <PlaceholderPage title="Step 3: Creative Profile Tags" />
+        <Step3 />
       </ProtectedRoute>
     ),
   },
