@@ -91,6 +91,12 @@ async function deleteOnboardingSession(kv: KVNamespace, userId: string): Promise
 /**
  * Get onboarding status
  * GET /v1/onboarding/status
+ *
+ * Returns current onboarding status for a user:
+ * - current_step: which step to show next (1-5)
+ * - steps_complete: array of completed step numbers
+ * - onboarding_complete: boolean indicating if all steps are done
+ * - redirect_url: URL for next step or dashboard if complete
  */
 export const getOnboardingStatus: RouteHandler = async (ctx) => {
   if (!ctx.userId) {
@@ -107,7 +113,7 @@ export const getOnboardingStatus: RouteHandler = async (ctx) => {
     // Check if user has completed onboarding
     const userResult = await ctx.env.DB.prepare(
       'SELECT onboarding_complete FROM users WHERE id = ?'
-    ).bind(ctx.userId).first<{ onboarding_complete: boolean }>()
+    ).bind(ctx.userId).first<{ onboarding_complete: number }>()
 
     if (!userResult) {
       return errorResponse(
@@ -119,62 +125,56 @@ export const getOnboardingStatus: RouteHandler = async (ctx) => {
       )
     }
 
-    // If onboarding is complete, return completed status
+    // If onboarding is complete, return completed status with dashboard redirect
     if (userResult.onboarding_complete) {
       return successResponse(
         {
-          complete: true,
-          currentStep: 5,
-          completedSteps: [1, 2, 3, 4, 5],
-          steps: [
-            { step: 1, name: 'identity_basics', complete: true },
-            { step: 2, name: 'links_story', complete: true },
-            { step: 3, name: 'creative_profile', complete: true },
-            { step: 4, name: 'your_numbers', complete: true },
-            { step: 5, name: 'quick_questions', complete: true },
-          ],
+          current_step: 5,
+          steps_complete: [1, 2, 3, 4, 5],
+          onboarding_complete: true,
+          redirect_url: '/dashboard',
         },
         200,
         ctx.requestId
       )
     }
 
-    // Get onboarding session from KV
+    // Get onboarding session from KV to check progress
     const session = await getOnboardingSession(ctx.env.KV, ctx.userId)
 
     if (!session) {
-      // No session exists, start from step 1
+      // No session exists, user hasn't started onboarding - direct to step 1
       return successResponse(
         {
-          complete: false,
-          currentStep: 1,
-          completedSteps: [],
-          steps: [
-            { step: 1, name: 'identity_basics', complete: false },
-            { step: 2, name: 'links_story', complete: false },
-            { step: 3, name: 'creative_profile', complete: false },
-            { step: 4, name: 'your_numbers', complete: false },
-            { step: 5, name: 'quick_questions', complete: false },
-          ],
+          current_step: 1,
+          steps_complete: [],
+          onboarding_complete: false,
+          redirect_url: '/onboarding/step1',
         },
         200,
         ctx.requestId
       )
     }
+
+    // Determine current step (first incomplete step)
+    let currentStep = 1
+    for (let step = 1; step <= 5; step++) {
+      if (!session.completedSteps.includes(step)) {
+        currentStep = step
+        break
+      }
+    }
+
+    // Determine redirect URL based on current step
+    const redirectUrl = `/onboarding/step${currentStep}`
 
     // Return current session status
     return successResponse(
       {
-        complete: false,
-        currentStep: session.currentStep,
-        completedSteps: session.completedSteps,
-        steps: [
-          { step: 1, name: 'identity_basics', complete: session.completedSteps.includes(1) },
-          { step: 2, name: 'links_story', complete: session.completedSteps.includes(2) },
-          { step: 3, name: 'creative_profile', complete: session.completedSteps.includes(3) },
-          { step: 4, name: 'your_numbers', complete: session.completedSteps.includes(4) },
-          { step: 5, name: 'quick_questions', complete: session.completedSteps.includes(5) },
-        ],
+        current_step: currentStep,
+        steps_complete: session.completedSteps,
+        onboarding_complete: false,
+        redirect_url: redirectUrl,
       },
       200,
       ctx.requestId
