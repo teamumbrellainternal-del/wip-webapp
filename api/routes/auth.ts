@@ -216,24 +216,51 @@ export async function handleSessionCheck(request: Request, env: Env): Promise<Re
 
 /**
  * POST /v1/auth/logout
- * Clear user session
+ * Optional logout endpoint for logging/analytics
+ * NOTE: With Clerk, session management is handled client-side via clerk.signOut()
+ * This endpoint is optional and primarily for tracking logout events
  * @param request - Request with auth header
  * @param env - Worker environment
  * @returns Success response
  */
 export async function handleLogout(request: Request, env: Env): Promise<Response> {
   try {
-    const user = await authenticateRequest(request, env)
+    // Optional: Extract user info for logging
+    const authHeader = request.headers.get('Authorization')
+    const token = authHeader?.replace('Bearer ', '')
 
-    // Delete session from KV
-    await env.KV.delete(`session:${user.userId}`)
+    let userId: string | undefined
+    try {
+      const user = await authenticateRequest(request, env)
+      userId = user.userId
+    } catch (error) {
+      // If auth fails, still log the attempt
+      console.log({
+        event: 'logout_attempt',
+        timestamp: new Date().toISOString(),
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
 
+    // Log logout event for analytics/monitoring
+    console.log({
+      event: 'user_logout',
+      timestamp: new Date().toISOString(),
+      userId: userId || 'unknown',
+      success: true,
+    })
+
+    // Return success (Clerk handles session invalidation client-side)
     return successResponse({
+      success: true,
       message: 'Logged out successfully',
     })
   } catch (error) {
-    // Even if auth fails, return success (idempotent logout)
+    // Even if logging fails, return success (idempotent logout)
+    console.error('Logout error:', error)
     return successResponse({
+      success: true,
       message: 'Logged out successfully',
     })
   }

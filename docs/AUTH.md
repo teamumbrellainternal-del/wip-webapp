@@ -2,7 +2,9 @@
 
 ## Overview
 
-This document describes the OAuth-based authentication system for Umbrella MVP, including session management, JWT validation, and onboarding state tracking.
+This document describes the authentication system for Umbrella MVP, including Clerk-based session management, JWT validation, and onboarding state tracking.
+
+**⚠️ CLERK MIGRATION**: The system uses [Clerk](https://clerk.com) for authentication and session management. Clerk handles OAuth with Apple/Google, session lifecycle, and token management. Legacy references to custom JWT and KV session storage are being phased out.
 
 ## Architecture
 
@@ -131,11 +133,11 @@ Authorization: Bearer <jwt-token>
 
 ### POST /v1/auth/logout
 
-Clear user session (idempotent).
+**⚠️ OPTIONAL ENDPOINT** - With Clerk, session management is handled client-side via `clerk.signOut()`. This backend endpoint is optional and primarily used for logging/analytics.
 
 **Headers:**
 ```
-Authorization: Bearer <jwt-token>
+Authorization: Bearer <clerk-session-token>
 ```
 
 **Response:**
@@ -143,10 +145,17 @@ Authorization: Bearer <jwt-token>
 {
   "success": true,
   "data": {
+    "success": true,
     "message": "Logged out successfully"
   }
 }
 ```
+
+**Notes:**
+- This endpoint does NOT invalidate sessions (Clerk handles that client-side)
+- Used primarily for tracking logout events in analytics
+- Returns success even if authentication fails (idempotent)
+- Frontend should call `clerk.signOut()` for actual session termination
 
 ## JWT Structure
 
@@ -414,6 +423,49 @@ All authentication operations log to console:
 - Session creation/deletion
 - Unexpected errors
 
+## Clerk Logout Flow
+
+With Clerk, logout is primarily a client-side operation:
+
+1. **Frontend calls `clerk.signOut()`**: This is the primary logout mechanism
+2. **Clerk invalidates session**: Session tokens are revoked client-side
+3. **User redirected**: Typically to login page or public homepage
+4. **(Optional) Backend logging**: Frontend can call POST `/v1/auth/logout` for analytics
+
+**Example Frontend Implementation:**
+```typescript
+import { useClerk } from '@clerk/clerk-react'
+
+function LogoutButton() {
+  const { signOut } = useClerk()
+
+  const handleLogout = async () => {
+    // Optional: Call backend for logging
+    try {
+      await fetch('/v1/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${await getToken()}`,
+        },
+      })
+    } catch (error) {
+      console.error('Logout logging failed:', error)
+    }
+
+    // Primary logout action
+    await signOut()
+  }
+
+  return <button onClick={handleLogout}>Logout</button>
+}
+```
+
+**Key Points:**
+- Backend session deletion is NOT required (Clerk manages sessions)
+- Backend `/v1/auth/logout` endpoint is optional for analytics only
+- Always call `clerk.signOut()` for actual session termination
+- Logout is idempotent and always returns success
+
 ## Future Enhancements
 
 - [ ] Add session device tracking (browser, IP)
@@ -422,11 +474,14 @@ All authentication operations log to console:
 - [ ] Support multi-device session management
 - [ ] Add rate limiting for auth endpoints
 - [ ] Implement session activity timestamps
-- [ ] Add OAuth token refresh from providers
+- [ ] Integrate Clerk webhooks for advanced session tracking
 
 ## References
 
-- [Cloudflare Access Docs](https://developers.cloudflare.com/cloudflare-one/identity/authorization-cookie/)
+- [Clerk Documentation](https://clerk.com/docs)
+- [Clerk React SDK](https://clerk.com/docs/references/react/use-clerk)
+- [Clerk Backend SDK](https://clerk.com/docs/references/backend/overview)
+- [Clerk Webhooks](https://clerk.com/docs/integrations/webhooks/overview)
 - [JWT Best Practices](https://datatracker.ietf.org/doc/html/rfc8725)
 - [OAuth 2.0 Spec](https://datatracker.ietf.org/doc/html/rfc6749)
 - Architecture Spec: D-001 (OAuth-only), D-003 (Onboarding), D-004 (No save), D-006 (Resume)
