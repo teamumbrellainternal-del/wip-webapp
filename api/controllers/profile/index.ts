@@ -53,6 +53,11 @@ export const getProfile: RouteHandler = async (ctx) => {
       )
     }
 
+    // Get track count
+    const tracksCount = await ctx.env.DB.prepare(
+      'SELECT COUNT(*) as count FROM tracks WHERE artist_id = ?'
+    ).bind(artist.id).first<{ count: number }>()
+
     // Calculate profile completion
     const completionPercentage = calculateProfileCompletion(artist)
 
@@ -69,6 +74,7 @@ export const getProfile: RouteHandler = async (ctx) => {
       struggles: parseArrayField(artist.struggles),
       available_dates: parseArrayField(artist.available_dates),
       profile_completion: completionPercentage,
+      track_count: tracksCount?.count || 0,
     }
 
     return successResponse(response, 200, ctx.requestId)
