@@ -148,6 +148,24 @@ class APIClient {
       body: JSON.stringify({ content }),
     });
   }
+
+  // Onboarding endpoints
+  async submitOnboardingStep1(data: {
+    stage_name: string;
+    location_city: string;
+    location_state: string;
+    location_zip?: string;
+    phone_number?: string;
+    legal_name?: string;
+    pronouns?: string;
+    inspirations?: string[];
+    genre_primary?: string[];
+  }): Promise<{ message: string; artist: any }> {
+    return this.request<{ message: string; artist: any }>('/onboarding/artists/step1', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 // Export singleton instance

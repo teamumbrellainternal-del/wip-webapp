@@ -1,9 +1,10 @@
 ---
 id: task-2.6
 title: "Implement Onboarding Status Endpoint"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["backend", "P0", "onboarding"]
 milestone: "M2 - Onboarding Flow Implementation"
 dependencies: ["task-1.4"]
@@ -14,12 +15,12 @@ estimated_hours: 2
 Implement an endpoint that returns the current onboarding status for a user, showing which steps have been completed and which step to show next.
 
 ## Acceptance Criteria
-- [ ] GET /v1/onboarding/status endpoint implemented
-- [ ] Requires authentication
-- [ ] Returns object with: current_step, steps_complete, onboarding_complete
-- [ ] Determines current_step based on which steps are incomplete
-- [ ] Returns redirect_url for next step or dashboard if complete
-- [ ] Handles users who haven't started onboarding
+- [x] GET /v1/onboarding/status endpoint implemented
+- [x] Requires authentication
+- [x] Returns object with: current_step, steps_complete, onboarding_complete
+- [x] Determines current_step based on which steps are incomplete
+- [x] Returns redirect_url for next step or dashboard if complete
+- [x] Handles users who haven't started onboarding
 
 ## Implementation Plan
 1. Create route handler in api/controllers/onboarding/index.ts
