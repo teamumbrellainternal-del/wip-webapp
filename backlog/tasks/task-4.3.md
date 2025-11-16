@@ -1,7 +1,7 @@
 ---
 id: task-4.3
 title: "Build Dashboard Page with Metrics"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
 labels: ["frontend", "P0", "dashboard"]
@@ -14,17 +14,17 @@ estimated_hours: 5
 Create the main dashboard page showing welcome message, metrics cards, opportunities widget, messages widget, endorsements, and quick actions.
 
 ## Acceptance Criteria
-- [ ] src/pages/DashboardPage.tsx component created
-- [ ] Welcome section with artist name
-- [ ] 3 metrics cards: This Month (earnings + %), Gigs Booked, Profile Views
-- [ ] New Opportunities section showing latest 3 gigs (D-011)
-- [ ] Messages widget with 3 recent message previews
-- [ ] Recent Endorsements widget
-- [ ] Quick Actions widget (Find Gigs, Find Collaborators, View Analytics)
-- [ ] Violet prompt at bottom (D-058: opens intent picker modal)
-- [ ] All metrics updated from daily batch (D-008)
-- [ ] Responsive layout (mobile + desktop)
-- [ ] **✓ CHECKPOINT:** Test dashboard displays metrics correctly before proceeding to M5
+- [x] src/pages/DashboardPage.tsx component created
+- [x] Welcome section with artist name
+- [x] 3 metrics cards: This Month (earnings + %), Gigs Booked, Profile Views
+- [x] New Opportunities section showing latest 3 gigs (D-011)
+- [x] Messages widget with 3 recent message previews
+- [x] Recent Endorsements widget
+- [x] Quick Actions widget (Find Gigs, Find Collaborators, View Analytics)
+- [x] Violet prompt at bottom (D-058: opens intent picker modal)
+- [x] All metrics updated from daily batch (D-008)
+- [x] Responsive layout (mobile + desktop)
+- [x] **✓ CHECKPOINT:** Test dashboard displays metrics correctly before proceeding to M5
 
 ## Implementation Plan
 1. Create DashboardPage.tsx in src/pages/
