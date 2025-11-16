@@ -1,9 +1,10 @@
 ---
 id: task-5.5
 title: "Implement Global Search Endpoint"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["backend", "P1", "marketplace", "search"]
 milestone: "M5 - Marketplace Discovery System"
 dependencies: ["task-1.4"]
@@ -14,16 +15,16 @@ estimated_hours: 3
 Implement the global search endpoint that searches both artists and gigs (D-071). No venues in MVP scope.
 
 ## Acceptance Criteria
-- [ ] GET /v1/search endpoint implemented
-- [ ] Requires authentication
-- [ ] Supports query params: q (query string), type (artists/gigs/all), limit, offset
-- [ ] Searches artists: name, bio, genres, location
-- [ ] Searches gigs: title, venue name, description, location, genres
-- [ ] Returns unified results with type indicator (artist/gig)
-- [ ] Default type: "all" (searches both)
-- [ ] Results sorted by relevance (basic text matching)
-- [ ] Infinite scroll pagination (limit/offset)
-- [ ] Proper error handling
+- [x] GET /v1/search endpoint implemented
+- [x] Requires authentication
+- [x] Supports query params: q (query string), type (artists/gigs/all), limit, offset
+- [x] Searches artists: name, bio, genres, location
+- [x] Searches gigs: title, venue name, description, location, genres
+- [x] Returns unified results with type indicator (artist/gig)
+- [x] Default type: "all" (searches both)
+- [x] Results sorted by relevance (basic text matching)
+- [x] Infinite scroll pagination (limit/offset)
+- [x] Proper error handling
 
 ## Implementation Plan
 1. Create GET /v1/search route in api/controllers/search/index.ts

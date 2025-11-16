@@ -197,12 +197,12 @@ function setupRouter(): Router {
   router.get('/v1/violet/suggestions', violetController.getSuggestions, [authMiddleware])
   router.delete('/v1/violet/history', violetController.clearHistory, [authMiddleware])
 
-  // Search routes (public)
-  router.get('/v1/search', searchController.globalSearch)
-  router.get('/v1/search/artists', searchController.searchArtists)
-  router.get('/v1/search/gigs', searchController.searchGigs)
-  router.get('/v1/search/tracks', searchController.searchTracks)
-  router.get('/v1/search/suggestions', searchController.getSearchSuggestions)
+  // Search routes (auth required) - Task-5.5
+  router.get('/v1/search', searchController.globalSearch, [authMiddleware])
+  router.get('/v1/search/artists', searchController.searchArtists, [authMiddleware])
+  router.get('/v1/search/gigs', searchController.searchGigs, [authMiddleware])
+  router.get('/v1/search/tracks', searchController.searchTracks, [authMiddleware])
+  router.get('/v1/search/suggestions', searchController.getSearchSuggestions, [authMiddleware])
 
   // Cron routes (manual trigger with ?force=true)
   router.get('/cron/analytics', async (ctx) => handleAnalyticsCron(ctx.request, ctx.env))
