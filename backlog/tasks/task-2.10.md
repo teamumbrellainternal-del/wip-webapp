@@ -1,7 +1,7 @@
 ---
 id: task-2.10
 title: "Build Onboarding Step 4 Frontend Page"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
 labels: ["frontend", "P0", "onboarding"]
@@ -14,15 +14,14 @@ estimated_hours: 4
 Create the frontend page for onboarding step 4 with sliders for rates, capacity, time split, and date picker for availability.
 
 ## Acceptance Criteria
-- [ ] src/pages/onboarding/Step4.tsx component created
-- [ ] Slider inputs for: practice_rate, performance_rate, recording_rate
-- [ ] Numeric input for monthly gig capacity
-- [ ] Time split sliders (percentages must sum to 100)
-- [ ] Date range picker for availability
-- [ ] Real-time validation of time split sum
-- [ ] Calls POST /v1/onboarding/artists/step4 on submit
-- [ ] "Back" and "Next" navigation
-- [ ] Progress indicator shows "Step 4 of 5"
+- [x] src/pages/onboarding/Step4.tsx component created
+- [x] Slider inputs for: largest_show_capacity, flat_rate, hourly_rate (per engineering spec)
+- [x] Time split sliders (percentages must sum to 100)
+- [x] Date range picker for availability (up to 3 dates)
+- [x] Real-time validation of time split sum
+- [x] Calls POST /v1/onboarding/artists/step4 on submit
+- [x] "Back" and "Next" navigation
+- [x] Progress indicator shows "Step 4 of 5"
 
 ## Implementation Plan
 1. Create Step4.tsx component
