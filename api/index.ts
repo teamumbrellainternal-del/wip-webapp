@@ -100,6 +100,7 @@ function setupRouter(): Router {
   router.post('/v1/onboarding/step3', onboardingController.submitStep3, [authMiddleware])
   router.post('/v1/onboarding/step4', onboardingController.submitStep4, [authMiddleware])
   router.post('/v1/onboarding/step5', onboardingController.submitStep5, [authMiddleware])
+  router.post('/v1/onboarding/artists/step5', onboardingController.submitArtistStep5, [authMiddleware])
   router.post('/v1/onboarding/reset', onboardingController.resetOnboarding, [authMiddleware])
 
   // New Artist Onboarding routes (incremental D1-based approach)
