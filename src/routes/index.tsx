@@ -5,6 +5,7 @@ import DashboardPage from '@/pages/DashboardPage'
 import ProfilePage from '@/pages/ProfilePage'
 import PlaceholderPage from '@/pages/placeholders/PlaceholderPage'
 import ProfileEditPage from '@/pages/ProfileEditPage'
+import MarketplacePage from '@/pages/MarketplacePage'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import OnboardingGuard from '@/components/auth/OnboardingGuard'
 import Step2 from '@/pages/onboarding/Step2'
@@ -118,7 +119,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <OnboardingGuard>
-          <PlaceholderPage title="Find Gigs" />
+          <MarketplacePage />
         </OnboardingGuard>
       </ProtectedRoute>
     ),
@@ -128,7 +129,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <OnboardingGuard>
-          <PlaceholderPage title="Discover Artists" />
+          <MarketplacePage />
         </OnboardingGuard>
       </ProtectedRoute>
     ),
