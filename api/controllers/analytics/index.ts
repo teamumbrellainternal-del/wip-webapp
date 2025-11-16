@@ -11,6 +11,13 @@ import { ErrorCodes } from '../../utils/error-codes'
 /**
  * Get analytics overview
  * GET /v1/analytics
+ *
+ * Query params:
+ * - period: 'month' or 'year' (default: 'month')
+ * - start_date: ISO date YYYY-MM-DD (optional)
+ * - end_date: ISO date YYYY-MM-DD (optional)
+ *
+ * Returns aggregated metrics with percentage changes, chart data, and peak values
  */
 export const getAnalytics: RouteHandler = async (ctx) => {
   if (!ctx.userId) {
@@ -23,24 +30,181 @@ export const getAnalytics: RouteHandler = async (ctx) => {
     )
   }
 
-  // Query params: period (day, week, month, year)
-  const period = ctx.url.searchParams.get('period') || 'month'
+  try {
+    // 1. Get artist profile from user_id
+    const artist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE user_id = ?'
+    ).bind(ctx.userId).first<{ id: string }>()
 
-  // TODO: Implement analytics retrieval
-  return successResponse(
-    {
-      period,
-      profileViews: 0,
-      gigApplications: 0,
-      messagesReceived: 0,
-      messagesSent: 0,
-      followersGained: 0,
-      storageUsed: 0,
-      violetPromptsUsed: 0,
-    },
-    200,
-    ctx.requestId
-  )
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist profile not found. Please complete onboarding.',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // 2. Parse query parameters
+    const period = ctx.url.searchParams.get('period') || 'month'
+    const customStartDate = ctx.url.searchParams.get('start_date')
+    const customEndDate = ctx.url.searchParams.get('end_date')
+
+    // 3. Calculate date ranges for current and previous periods
+    const today = new Date()
+    let currentStart: Date
+    let currentEnd: Date
+    let previousStart: Date
+    let previousEnd: Date
+
+    if (customStartDate && customEndDate) {
+      // Use custom date range
+      currentStart = new Date(customStartDate)
+      currentEnd = new Date(customEndDate)
+
+      // Calculate previous period of same length
+      const periodLength = Math.floor((currentEnd.getTime() - currentStart.getTime()) / (1000 * 60 * 60 * 24))
+      previousEnd = new Date(currentStart)
+      previousEnd.setDate(previousEnd.getDate() - 1)
+      previousStart = new Date(previousEnd)
+      previousStart.setDate(previousStart.getDate() - periodLength)
+    } else if (period === 'year') {
+      // Current year
+      currentStart = new Date(today.getFullYear(), 0, 1)
+      currentEnd = today
+
+      // Previous year
+      previousStart = new Date(today.getFullYear() - 1, 0, 1)
+      previousEnd = new Date(today.getFullYear() - 1, 11, 31)
+    } else {
+      // Default to month
+      currentStart = new Date(today.getFullYear(), today.getMonth(), 1)
+      currentEnd = today
+
+      // Previous month
+      previousStart = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+      previousEnd = new Date(today.getFullYear(), today.getMonth(), 0)
+    }
+
+    // Format dates as YYYY-MM-DD for SQL query
+    const formatDate = (date: Date) => date.toISOString().split('T')[0]
+    const currentStartStr = formatDate(currentStart)
+    const currentEndStr = formatDate(currentEnd)
+    const previousStartStr = formatDate(previousStart)
+    const previousEndStr = formatDate(previousEnd)
+
+    // 4. Fetch current period metrics from daily_metrics table
+    const currentMetrics = await ctx.env.DB.prepare(`
+      SELECT
+        date,
+        profile_views,
+        gigs_completed,
+        earnings,
+        avg_rating,
+        follower_count,
+        track_plays
+      FROM daily_metrics
+      WHERE artist_id = ? AND date >= ? AND date <= ?
+      ORDER BY date ASC
+    `).bind(artist.id, currentStartStr, currentEndStr).all()
+
+    // 5. Fetch previous period metrics for comparison
+    const previousMetrics = await ctx.env.DB.prepare(`
+      SELECT
+        profile_views,
+        gigs_completed,
+        earnings,
+        follower_count
+      FROM daily_metrics
+      WHERE artist_id = ? AND date >= ? AND date <= ?
+      ORDER BY date ASC
+    `).bind(artist.id, previousStartStr, previousEndStr).all()
+
+    // 6. Calculate current period totals
+    const currentData = currentMetrics.results || []
+    const previousData = previousMetrics.results || []
+
+    const currentEarnings = currentData.reduce((sum: number, row: any) => sum + (row.earnings || 0), 0)
+    const currentGigs = currentData.reduce((sum: number, row: any) => sum + (row.gigs_completed || 0), 0)
+    const currentViews = currentData.reduce((sum: number, row: any) => sum + (row.profile_views || 0), 0)
+
+    // For follower_count and avg_rating, use the latest value
+    const latestMetric = currentData.length > 0 ? currentData[currentData.length - 1] : null
+    const currentFollowers = latestMetric?.follower_count || 0
+    const currentRating = latestMetric?.avg_rating || 0
+
+    // 7. Calculate previous period totals
+    const previousEarnings = previousData.reduce((sum: number, row: any) => sum + (row.earnings || 0), 0)
+    const previousGigs = previousData.reduce((sum: number, row: any) => sum + (row.gigs_completed || 0), 0)
+    const previousViews = previousData.reduce((sum: number, row: any) => sum + (row.profile_views || 0), 0)
+    const previousFollowers = previousData.length > 0 ? previousData[previousData.length - 1]?.follower_count || 0 : 0
+
+    // 8. Calculate percentage changes
+    const calculateChange = (current: number, previous: number): number => {
+      if (previous === 0) return current > 0 ? 100 : 0
+      return Math.round(((current - previous) / previous) * 100)
+    }
+
+    const earningsChange = calculateChange(currentEarnings, previousEarnings)
+    const gigsChange = calculateChange(currentGigs, previousGigs)
+    const viewsChange = calculateChange(currentViews, previousViews)
+    const followersChange = calculateChange(currentFollowers, previousFollowers)
+
+    // 9. Generate chart data array (date → metrics mapping)
+    const chartData = currentData.map((row: any) => ({
+      date: row.date,
+      earnings: row.earnings || 0,
+      gigs: row.gigs_completed || 0,
+      views: row.profile_views || 0,
+      followers: row.follower_count || 0,
+      rating: row.avg_rating || 0,
+    }))
+
+    // 10. Calculate peak values across all current period data
+    const peakRevenue = Math.max(...currentData.map((row: any) => row.earnings || 0), 0)
+    const peakGigs = Math.max(...currentData.map((row: any) => row.gigs_completed || 0), 0)
+    const peakFans = Math.max(...currentData.map((row: any) => row.follower_count || 0), 0)
+
+    // 11. Return comprehensive analytics response
+    return successResponse(
+      {
+        period,
+        date_range: {
+          start: currentStartStr,
+          end: currentEndStr,
+        },
+        metrics: {
+          total_earnings: currentEarnings,
+          earnings_change: earningsChange,
+          gig_count: currentGigs,
+          gig_change: gigsChange,
+          profile_views: currentViews,
+          views_change: viewsChange,
+          follower_count: currentFollowers,
+          followers_change: followersChange,
+          avg_rating: currentRating,
+        },
+        chart_data: chartData,
+        peaks: {
+          peak_revenue: peakRevenue,
+          peak_gigs: peakGigs,
+          peak_fans: peakFans,
+        },
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error fetching analytics:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to fetch analytics data',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
 }
 
 /**
