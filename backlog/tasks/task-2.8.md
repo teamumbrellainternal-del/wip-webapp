@@ -1,9 +1,10 @@
 ---
 id: task-2.8
 title: "Build Onboarding Step 2 Frontend Page"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["frontend", "P0", "onboarding"]
 milestone: "M2 - Onboarding Flow Implementation"
 dependencies: ["task-2.2"]
@@ -14,15 +15,15 @@ estimated_hours: 4
 Create the frontend page for onboarding step 2 that collects social links (minimum 3) and qualitative questions.
 
 ## Acceptance Criteria
-- [ ] src/pages/onboarding/Step2.tsx component created
-- [ ] Social link inputs for: Instagram, Facebook, YouTube, SoundCloud, Spotify, TikTok, Twitter
-- [ ] Validates minimum 3 links required
-- [ ] Validates URL formats
-- [ ] Three textarea fields for qualitative questions
-- [ ] Calls POST /v1/onboarding/artists/step2 on submit
-- [ ] "Back" button returns to step 1
-- [ ] "Next" button navigates to step 3 on success
-- [ ] Progress indicator shows "Step 2 of 5"
+- [x] src/pages/onboarding/Step2.tsx component created
+- [x] Social link inputs for: Instagram, Facebook, YouTube, SoundCloud, Spotify, TikTok, Twitter, Bandcamp, Website, Apple Music
+- [x] Validates minimum 3 links required
+- [x] Validates URL formats
+- [x] Three textarea fields for qualitative questions
+- [x] Calls POST /v1/onboarding/artists/step2 on submit
+- [x] "Back" button returns to step 1
+- [x] "Next" button navigates to step 3 on success
+- [x] Progress indicator shows "Step 2 of 5"
 
 ## Implementation Plan
 1. Create Step2.tsx component

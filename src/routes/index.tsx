@@ -5,6 +5,7 @@ import DashboardPage from '@/pages/DashboardPage'
 import PlaceholderPage from '@/pages/placeholders/PlaceholderPage'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import OnboardingGuard from '@/components/auth/OnboardingGuard'
+import Step2 from '@/pages/onboarding/Step2'
 
 /**
  * Main application router using React Router v6
@@ -64,7 +65,7 @@ export const router = createBrowserRouter([
     path: '/onboarding/artists/step2',
     element: (
       <ProtectedRoute>
-        <PlaceholderPage title="Step 2: Links & Your Story" />
+        <Step2 />
       </ProtectedRoute>
     ),
   },
