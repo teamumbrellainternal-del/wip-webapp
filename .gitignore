@@ -66,3 +66,4 @@ wrangler.toml.local
 # Generated seed data output files
 db/seed-output.sql
 db/seed-production-output.sql
+api/worker-configuration.d.ts

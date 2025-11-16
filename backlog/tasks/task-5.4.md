@@ -1,9 +1,10 @@
 ---
 id: task-5.4
 title: "Implement Artist Discovery Endpoint"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["backend", "P1", "marketplace"]
 milestone: "M5 - Marketplace Discovery System"
 dependencies: ["task-1.4"]
@@ -14,15 +15,15 @@ estimated_hours: 4
 Implement the endpoint for browsing artists in the marketplace with filters (genre, location, verified status) and infinite scroll pagination. Default sort: random shuffle (D-014).
 
 ## Acceptance Criteria
-- [ ] GET /v1/artists endpoint implemented
-- [ ] Requires authentication
-- [ ] Supports query params: genre[], location, verified, available_now, limit, offset
-- [ ] Default sort: RANDOM() (D-014)
-- [ ] Returns artist cards with: name, verification badge, genre, distance, bio preview, rating, followers, gigs, price range
-- [ ] Calculates distance from authenticated user location (if available)
-- [ ] Infinite scroll pagination (D-017: limit/offset params)
-- [ ] Returns total count for UI display
-- [ ] Proper error handling
+- [x] GET /v1/artists endpoint implemented
+- [x] Requires authentication
+- [x] Supports query params: genre[], location, verified, available_now, limit, offset
+- [x] Default sort: RANDOM() (D-014)
+- [x] Returns artist cards with: name, verification badge, genre, distance, bio preview, rating, followers, gigs, price range
+- [x] Calculates distance from authenticated user location (if available)
+- [x] Infinite scroll pagination (D-017: limit/offset params)
+- [x] Returns total count for UI display
+- [x] Proper error handling
 
 ## Implementation Plan
 1. Create GET /v1/artists route in api/controllers/marketplace/artists.ts
