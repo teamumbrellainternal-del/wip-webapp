@@ -52,8 +52,23 @@ wrangler d1 migrations apply umbrella-dev-db --remote
 
 ### 2. Seed Development Data
 
+**Option A: Comprehensive Test Fixtures (Recommended for Frontend Development)**
+
 ```bash
-# Load sample data for development
+# Generate and apply comprehensive seed data
+npm run seed
+
+# Or generate SQL file only (without applying)
+npm run seed:generate
+
+# Then manually apply if needed
+wrangler d1 execute umbrella-dev-db --local --file=db/seed-output.sql
+```
+
+**Option B: Basic Seed Data (Legacy)**
+
+```bash
+# Load basic sample data for development
 wrangler d1 execute umbrella-dev-db --local --file=db/seed.sql
 
 # Seed remote database (use with caution)
@@ -107,7 +122,61 @@ Migrations are applied sequentially in order. Each migration is idempotent (uses
 
 ## Seed Data Summary
 
-The seed.sql file provides realistic development data:
+### Comprehensive Test Fixtures (seed.ts)
+
+**New in task-1.7:** The `db/seed.ts` TypeScript script generates comprehensive test data for frontend development:
+
+- **10 test users** with varied onboarding states:
+  - 3 users with incomplete onboarding (stopped at different steps)
+  - 7 users with complete onboarding
+- **20 artist profiles** with complete data:
+  - Varied genres (Rock, Pop, Hip-Hop, Electronic, Jazz, etc.)
+  - Multiple locations across US cities
+  - Complete onboarding data (all 5 steps)
+  - Realistic ratings (3.5-5.0 stars)
+  - 5 verified artists
+  - Profile images, social links, and portfolio data
+- **30 gigs** with different statuses and dates:
+  - 10 past gigs (completed status)
+  - 15 upcoming gigs (open status, various dates)
+  - 3 pending gigs
+  - 2 cancelled gigs
+  - Urgency flags for gigs <7 days with <50% capacity
+- **50+ messages** across 10 conversations:
+  - Mix of short and long messages (testing 2000 char limit)
+  - Some with file attachments
+  - Realistic conversation threads
+- **Test files** and R2 metadata:
+  - 10 audio files (MP3s for tracks) per artist
+  - 5 images (profile pictures, promo photos) per artist
+  - 3 documents (EPKs, contracts) per artist
+  - File metadata for first 10 artists
+- **Storage quotas** at varied levels:
+  - 20%, 40%, 50%, 70%, 85%, 90% usage across artists
+  - 50GB limit per artist (per D-026)
+- **Reviews** for artists with ratings
+
+**Features:**
+- ✅ **Idempotent** - Safe to run multiple times (clears old data first)
+- ✅ **Edge cases** - Tests quota limits, long text fields, special characters
+- ✅ **Realistic data** - Proper timestamps, relationships, and business logic
+- ✅ **Complete coverage** - All user states, gig statuses, and data types
+
+**Usage:**
+```bash
+# Install dependencies (if needed)
+npm install
+
+# Generate and apply seed data
+npm run seed
+
+# Or just generate SQL file
+npm run seed:generate
+```
+
+### Basic Seed Data (seed.sql - Legacy)
+
+The seed.sql file provides basic development data:
 
 - **3 complete artists** with full onboarding data:
   - Maya Rivers (Indie/Folk)
