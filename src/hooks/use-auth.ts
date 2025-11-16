@@ -1,99 +1,89 @@
 /**
  * Authentication hook for Umbrella
- * Manages user session state using Cloudflare Access OAuth
+ * Wraps Clerk's React hooks to provide a consistent interface
+ *
+ * This is a lightweight wrapper around Clerk's useUser() and useAuth() hooks.
+ * For components that need backend user data (like onboarding_complete status),
+ * use the AuthContext instead which fetches from /v1/auth/session.
+ *
+ * @see src/contexts/AuthContext.tsx - For full user profile with backend data
  */
 
-import { useState, useEffect } from 'react';
+import { useUser, useAuth as useClerkAuth } from '@clerk/clerk-react'
+import type { UserResource } from '@clerk/clerk-react'
 
-export interface User {
-  id: string;
-  oauth_provider: 'apple' | 'google';
-  oauth_id: string;
-  email: string;
-  onboarding_complete: boolean;
-  created_at: string;
-  updated_at: string;
-  tailnet?: string;
+/**
+ * Return type for the useAuth hook
+ */
+export interface UseAuthReturn {
+  /** Current user object from Clerk (null if not authenticated) */
+  user: UserResource | null
+  /** True while user data is being loaded */
+  loading: boolean
+  /** True if user is authenticated */
+  isAuthenticated: boolean
+  /** Sign out the current user */
+  logout: () => Promise<void>
+  /** Clerk session ID */
+  sessionId: string | null | undefined
 }
 
-export interface Session {
-  user: User;
-  token: string;
-  expires_at: string;
-}
+/**
+ * Authentication hook wrapping Clerk's functionality
+ *
+ * @example
+ * ```tsx
+ * import { useAuth } from '@/hooks/use-auth'
+ *
+ * function MyComponent() {
+ *   const { user, loading, isAuthenticated, logout } = useAuth()
+ *
+ *   if (loading) return <div>Loading...</div>
+ *   if (!isAuthenticated) return <Navigate to="/login" />
+ *
+ *   return (
+ *     <div>
+ *       <h1>Welcome, {user.firstName}!</h1>
+ *       <button onClick={logout}>Logout</button>
+ *     </div>
+ *   )
+ * }
+ * ```
+ */
+export function useAuth(): UseAuthReturn {
+  const { user, isLoaded, isSignedIn } = useUser()
+  const { signOut, sessionId } = useClerkAuth()
 
-function getSession(): Session | null {
-  try {
-    const sessionData = localStorage.getItem('umbrella_session');
-    if (!sessionData) return null;
-
-    const session = JSON.parse(sessionData) as Session;
-
-    // Check if session is expired
-    if (new Date(session.expires_at) < new Date()) {
-      localStorage.removeItem('umbrella_session');
-      return null;
-    }
-
-    return session;
-  } catch {
-    return null;
+  return {
+    user: isSignedIn ? user : null,
+    loading: !isLoaded,
+    isAuthenticated: isSignedIn ?? false,
+    logout: signOut,
+    sessionId,
   }
 }
 
-function clearSession(): void {
-  localStorage.removeItem('umbrella_session');
+/**
+ * Legacy User interface (kept for backward compatibility)
+ * @deprecated Use Clerk's UserResource type instead
+ */
+export interface User {
+  id: string
+  oauth_provider: 'apple' | 'google'
+  oauth_id: string
+  email: string
+  onboarding_complete: boolean
+  created_at: string
+  updated_at: string
+  tailnet?: string
 }
 
-export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Load user from session on mount
-  useEffect(() => {
-    const session = getSession();
-    if (session) {
-      setUser(session.user);
-      setIsAuthenticated(true);
-    }
-    setIsLoading(false);
-  }, []);
-
-  const logout = async () => {
-    try {
-      // Call logout endpoint
-      const session = getSession();
-      if (session) {
-        await fetch('/v1/auth/logout', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${session.token}`,
-          },
-        });
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      clearSession();
-      setUser(null);
-      setIsAuthenticated(false);
-      window.location.href = '/';
-    }
-  };
-
-  const setSession = (session: Session) => {
-    localStorage.setItem('umbrella_session', JSON.stringify(session));
-    setUser(session.user);
-    setIsAuthenticated(true);
-  };
-
-  return {
-    user,
-    isAuthenticated,
-    isLoading,
-    logout,
-    setSession,
-    needsOnboarding: user && !user.onboarding_complete,
-  };
+/**
+ * Legacy Session interface (kept for backward compatibility)
+ * @deprecated Clerk manages sessions automatically
+ */
+export interface Session {
+  user: User
+  token: string
+  expires_at: string
 }
