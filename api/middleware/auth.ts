@@ -13,6 +13,7 @@ import {
   NotFoundError,
   DatabaseError,
 } from '../utils/errors'
+import { syncClerkUser } from '../utils/clerk-sync'
 
 /**
  * Environment interface (defined in api/index.ts)
@@ -111,18 +112,39 @@ export async function requireAuth(
     const clerkId = payload.sub
 
     // 3. Fetch user from D1 by clerk_id
-    const user = await env.DB.prepare(
+    let user = await env.DB.prepare(
       'SELECT * FROM users WHERE clerk_id = ?'
     )
       .bind(clerkId)
       .first<User>()
 
-    // 4. Return 404 if user not found (webhook sync issue)
+    // 4. If user not found, attempt manual sync (webhook failure recovery)
     if (!user) {
-      throw new NotFoundError(
-        'User not found in database. Please ensure your account is properly synchronized.',
-        { clerkId }
+      console.warn(
+        `[AUTH MIDDLEWARE] User ${clerkId} authenticated with Clerk but not found in D1. Attempting manual sync...`
       )
+
+      try {
+        // Fetch user from Clerk API and create in D1
+        user = await syncClerkUser(clerkId, env)
+        console.log(
+          `[AUTH MIDDLEWARE] Manual sync successful for user ${clerkId}, proceeding with request`
+        )
+      } catch (syncError) {
+        console.error('[AUTH MIDDLEWARE] Manual sync failed:', {
+          clerkId,
+          error: syncError instanceof Error ? syncError.message : String(syncError),
+        })
+
+        // If manual sync fails, throw NotFoundError
+        throw new NotFoundError(
+          'User not found in database and manual sync failed. Please try logging in again.',
+          {
+            clerkId,
+            syncError: syncError instanceof Error ? syncError.message : undefined,
+          }
+        )
+      }
     }
 
     // 5. Return user object

@@ -466,6 +466,244 @@ function LogoutButton() {
 - Always call `clerk.signOut()` for actual session termination
 - Logout is idempotent and always returns success
 
+## Clerk Webhook Integration & Failure Recovery
+
+### Webhook Event Flow
+
+Clerk sends webhooks to notify our backend when user events occur:
+
+```
+┌────────────┐      ┌──────────────────┐      ┌─────────┐
+│   Clerk    │─────▶│  POST /v1/auth/  │─────▶│   D1    │
+│   Server   │      │     webhook      │      │  users  │
+└────────────┘      └──────────────────┘      └─────────┘
+                            │
+                            │ (on error)
+                            ▼
+                    ┌──────────────────┐
+                    │  Return 500      │
+                    │  Clerk retries   │
+                    └──────────────────┘
+```
+
+### Webhook Events
+
+| Event | Description | Action |
+|-------|-------------|--------|
+| `user.created` | New user signs up | Create user record in D1 |
+| `user.updated` | User profile updated | Update user email in D1 |
+| `user.deleted` | User account deleted | Delete user from D1 |
+| `session.created` | New session created | Log for monitoring |
+
+### Webhook Retry Behavior
+
+**Clerk's Retry Policy:**
+- **Retries**: 3 attempts on 5xx errors
+- **Backoff**: Exponential backoff between retries
+- **Timeout**: 10 seconds per attempt
+- **Final Failure**: If all 3 retries fail, event is lost
+
+**Our Error Handling:**
+```typescript
+// On webhook error:
+1. Log full error details to console
+2. Increment KV counter: webhook_failures:{date}
+3. Return 500 status (tells Clerk to retry)
+```
+
+### Email Verification with Google OAuth
+
+**Google OAuth Pre-Verification:**
+- Users signing up with Google OAuth have pre-verified emails
+- Google provides verified email addresses in OAuth response
+- No additional email verification step required
+- Users can access platform immediately after signup
+
+**Verification Status:**
+- **Google/Apple OAuth**: Email pre-verified by provider
+- **Manual Verification**: Not currently implemented (OAuth-only auth per D-001)
+
+**Support Team Actions:**
+- View user verification status in Clerk dashboard
+- Manually verify users if needed (support escalation only)
+- Check email verification in user profile settings
+
+### Manual Sync (Webhook Failure Recovery)
+
+**Problem:**
+When webhooks fail (network issues, Worker deployment, rate limits), users authenticate successfully with Clerk but don't exist in our D1 database, preventing platform access.
+
+**Solution:**
+Automatic manual sync recovers from webhook failures transparently.
+
+**Recovery Flow:**
+```
+┌──────────────────┐
+│  User logs in    │
+│  with Clerk      │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│ Token validated  │
+│ by auth middleware│
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐      ┌─────────────────────┐
+│ Query D1 for     │─────▶│ User found?         │
+│ user by clerk_id │      │ → Return user       │
+└──────────────────┘      └─────────────────────┘
+         │                         │
+         │ User NOT found          │
+         ▼                         │
+┌──────────────────────────┐      │
+│ MANUAL SYNC TRIGGERED    │      │
+│ 1. Fetch from Clerk API  │      │
+│ 2. Extract email/provider│      │
+│ 3. Create user in D1     │      │
+│ 4. Log warning           │      │
+│ 5. Increment counter     │      │
+│ 6. Return user           │      │
+└────────┬─────────────────┘      │
+         │                        │
+         └────────────────────────┘
+                  │
+                  ▼
+          ┌──────────────┐
+          │ User can now │
+          │ use platform │
+          └──────────────┘
+```
+
+**Implementation:**
+- **Location**: `api/utils/clerk-sync.ts` - `syncClerkUser()`
+- **Trigger**: Auth middleware when user not found in D1
+- **Process**: Fetch from Clerk API, create in D1, log warning
+- **Duplicate Prevention**: Check for existing user before creating
+- **Monitoring**: Increment KV counter `manual_syncs:{date}`
+
+**Code Example:**
+```typescript
+import { syncClerkUser } from '../utils/clerk-sync'
+
+// In auth middleware
+let user = await env.DB.prepare('SELECT * FROM users WHERE clerk_id = ?')
+  .bind(clerkId)
+  .first<User>()
+
+if (!user) {
+  // Manual sync triggered
+  user = await syncClerkUser(clerkId, env)
+  console.warn('[WEBHOOK FAILURE RECOVERY] User synced manually')
+}
+```
+
+### Monitoring & Alerts
+
+**Webhook Failure Tracking:**
+```typescript
+// KV Key: webhook_failures:{YYYY-MM-DD}
+// Value: Integer count of failures for that day
+// TTL: 7 days
+
+const stats = await getWebhookFailureStats(env, 7)
+// Returns: { '2025-11-17': 2, '2025-11-16': 0, ... }
+```
+
+**Manual Sync Tracking:**
+```typescript
+// KV Key: manual_syncs:{YYYY-MM-DD}
+// Value: Integer count of manual syncs for that day
+// TTL: 7 days
+
+const stats = await getManualSyncStats(env, 7)
+// Returns: { '2025-11-17': 3, '2025-11-16': 1, ... }
+```
+
+**Alert Thresholds:**
+- **>5 manual syncs per day**: Indicates webhook endpoint unreliable
+- **Action**: Investigate webhook configuration, check Worker health
+- **Log Level**: ERROR with message about high sync count
+
+**Monitoring Queries:**
+```bash
+# Check webhook failures (last 7 days)
+wrangler kv:key list --namespace-id=<KV_ID> --prefix="webhook_failures:"
+
+# Check manual syncs (last 7 days)
+wrangler kv:key list --namespace-id=<KV_ID> --prefix="manual_syncs:"
+```
+
+### Testing Webhook Failure Recovery
+
+**Test Scenario: Webhook Fails, User Signs Up, Manual Sync Recovers**
+
+1. **Break webhook handler** (for testing):
+   ```typescript
+   // In api/routes/auth.ts - handleUserCreated()
+   throw new Error('TESTING: Simulated webhook failure')
+   ```
+
+2. **Sign up new user via Clerk**:
+   - User creates account with Google OAuth
+   - Clerk webhook fires but fails (returns 500)
+   - Clerk retries 3 times, all fail
+   - User authenticated with Clerk, but NOT in D1
+
+3. **Make authenticated API call**:
+   ```bash
+   curl -H "Authorization: Bearer <clerk-token>" \
+        http://localhost:8787/v1/auth/session
+   ```
+
+4. **Verify manual sync triggered**:
+   - Check logs for `[WEBHOOK FAILURE RECOVERY]` messages
+   - User successfully created in D1
+   - Response includes user data
+   - Counter incremented: `manual_syncs:2025-11-17`
+
+5. **Verify user can use platform**:
+   - Subsequent API calls work normally
+   - User can complete onboarding
+   - No repeated sync attempts
+
+**Expected Logs:**
+```
+[WEBHOOK ERROR] user.created failed: {...}
+[KV] Incremented webhook_failures:2025-11-17 to 1
+[AUTH MIDDLEWARE] User user_xxx not found in D1. Attempting manual sync...
+[WEBHOOK FAILURE RECOVERY] Fetching user from Clerk API
+[WEBHOOK FAILURE RECOVERY] Successfully created user for Clerk ID user_xxx
+[KV] Incremented manual_syncs:2025-11-17 to 1
+[AUTH MIDDLEWARE] Manual sync successful, proceeding with request
+```
+
+### Troubleshooting
+
+**Issue: High webhook failure rate**
+- **Check**: Webhook secret configured correctly
+- **Check**: Worker deployment health
+- **Check**: Network connectivity to Clerk
+- **Action**: Review Worker logs for specific errors
+
+**Issue: High manual sync rate**
+- **Indicates**: Webhook endpoint unreliable
+- **Check**: Worker resource limits (CPU, memory)
+- **Check**: Database connection pool
+- **Action**: Investigate root cause, fix webhook handler
+
+**Issue: Manual sync fails**
+- **Check**: Clerk API key valid
+- **Check**: User exists in Clerk
+- **Check**: Database schema matches expectations
+- **Action**: User must re-authenticate
+
+**Issue: Duplicate users created**
+- **Prevention**: UNIQUE constraint on `clerk_id` column
+- **Handling**: Manual sync catches duplicate error, fetches existing user
+- **Action**: No action needed, handled automatically
+
 ## Future Enhancements
 
 - [ ] Add session device tracking (browser, IP)
