@@ -1,114 +1,93 @@
 ---
 id: task-11.1
-title: "Generate API Surface Map"
+title: "Legal & Compliance Setup"
 status: "To Do"
 assignee: []
-created_date: "2025-11-16"
-labels: ["documentation", "P1", "automation"]
-milestone: "M11 - Documentation & Developer Tooling"
-dependencies: []
-estimated_hours: null
+created_date: "2025-11-17"
+labels: ["legal", "P0", "compliance", "frontend", "backend"]
+milestone: "M11 - Pre-Launch Readiness & Compliance"
+dependencies: ["task-1.4"]
+estimated_hours: 8
 ---
 
 ## Description
-Auto-generate comprehensive API endpoint documentation from the api/routes/ directory using Claude Code. Create a machine-readable and human-readable reference of all REST endpoints with their contracts, authentication requirements, and database dependencies.
+Create all legally required pages and functionality: Terms of Service, Privacy Policy, Cookie Policy, cookie consent banner, and account deletion flow (California CCPA compliance).
 
 ## Acceptance Criteria
-- [ ] docs/API_SURFACE.md created with all 50+ endpoints documented
-- [ ] For each endpoint, document:
-  - HTTP method and path (e.g., `POST /v1/onboarding/artists/step1`)
-  - Authentication requirement (requireAuth, requireOnboarding, public)
-  - Request parameters (headers, body fields, query params)
-  - Response schema (success and error cases)
-  - Database tables touched (reads/writes)
-  - Dependencies on other endpoints or services
-- [ ] Endpoints grouped by domain (Auth, Onboarding, Profile, Marketplace, etc.)
-- [ ] Cross-references to database tables in DATABASE.md
-- [ ] Cross-references to TypeScript types in types/ directory
-- [ ] Examples of successful requests and responses
-- [ ] Machine-readable format (can be parsed by future agents)
-- [ ] File validates against actual codebase (no outdated info)
+- [ ] Terms of Service page created at /legal/terms
+- [ ] Privacy Policy page created at /legal/privacy (discloses Clerk, Resend, Twilio, Cloudflare, Anthropic)
+- [ ] Cookie Policy page created at /legal/cookies
+- [ ] All legal pages linked in footer on every page
+- [ ] Cookie consent banner appears on first visit, dismisses on accept
+- [ ] Cookie consent choice stored in localStorage
+- [ ] DELETE /v1/account endpoint implemented
+- [ ] Account deletion requires typing "DELETE" for confirmation
+- [ ] Deletion removes all user data (users, artists, tracks, files, messages, reviews)
+- [ ] Deletion removes files from R2 bucket
+- [ ] Deletion removes Clerk user via Clerk API
+- [ ] Confirmation email sent after deletion
+- [ ] Settings page has "Delete Account" section with danger styling
 
 ## Implementation Plan
 
-### 1. Create Claude Code Prompt
-```
-Prompt: "Scan the api/routes/ directory and generate docs/API_SURFACE.md 
-with the following structure:
+### Legal Pages (3 hours)
+1. Create src/pages/legal/ directory
+2. Create TermsPage.tsx:
+   - Sections: Acceptance, User Accounts, Service Description, Content Ownership, Prohibited Uses, Termination, Disclaimers, Limitation of Liability, Governing Law (US), Changes to Terms
+   - Last updated date at top
+   - Brand kit styling
+3. Create PrivacyPage.tsx:
+   - Sections: Information Collection, How We Use Information, Information Sharing, Data Storage, User Rights (California CCPA), Cookies, Children's Privacy, Changes to Policy, Contact
+   - Disclose third parties: Clerk, Resend, Twilio, Cloudflare, Anthropic
+   - California CCPA rights: access, deletion, opt-out of sale (note we don't sell data)
+4. Create CookiesPage.tsx:
+   - Sections: What Are Cookies, Cookies We Use, Essential Cookies (Clerk session), How to Control Cookies
+   - List cookie names, purposes, durations
+5. Add routes: /legal/terms, /legal/privacy, /legal/cookies
+6. Update Footer.tsx with legal page links
 
-# API Surface Map
+### Cookie Consent Banner (1 hour)
+7. Create CookieBanner.tsx component
+8. Check localStorage for cookie_consent on mount
+9. Show banner if not set: "We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies."
+10. Add "Learn More" link to /legal/cookies
+11. Add "Accept" button → set localStorage: cookie_consent = "accepted"
+12. Add to App.tsx or root layout
 
-## Authentication Endpoints
-### POST /v1/auth/callback
-- **Auth:** Public
-- **Purpose:** Handle OAuth callback from Clerk
-- **Request:** 
-  - Headers: Cf-Access-Jwt-Assertion
-- **Response:**
-  ```json
-  {
-    "data": {
-      "token": "string",
-      "user": { ... },
-      "redirect_url": "string"
-    }
-  }
-  ```
-- **Database:** Writes to users table
-- **Dependencies:** Clerk webhook (task-1.1)
-- **Types:** User (types/models.ts)
-
-[Continue for all endpoints...]
-
-## Onboarding Endpoints
-[...]
-
-## Profile Endpoints
-[...]
-
-Use actual code from api/routes/*.ts to ensure accuracy.
-Group by milestone/domain (M1 Auth, M2 Onboarding, etc.).
-Include error responses (400, 401, 403, 404, 500).
-"
-```
-
-### 2. Run Generation
-- Point Claude Code at api/routes/ directory
-- Generate initial draft of API_SURFACE.md
-- Validate against actual endpoint implementations
-
-### 3. Add Metadata
-- Cross-reference database tables (reference DATABASE.md)
-- Link to TypeScript types (reference types/api.ts)
-- Add dependency notes (which endpoints depend on others)
-
-### 4. Validation Pass
-- Verify all endpoints from M1-M10 included
-- Check request/response schemas match actual code
-- Ensure no deprecated or removed endpoints documented
-
-### 5. Format for Machine Readability
-- Consistent structure for each endpoint
-- Parseable by LLMs (clear sections, predictable format)
-- Include YAML front-matter if helpful for tooling
+### Account Deletion Flow (4 hours)
+13. Create DELETE /v1/account route in api/routes/account.ts
+14. Apply requireAuth middleware
+15. Begin D1 transaction for atomic deletion:
+    - Delete from files table (WHERE artist_id = ?)
+    - Delete files from R2 bucket (list all keys, delete each)
+    - Delete from tracks, messages, conversations, reviews, gig_applications, analytics, violet_usage, journal_entries, broadcast_messages, contacts, artists, users tables
+16. Commit D1 transaction
+17. Delete Clerk user: DELETE /v1/users/{clerk_user_id} via Clerk API
+18. Send confirmation email via Resend
+19. Return 200 OK
+20. Add error handling (rollback on D1 failure, graceful degradation on Clerk failure)
+21. Add "Delete Account" section to Settings page (bottom, red danger styling)
+22. Create confirmation modal requiring typing "DELETE"
+23. Wire up delete button → call DELETE /v1/account → redirect to login with "Account deleted" message
 
 ## Notes & Comments
-**References:**
-- api/routes/ directory - All endpoint implementations
-- docs/API_CONTRACT.md - Created in task-0.2 (may be outdated)
-- types/api.ts - Request/response TypeScript interfaces
+**Priority:** P0 - LAUNCH BLOCKER (legal requirement for US launch)
 
-**Priority:** P1 - Highest ROI documentation (enables surgical API changes)
-**File:** docs/API_SURFACE.md
-**Can Run Parallel With:** task-11.2, task-11.3, task-11.4, task-11.5
+**Files to Create:**
+- src/pages/legal/TermsPage.tsx
+- src/pages/legal/PrivacyPage.tsx
+- src/pages/legal/CookiesPage.tsx
+- src/components/CookieBanner.tsx
+- api/routes/account.ts
 
-**Why This Matters:**
-Post-MVP, every API change requires understanding: "What does this endpoint do? What breaks if I change it?" This document answers those questions without re-ingesting entire codebase.
+**Files to Modify:**
+- src/components/Footer.tsx (add legal links)
+- src/router.tsx (add legal routes)
+- src/App.tsx (add CookieBanner)
+- api/index.ts (register DELETE /v1/account route)
+- src/pages/SettingsPage.tsx (add Delete Account section)
 
-**Example Use Case:**
-```
-Client: "Can we add 'pronouns' field to artist profile?"
-Developer: [Reads API_SURFACE.md]
-Developer: "Profile uses PUT /v1/profile → touches artists table → used by ProfileEditPage.tsx"
-Agent: [Ingests only: API_SURFACE.md, api/routes/profile.ts, db/schema.sql (artists table), ProfileEditPage.tsx]
-Agent: [Makes surgical change in 4 files]
+**Legal Note:** Content should be reviewed by legal counsel before production launch. Placeholder content acceptable for MVP testing but must be replaced with lawyer-reviewed versions before public launch.
+
+**California CCPA:** Requires "right to delete" for all users (not just California residents). Account deletion must complete within 45 days (we do it immediately).
+

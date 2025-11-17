@@ -1,160 +1,107 @@
 ---
-
-### task-11.2.md
-
-```markdown
----
 id: task-11.2
-title: "Generate Database Schema Documentation"
+title: "Security Hardening"
 status: "To Do"
 assignee: []
-created_date: "2025-11-16"
-labels: ["documentation", "P1", "automation", "database"]
-milestone: "M11 - Documentation & Developer Tooling"
-dependencies: []
-estimated_hours: null
+created_date: "2025-11-17"
+labels: ["security", "P0", "backend"]
+milestone: "M11 - Pre-Launch Readiness & Compliance"
+dependencies: ["task-1.4"]
+estimated_hours: 8
 ---
 
 ## Description
-Auto-generate database schema documentation from db/schema.sql and db/migrations/ using Claude Code. Create a reference that shows table relationships, foreign keys, indexes, and which API endpoints read/write to each table.
+Implement comprehensive security measures: rate limiting, input sanitization, environment validation, and CORS policy to prevent abuse and attacks.
 
 ## Acceptance Criteria
-- [ ] docs/DATABASE.md created with all 27 tables documented
-- [ ] For each table, document:
-  - Columns with types, constraints, defaults
-  - Primary keys and indexes
-  - Foreign key relationships (visual diagram if possible)
-  - Which API endpoints read from this table
-  - Which API endpoints write to this table
-  - Example queries for common operations
-- [ ] Relationship diagram (Mermaid ER diagram or ASCII art)
-- [ ] Migration history reference (which migration created which table)
-- [ ] Cross-references to API_SURFACE.md (which endpoints use which tables)
-- [ ] Query optimization notes (which columns should be indexed)
-- [ ] File validates against actual schema in D1
+- [ ] Rate limiting middleware implemented (20 req/min for public, 100 req/min for authenticated)
+- [ ] Rate limit headers returned (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset)
+- [ ] 429 status with Retry-After header when limit exceeded
+- [ ] All D1 queries use parameterized statements (no string concatenation)
+- [ ] All user inputs validated (email, phone, URLs, filenames)
+- [ ] File uploads validate MIME type server-side
+- [ ] HTML content sanitized (if any rich text)
+- [ ] Content Security Policy headers configured
+- [ ] Environment variable validation on Worker startup
+- [ ] Worker fails fast if required secrets missing
+- [ ] CORS middleware configured with allowed origins
+- [ ] CORS credentials enabled for auth cookies
+- [ ] Preflight OPTIONS requests handled
 
 ## Implementation Plan
 
-### 1. Create Claude Code Prompt
-```
-Prompt: "Read db/schema.sql and db/migrations/*.sql to generate docs/DATABASE.md 
-with the following structure:
+### Rate Limiting (3 hours)
+1. Create api/middleware/rate-limit.ts
+2. Implement KV-based rate limiter:
+   - Key format: `ratelimit:{identifier}:{window}`
+   - Identifier: IP for public, user_id for authenticated
+   - Window: Unix timestamp floored to minute
+3. Create rateLimitPublic (20 req/min per IP) and rateLimitUser (100 req/min per user_id)
+4. Apply rateLimitPublic to: POST /v1/auth/callback, GET /v1/search
+5. Apply rateLimitUser to all authenticated endpoints
+6. Add rate limit headers to all responses
+7. Return 429 with Retry-After when exceeded
+8. Test: Send 21 rapid requests, verify 429 on 21st
 
-# Database Schema
+### Input Sanitization (3 hours)
+9. Audit all D1 queries in api/ directory
+10. Verify all use `.prepare()` with `.bind()` (no string concatenation)
+11. Create api/utils/sanitize.ts with helpers:
+    - sanitizeEmail(email): validates format, normalizes
+    - sanitizePhone(phone): validates E.164 format
+    - sanitizeURL(url): validates format, prevents javascript: protocol
+    - sanitizeFilename(filename): removes path traversal (../, ..\)
+12. Apply sanitization to all user inputs in api/routes/
+13. Validate file uploads:
+    - Check MIME type server-side (not just client)
+    - Reject executable types (.exe, .sh, .bat)
+    - Check magic bytes for true file type
+14. Configure CSP headers:
+    - default-src 'self'
+    - script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com
+    - style-src 'self' 'unsafe-inline'
 
-## Overview
-- Total tables: 27
-- Database: D1 (SQLite)
-- Migrations applied: 0001-0007 + clerk integration
+### Environment Validation (1 hour)
+15. Create api/utils/validate-env.ts
+16. Define required secrets: CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY, CLERK_WEBHOOK_SECRET, RESEND_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, ANTHROPIC_API_KEY
+17. Define required bindings: DB, KV, R2_BUCKET
+18. Create validateEnvironment(env) function
+19. Call in Worker fetch handler before routing
+20. Throw error with missing variable list if validation fails
+21. Allow dev mode to skip external service keys (use mocks)
 
-## Table Relationships Diagram
-```mermaid
-erDiagram
-    users ||--o{ artists : has
-    artists ||--o{ tracks : uploads
-    artists ||--o{ gigs : applies_to
-    users {
-        string id PK
-        string clerk_user_id UK
-        string email
-        boolean onboarding_complete
-    }
-    artists {
-        string id PK
-        string user_id FK
-        string stage_name
-        text bio
-    }
-    [...]
-```
-
-## Tables
-
-### users
-**Purpose:** User accounts from Clerk OAuth
-
-**Columns:**
-- id (TEXT, PRIMARY KEY)
-- clerk_user_id (TEXT, UNIQUE) - Clerk's user ID
-- email (TEXT) - Primary email
-- onboarding_complete (BOOLEAN) - Whether onboarding finished
-- created_at (DATETIME)
-- updated_at (DATETIME)
-
-**Indexes:**
-- idx_users_clerk_id ON (clerk_user_id)
-
-**Relationships:**
-- HAS ONE artist (artists.user_id → users.id)
-
-**Used By Endpoints:**
-- POST /v1/auth/callback (writes)
-- GET /v1/auth/session (reads)
-- POST /v1/onboarding/artists/step5 (writes onboarding_complete)
-
-**Common Queries:**
-```sql
--- Get user with artist profile
-SELECT u.*, a.* 
-FROM users u 
-LEFT JOIN artists a ON a.user_id = u.id 
-WHERE u.clerk_user_id = ?
-
--- Check onboarding status
-SELECT onboarding_complete 
-FROM users 
-WHERE clerk_user_id = ?
-```
-
-[Continue for all 27 tables...]
-
-Use actual schema from db/schema.sql to ensure accuracy.
-Cross-reference API_SURFACE.md to show endpoint usage.
-Include migration references (which migration created this table).
-"
-```
-
-### 2. Run Generation
-- Point Claude Code at db/schema.sql and db/migrations/
-- Generate initial draft of DATABASE.md
-- Create Mermaid ER diagram if possible
-
-### 3. Add Endpoint Mappings
-- For each table, list which endpoints read/write
-- Cross-reference to API_SURFACE.md
-- Note any endpoints that JOIN multiple tables
-
-### 4. Add Query Examples
-- Common SELECT patterns (with JOINs)
-- Common UPDATE/INSERT patterns
-- Performance considerations (which queries need indexes)
-
-### 5. Validation Pass
-- Verify all 27 tables documented
-- Check foreign key relationships are correct
-- Ensure migration references are accurate
+### CORS Policy (1 hour)
+22. Create api/middleware/cors.ts
+23. Define allowed origins by environment:
+    - production: ['https://umbrella.app']
+    - preview: ['https://preview.umbrella.app']
+    - development: ['http://localhost:5173', 'http://localhost:3000']
+24. Add CORS headers to all responses:
+    - Access-Control-Allow-Origin (from request Origin if allowed)
+    - Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+    - Access-Control-Allow-Headers: Authorization, Content-Type
+    - Access-Control-Allow-Credentials: true
+25. Handle preflight OPTIONS requests (return 204 with headers)
+26. Apply CORS to all responses in api/index.ts
+27. Configure R2 CORS separately (create r2-cors.json, apply via wrangler)
 
 ## Notes & Comments
-**References:**
-- db/schema.sql - Primary schema definition
-- db/migrations/*.sql - Migration history
-- docs/API_SURFACE.md - Endpoint → table mappings
-- db/MIGRATION_STATUS.md - Applied migrations (from task-0.1)
+**Priority:** P0 - LAUNCH BLOCKER (prevents security vulnerabilities)
 
-**Priority:** P1 - Critical for understanding data model
-**File:** docs/DATABASE.md
-**Can Run Parallel With:** task-11.1, task-11.3, task-11.4, task-11.5
+**Files to Create:**
+- api/middleware/rate-limit.ts
+- api/utils/sanitize.ts
+- api/utils/validate-env.ts
+- api/middleware/cors.ts
+- r2-cors.json
 
-**Why This Matters:**
-Post-MVP, database changes are risky. Need to know: "If I add a column to artists table, what breaks?" This document shows all endpoints that touch each table.
+**Files to Modify:**
+- api/index.ts (apply all middleware)
+- All files in api/routes/ (apply sanitization)
 
-**Example Use Case:**
-```
-Client: "Can we add 'verified_at' timestamp to artists?"
-Developer: [Reads DATABASE.md]
-Developer: "artists table used by: GET /v1/profile, PUT /v1/profile, GET /v1/artists"
-Agent: [Ingests only: DATABASE.md, db/schema.sql, 3 endpoint files]
-Agent: [Adds column, updates 3 endpoints]
----
+**Rate Limit Strategy:** Sliding window in KV prevents burst attacks. Per-IP for public (anonymous abuse), per-user for authenticated (account abuse).
 
+**SQL Injection:** D1 parameterized queries prevent injection. Must verify no string concatenation in queries.
+
+**XSS Prevention:** React auto-escapes JSX content. Watch for dangerouslySetInnerHTML, innerHTML assignments, href="javascript:" URLs.
 

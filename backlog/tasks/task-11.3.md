@@ -1,211 +1,106 @@
 ---
 id: task-11.3
-title: "Generate Component Catalog"
+title: "Error Pages & Session Handling"
 status: "To Do"
 assignee: []
-created_date: "2025-11-16"
-labels: ["documentation", "P1", "automation", "frontend"]
-milestone: "M11 - Documentation & Developer Tooling"
-dependencies: []
-estimated_hours: null
+created_date: "2025-11-17"
+labels: ["frontend", "P0", "ux"]
+milestone: "M11 - Pre-Launch Readiness & Compliance"
+dependencies: ["task-1.6"]
+estimated_hours: 6
 ---
 
 ## Description
-Auto-generate UI component documentation from src/components/ using Claude Code. Create a catalog that shows all reusable components, their props, variants, usage patterns, and dependencies.
+Create custom 404 and 500 error pages, implement offline state detection, and handle Clerk session timeout gracefully without losing user work.
 
 ## Acceptance Criteria
-- [ ] docs/COMPONENTS.md created with all ~30 components documented
-- [ ] For each component, document:
-  - Component name and file path
-  - Props with types, defaults, and descriptions
-  - Visual variants (if applicable)
-  - Usage examples (code snippets)
-  - Dependencies on other components
-  - Used in which pages/components
-- [ ] Components grouped by category (UI primitives, forms, cards, layouts)
-- [ ] Theming section showing design tokens and customization
-- [ ] Cross-references to pages that use each component
-- [ ] Screenshots or visual examples (optional but nice)
-- [ ] File validates against actual components in codebase
+- [ ] 404 page created with navigation options (Dashboard, Browse Gigs, Home)
+- [ ] 500 page created with refresh and contact support options
+- [ ] Invalid routes redirect to 404 page
+- [ ] Unhandled exceptions show 500 page
+- [ ] Error boundary wraps entire app
+- [ ] Session timeout modal shows when Clerk session expires
+- [ ] Session timeout modal requires re-login (cannot dismiss)
+- [ ] Unsaved form data preserved in localStorage before redirect
+- [ ] After re-login, attempt to restore user to previous location
+- [ ] Offline banner appears when browser loses connection
+- [ ] Offline banner shows: "You're offline. Some features may not work."
+- [ ] API calls fail gracefully when offline
+- [ ] Offline banner disappears when connection restored
+- [ ] All pages styled with brand kit, mobile responsive
 
 ## Implementation Plan
 
-### 1. Create Claude Code Prompt
-```
-Prompt: "Scan src/components/ directory and generate docs/COMPONENTS.md 
-with the following structure:
+### Error Pages (2 hours)
+1. Create NotFoundPage.tsx (404):
+   - Heading: "Page Not Found"
+   - Subheading: "The page you're looking for doesn't exist or has been moved."
+   - 3 buttons: "Go to Dashboard", "Browse Gigs", "Back to Home"
+   - Brand kit styling
+2. Create ServerErrorPage.tsx (500):
+   - Heading: "Something Went Wrong"
+   - Subheading: "We're aware of the issue and working on a fix. Please try again in a few minutes."
+   - 2 buttons: "Refresh Page", "Contact Support"
+   - Brand kit styling
+3. Add catch-all route: path="*" → NotFoundPage
+4. Create ErrorBoundary.tsx component
+5. Wrap App in ErrorBoundary
+6. On error: log to Sentry (if configured), render ServerErrorPage
+7. Test: Navigate to /invalid-route, trigger unhandled exception
 
-# Component Catalog
+### Session Timeout Handling (2 hours)
+8. Create SessionTimeoutModal component:
+   - Title: "Session Expired"
+   - Message: "Your session has expired for security. Please log in again to continue."
+   - "Log In" button → redirects to Clerk login
+   - Cannot be dismissed (must log in)
+9. Create session timeout interceptor in src/lib/api-client.ts
+10. Detect 401 status from API calls
+11. Save current form data to localStorage before modal:
+    - Key: `unsaved:{page}:{timestamp}`
+    - Value: form data object
+    - TTL: 1 hour (clear stale data)
+12. Save current URL in localStorage
+13. Show SessionTimeoutModal
+14. After re-login, check localStorage for unsaved data
+15. If found, offer to restore (show toast)
+16. Redirect to saved URL
+17. Test: Expire Clerk session, make API call, verify modal appears
 
-## UI Primitives
-
-### Button
-**File:** src/components/ui/button.tsx
-
-**Props:**
-```typescript
-interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost'  // default: 'primary'
-  size?: 'sm' | 'md' | 'lg'  // default: 'md'
-  disabled?: boolean  // default: false
-  loading?: boolean  // default: false
-  onClick?: () => void
-  children: React.ReactNode
-}
-```
-
-**Variants:**
-- primary: Purple background, white text (main CTAs)
-- secondary: Outline style (secondary actions)
-- danger: Red background (destructive actions)
-- ghost: Transparent background (tertiary actions)
-
-**Usage:**
-```tsx
-import { Button } from '@/components/ui/button'
-
-// Primary CTA
-<Button variant="primary" onClick={handleSave}>
-  Save Changes
-</Button>
-
-// Danger action
-<Button variant="danger" onClick={handleDelete}>
-  Delete Account
-</Button>
-
-// Loading state
-<Button loading={isSubmitting}>
-  {isSubmitting ? 'Saving...' : 'Save'}
-</Button>
-```
-
-**Used In:**
-- ProfileEditPage (Save button)
-- OnboardingStep1 (Next button)
-- DashboardPage (Quick actions)
-
-**Dependencies:** None (primitive component)
-
----
-
-### Input
-[... similar structure for each component ...]
-
-## Forms
-
-### FormField
-[...]
-
-## Cards
-
-### GigCard
-**File:** src/components/GigCard.tsx
-
-**Props:**
-```typescript
-interface GigCardProps {
-  gig: Gig  // Gig model from types/models.ts
-  onApply?: (gigId: string) => void
-  showUrgency?: boolean  // default: true
-}
-```
-
-**Usage:**
-```tsx
-import { GigCard } from '@/components/GigCard'
-
-<GigCard 
-  gig={gigData} 
-  onApply={handleApply}
-  showUrgency={true}
-/>
-```
-
-**Used In:**
-- MarketplacePage (gig listing)
-- DashboardPage (opportunities widget)
-
-**Dependencies:**
-- Badge (for urgency indicator)
-- Button (for apply CTA)
-
----
-
-[Continue for all components...]
-
-## Theming
-
-### Design Tokens
-```css
-/* Colors */
---color-primary: #8B5CF6       /* Purple */
---color-secondary: #EC4899     /* Pink */
-
-/* Typography */
---font-display: 'Inter', sans  /* Headings */
---font-body: 'Inter', sans     /* Body text */
-
-/* Spacing */
---space-md: 1rem               /* 16px */
---space-lg: 1.5rem             /* 24px */
-```
-
-### Customization
-To change the entire app aesthetic:
-1. Update design tokens in tailwind.config.js
-2. Re-run build
-3. All components automatically use new theme
-
-Use actual code from src/components/*.tsx to extract props.
-Include usage examples from actual pages.
-Show component dependencies (which components use which).
-"
-```
-
-### 2. Run Generation
-- Point Claude Code at src/components/ directory
-- Extract prop types from TypeScript interfaces
-- Generate initial draft of COMPONENTS.md
-
-### 3. Add Usage Examples
-- Find actual usage in src/pages/*.tsx
-- Add real code snippets (not synthetic examples)
-- Show common patterns (loading states, error states, variants)
-
-### 4. Add Component Dependencies
-- Map which components use which other components
-- Create dependency tree if helpful
-- Note circular dependencies (if any)
-
-### 5. Extract Theming Info
-- Read tailwind.config.js for design tokens
-- Document color palette with semantic meaning
-- Show how to customize (for client aesthetic changes)
-
-### 6. Validation Pass
-- Verify all reusable components documented
-- Check prop types match actual TypeScript
-- Ensure usage examples are accurate
+### Offline State Handling (2 hours)
+18. Create OfflineBanner component
+19. Listen to window 'offline' and 'online' events
+20. Check navigator.onLine on mount
+21. Show banner when offline: "You're offline. Some features may not work."
+22. Add "Learn More" link (optional)
+23. Yellow/warning background color
+24. Fixed position at top or bottom
+25. Integrate with API client:
+    - Before API call: check if offline
+    - If offline: don't attempt call, show offline message
+    - If online: proceed normally
+26. When online event fires: hide banner, retry queued requests (GET only)
+27. Add to App.tsx or root layout
+28. Test: Disable network in DevTools, verify banner, re-enable, verify banner disappears
 
 ## Notes & Comments
-**References:**
-- src/components/ directory - All component implementations
-- src/pages/ directory - Component usage examples
-- tailwind.config.js - Design tokens and theming
-- types/models.ts - Data models used in props
+**Priority:** P0 - LAUNCH BLOCKER (default Cloudflare errors are bad UX)
 
-**Priority:** P1 - Enables fast UI changes
-**File:** docs/COMPONENTS.md
-**Can Run Parallel With:** task-11.1, task-11.2, task-11.4, task-11.5
+**Files to Create:**
+- src/pages/NotFoundPage.tsx
+- src/pages/ServerErrorPage.tsx
+- src/components/ErrorBoundary.tsx
+- src/components/SessionTimeoutModal.tsx
+- src/components/OfflineBanner.tsx
 
-**Why This Matters:**
-Post-MVP, UI changes are common. Need to know: "Which components exist? How do I use them? What are the variants?" This document prevents re-inventing components and ensures consistency.
+**Files to Modify:**
+- src/router.tsx (add catch-all 404 route)
+- src/App.tsx (wrap in ErrorBoundary, add OfflineBanner)
+- src/lib/api-client.ts (add 401 interceptor, offline detection)
 
-**Example Use Case:**
-```
-Client: "Can we add a 'warning' variant to buttons?"
-Developer: [Reads COMPONENTS.md]
-Developer: "Button component has variants: primary, secondary, danger, ghost"
-Agent: [Ingests only: COMPONENTS.md, src/components/ui/button.tsx]
-Agent: [Adds 'warning' variant, updates docs]
+**Session Timeout:** Clerk sessions have configurable TTL (default 7 days with auto-refresh). Timeout is rare but must be handled gracefully.
+
+**Work Preservation:** Best effort only. Can preserve form inputs, drafts, search filters. Cannot preserve file uploads in progress or non-serializable state.
+
+**Offline Detection:** navigator.onLine only detects complete network loss. User may have connection but slow/failing requests - handle separately with timeouts.
+
