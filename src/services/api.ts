@@ -32,6 +32,11 @@ import type {
   OnboardingStep4Data,
   OnboardingStep5Data,
   PaginatedResponse,
+  ContactList,
+  Contact,
+  BroadcastMessage,
+  BroadcastRequest,
+  BroadcastResponse,
 } from '@/types'
 
 // ============================================================================
@@ -583,6 +588,145 @@ export const settingsService = {
 }
 
 // ============================================================================
+// CONTACTS SERVICES
+// ============================================================================
+
+export const contactsService = {
+  /**
+   * Get all contact lists for the artist
+   */
+  getLists: () =>
+    apiRequest<ContactList[]>('/contacts/lists'),
+
+  /**
+   * Create a new contact list
+   */
+  createList: (data: {
+    list_name: string
+    list_type: 'fans' | 'venue_contacts' | 'industry' | 'custom'
+  }) =>
+    apiRequest<ContactList>('/contacts/lists', {
+      method: 'POST',
+      body: data,
+    }),
+
+  /**
+   * Get contacts (optionally filtered by list_id)
+   */
+  getContacts: (listId?: string) =>
+    apiRequest<Contact[]>('/contacts', {
+      params: listId ? { list_id: listId } : undefined,
+    }),
+
+  /**
+   * Add a single contact
+   */
+  addContact: (data: {
+    list_id: string
+    email?: string
+    phone?: string
+    name?: string
+    opted_in: boolean
+  }) =>
+    apiRequest<Contact>('/contacts', {
+      method: 'POST',
+      body: data,
+    }),
+
+  /**
+   * Bulk import contacts
+   */
+  importContacts: (data: {
+    list_id: string
+    contacts: Array<{
+      email?: string
+      phone?: string
+      name?: string
+      opted_in: boolean
+    }>
+  }) =>
+    apiRequest<{ import_count: number }>('/contacts/import', {
+      method: 'POST',
+      body: data,
+    }),
+
+  /**
+   * Update a contact (e.g., opt-in status)
+   */
+  updateContact: (contactId: string, data: Partial<Contact>) =>
+    apiRequest<Contact>(`/contacts/${contactId}`, {
+      method: 'PUT',
+      body: data,
+    }),
+
+  /**
+   * Delete a contact
+   */
+  deleteContact: (contactId: string) =>
+    apiRequest<void>(`/contacts/${contactId}`, {
+      method: 'DELETE',
+    }),
+}
+
+// ============================================================================
+// BROADCAST SERVICES
+// ============================================================================
+
+export const broadcastService = {
+  /**
+   * Send a broadcast message to selected contact lists
+   * (D-049: Text-only broadcasts in MVP)
+   */
+  send: (data: BroadcastRequest) =>
+    apiRequest<BroadcastResponse>('/broadcast', {
+      method: 'POST',
+      body: data,
+    }),
+
+  /**
+   * Get all broadcast messages
+   */
+  getAll: () =>
+    apiRequest<BroadcastMessage[]>('/broadcast/messages'),
+
+  /**
+   * Get a single broadcast message by ID
+   */
+  getById: (id: string) =>
+    apiRequest<BroadcastMessage>(`/broadcast/messages/${id}`),
+
+  /**
+   * Save a draft broadcast
+   */
+  saveDraft: (data: {
+    subject: string
+    body: string
+    list_ids: string[]
+  }) =>
+    apiRequest<BroadcastMessage>('/broadcast/drafts', {
+      method: 'POST',
+      body: data,
+    }),
+
+  /**
+   * Update a draft broadcast
+   */
+  updateDraft: (id: string, data: Partial<BroadcastMessage>) =>
+    apiRequest<BroadcastMessage>(`/broadcast/drafts/${id}`, {
+      method: 'PUT',
+      body: data,
+    }),
+
+  /**
+   * Delete a draft broadcast
+   */
+  deleteDraft: (id: string) =>
+    apiRequest<void>(`/broadcast/drafts/${id}`, {
+      method: 'DELETE',
+    }),
+}
+
+// ============================================================================
 // EXPORT ALL SERVICES
 // ============================================================================
 
@@ -599,6 +743,8 @@ export const api = {
   reviews: reviewsService,
   search: searchService,
   settings: settingsService,
+  contacts: contactsService,
+  broadcast: broadcastService,
 }
 
 export default api
