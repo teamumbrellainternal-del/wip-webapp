@@ -158,6 +158,7 @@ function setupRouter(): Router {
   router.post('/v1/messages/booking-inquiry', messagesController.createBookingInquiry, [authMiddleware])
 
   // Files routes (auth required)
+  router.post('/v1/files', filesController.confirmFileUpload, [authMiddleware]) // Confirm upload
   router.get('/v1/files', filesController.listFiles, [authMiddleware])
   router.get('/v1/files/storage', filesController.getStorageStats, [authMiddleware])
   router.get('/v1/files/:id', filesController.getFile, [authMiddleware])
@@ -165,6 +166,10 @@ function setupRouter(): Router {
   router.post('/v1/files/upload-url', filesController.getUploadUrl, [authMiddleware]) // legacy
   router.post('/v1/files/:id/confirm', filesController.confirmUpload, [authMiddleware])
   router.delete('/v1/files/:id', filesController.deleteFile, [authMiddleware])
+
+  // Folder routes (auth required)
+  router.post('/v1/files/folders', filesController.createFolder, [authMiddleware])
+  router.put('/v1/files/:fileId/move', filesController.moveFile, [authMiddleware])
 
   // Journal routes (auth required)
   router.get('/v1/journal', journalController.listEntries, [authMiddleware])
