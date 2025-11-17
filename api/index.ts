@@ -1,8 +1,10 @@
 /**
  * Umbrella API Worker Entry Point
  * Main Worker that handles all API routes using the Router system
+ * Implements task-10.2 requirements for error tracking and logging
  */
 
+import { Toucan } from 'toucan-js'
 import { Router } from './router'
 import { handleClerkWebhook, handleSessionCheck, handleLogout, handleSessionRefresh } from './routes/auth'
 import { handleHealthCheck } from './routes/health'
@@ -13,6 +15,7 @@ import { errorResponse } from './utils/response'
 import { ErrorCodes } from './utils/error-codes'
 import { violetRateLimitMiddleware } from './middleware/rate-limit'
 import { authenticateRequest } from './middleware/auth'
+import { logger, setEnvironment } from './utils/logger'
 
 // Import controllers
 import * as profileController from './controllers/profile'
@@ -49,6 +52,8 @@ export interface Env {
   TWILIO_ACCOUNT_SID: string // Twilio account SID
   TWILIO_AUTH_TOKEN: string // Twilio auth token
   TWILIO_PHONE_NUMBER: string // Twilio phone number
+  SENTRY_DSN?: string // Sentry DSN for error tracking (optional)
+  ENVIRONMENT?: string // Environment name (production, staging, dev)
 }
 
 /**
@@ -229,11 +234,43 @@ function setupRouter(): Router {
 }
 
 /**
+ * Initialize Sentry for error tracking
+ */
+function initSentry(request: Request, env: Env, ctx: ExecutionContext): Toucan | undefined {
+  // Only initialize Sentry if DSN is provided
+  if (!env.SENTRY_DSN) {
+    return undefined
+  }
+
+  const sentry = new Toucan({
+    dsn: env.SENTRY_DSN,
+    context: ctx,
+    request,
+    environment: env.ENVIRONMENT || 'development',
+    // Performance monitoring sample rate: 10% in production
+    tracesSampleRate: env.ENVIRONMENT === 'production' ? 0.1 : 1.0,
+    // Enable debug mode in development
+    debug: env.ENVIRONMENT !== 'production',
+  })
+
+  // Set user context if available (will be set later in auth middleware)
+  // sentry.setUser({ id: userId })
+
+  return sentry
+}
+
+/**
  * Main Worker export
  */
 export default {
-  async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url)
+
+    // Set environment for logger
+    setEnvironment(env.ENVIRONMENT || 'development')
+
+    // Initialize Sentry for error tracking
+    const sentry = initSentry(request, env, ctx)
 
     // Handle CORS preflight
     if (request.method === 'OPTIONS') {
@@ -256,8 +293,11 @@ export default {
       // This allows the frontend to handle client-side routing
       return env.ASSETS.fetch(request)
     } catch (error) {
-      // Global error handler
-      const response = handleError(error)
+      // Global error handler with Sentry integration
+      const response = handleError(error, undefined, sentry, {
+        endpoint: url.pathname,
+        method: request.method,
+      })
       return addCorsHeaders(response)
     }
   },
