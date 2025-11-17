@@ -89,6 +89,9 @@ export default function MarketplacePage() {
   // Favorites state (in-memory for MVP)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
+  // Apply to gig loading state
+  const [applyingGigId, setApplyingGigId] = useState<string | null>(null)
+
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -215,10 +218,13 @@ export default function MarketplacePage() {
   // Handle gig application
   const handleApplyToGig = async (gigId: string) => {
     try {
+      setApplyingGigId(gigId)
       await gigsService.apply(gigId)
       toast.success('Application submitted successfully!')
     } catch (err) {
       toast.error('Failed to apply to gig')
+    } finally {
+      setApplyingGigId(null)
     }
   }
 
@@ -627,12 +633,16 @@ export default function MarketplacePage() {
                               <Button
                                 className="w-full"
                                 size="sm"
+                                disabled={applyingGigId === gig.id}
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleApplyToGig(gig.id)
                                 }}
                               >
-                                Apply Now
+                                {applyingGigId === gig.id && (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                )}
+                                {applyingGigId === gig.id ? 'Applying...' : 'Apply Now'}
                               </Button>
                             </CardContent>
                           </Card>
@@ -877,9 +887,13 @@ export default function MarketplacePage() {
                   <div className="flex gap-2">
                     <Button
                       className="flex-1"
+                      disabled={applyingGigId === selectedGig.id}
                       onClick={() => handleApplyToGig(selectedGig.id)}
                     >
-                      Apply to Gig
+                      {applyingGigId === selectedGig.id && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      {applyingGigId === selectedGig.id ? 'Applying...' : 'Apply to Gig'}
                     </Button>
                     <Button
                       variant="outline"

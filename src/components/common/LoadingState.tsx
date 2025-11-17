@@ -78,3 +78,90 @@ export function LoadingSkeleton({
     </div>
   )
 }
+
+/**
+ * Loading overlay for covering content while loading
+ */
+export function LoadingOverlay({
+  message = 'Loading...',
+  visible = true,
+}: {
+  message?: string
+  visible?: boolean
+}) {
+  if (!visible) return null
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10 rounded-lg">
+      <div className="text-center">
+        <div
+          className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"
+          role="status"
+          aria-label="Loading"
+        />
+        <p className="text-muted-foreground text-sm">{message}</p>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Button loading spinner with text
+ * Use this inside buttons to show loading state
+ */
+export function ButtonSpinner({
+  loading,
+  loadingText = 'Loading...',
+  children,
+}: {
+  loading: boolean
+  loadingText?: string
+  children: React.ReactNode
+}) {
+  return (
+    <>
+      {loading && (
+        <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent mr-2" />
+      )}
+      {loading ? loadingText : children}
+    </>
+  )
+}
+
+/**
+ * Progress bar for uploads and long-running operations
+ */
+export function ProgressBar({
+  progress,
+  message,
+  showPercentage = true,
+}: {
+  progress: number
+  message?: string
+  showPercentage?: boolean
+}) {
+  const clampedProgress = Math.min(Math.max(progress, 0), 100)
+
+  return (
+    <div className="w-full">
+      {message && (
+        <div className="flex justify-between items-center mb-2">
+          <p className="text-sm text-muted-foreground">{message}</p>
+          {showPercentage && (
+            <span className="text-sm font-medium">{Math.round(clampedProgress)}%</span>
+          )}
+        </div>
+      )}
+      <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+        <div
+          className="bg-primary h-full transition-all duration-300 ease-out"
+          style={{ width: `${clampedProgress}%` }}
+          role="progressbar"
+          aria-valuenow={clampedProgress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        />
+      </div>
+    </div>
+  )
+}
