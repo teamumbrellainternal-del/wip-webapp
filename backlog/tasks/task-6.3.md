@@ -1,7 +1,7 @@
 ---
 id: task-6.3
 title: "Implement Book Artist Pre-Filled Inquiry"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
 labels: ["backend", "P1", "messaging", "booking"]
@@ -14,13 +14,13 @@ estimated_hours: 2
 Implement the "Book Artist" flow that opens a message composer with a pre-filled booking inquiry template (D-076).
 
 ## Acceptance Criteria
-- [ ] POST /v1/messages/booking-inquiry endpoint creates conversation + pre-filled message
-- [ ] Requires authentication
-- [ ] Creates conversation between user and artist (if not exists)
-- [ ] Pre-fills message with booking inquiry template
-- [ ] Template includes: artist name, requesting user name, booking details prompt
-- [ ] Returns conversation_id and message_id for frontend to open composer
-- [ ] Proper error handling
+- [x] POST /v1/messages/booking-inquiry endpoint creates conversation + pre-filled message
+- [x] Requires authentication
+- [x] Creates conversation between user and artist (if not exists)
+- [x] Pre-fills message with booking inquiry template
+- [x] Template includes: artist name, requesting user name, booking details prompt
+- [x] Returns conversation_id and message_id for frontend to open composer
+- [x] Proper error handling
 
 ## Implementation Plan
 1. Create POST /v1/messages/booking-inquiry route in api/controllers/messages/index.ts
