@@ -16,6 +16,6 @@ export async function handleHealthCheck(env: Env): Promise<Response> {
     service: 'umbrella-api',
     version: '0.1.0',
     timestamp: new Date().toISOString(),
-    environment: 'development',
+    environment: env.ENVIRONMENT || 'development',
   })
 }
