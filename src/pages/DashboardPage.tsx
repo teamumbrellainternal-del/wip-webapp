@@ -22,6 +22,7 @@ import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
 import { analyticsService } from '@/services/api'
 import type { DashboardMetrics } from '@/types'
+import { MetaTags } from '@/components/MetaTags'
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -124,6 +125,12 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
+      <MetaTags
+        title="Dashboard"
+        description="Your artist dashboard on Umbrella. Manage your gigs, track your performance, and grow your music career."
+        url="/dashboard"
+        noIndex={true}
+      />
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Welcome Section */}
         <div>

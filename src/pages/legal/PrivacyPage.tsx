@@ -1,9 +1,15 @@
 import AppLayout from '@/components/layout/AppLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { MetaTags } from '@/components/MetaTags'
 
 export default function PrivacyPage() {
   return (
     <AppLayout>
+      <MetaTags
+        title="Privacy Policy"
+        description="Learn about how Umbrella collects, uses, and protects your personal information. Read our comprehensive Privacy Policy."
+        url="/privacy"
+      />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold tracking-tight mb-2">Privacy Policy</h1>

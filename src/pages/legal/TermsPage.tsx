@@ -1,9 +1,15 @@
 import AppLayout from '@/components/layout/AppLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { MetaTags } from '@/components/MetaTags'
 
 export default function TermsPage() {
   return (
     <AppLayout>
+      <MetaTags
+        title="Terms of Service"
+        description="Read Umbrella's Terms of Service. Learn about user accounts, service description, acceptable use, and more."
+        url="/terms"
+      />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold tracking-tight mb-2">Terms of Service</h1>

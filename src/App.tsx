@@ -1,5 +1,6 @@
 import { RouterProvider } from 'react-router-dom'
 import { ClerkProvider } from '@clerk/clerk-react'
+import { HelmetProvider } from 'react-helmet-async'
 import { ThemeProvider } from './components/theme-provider'
 import { Toaster } from './components/ui/toaster'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -19,18 +20,20 @@ if (!CLERK_PUBLISHABLE_KEY) {
 export default function App() {
   return (
     <ErrorBoundary>
-      <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
-        <ThemeProvider defaultTheme="light" storageKey="umbrella-theme">
-          <SessionTimeoutProvider>
-            <AuthProvider>
-              <OfflineBanner />
-              <RouterProvider router={router} />
-              <Toaster />
-              <CookieBanner />
-            </AuthProvider>
-          </SessionTimeoutProvider>
-        </ThemeProvider>
-      </ClerkProvider>
+      <HelmetProvider>
+        <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+          <ThemeProvider defaultTheme="light" storageKey="umbrella-theme">
+            <SessionTimeoutProvider>
+              <AuthProvider>
+                <OfflineBanner />
+                <RouterProvider router={router} />
+                <Toaster />
+                <CookieBanner />
+              </AuthProvider>
+            </SessionTimeoutProvider>
+          </ThemeProvider>
+        </ClerkProvider>
+      </HelmetProvider>
     </ErrorBoundary>
   )
 }

@@ -34,6 +34,7 @@ import {
 } from 'lucide-react'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
+import { MetaTags } from '@/components/MetaTags'
 
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>()
@@ -155,6 +156,13 @@ export default function ProfilePage() {
 
   return (
     <AppLayout>
+      <MetaTags
+        title={artist.artist_name}
+        description={artist.bio || `${artist.artist_name} - Independent artist on Umbrella. ${artist.genres.join(', ')}. ${artist.gigs_completed} gigs completed.`}
+        keywords={artist.genres}
+        url={`/artist/${id}`}
+        type="profile"
+      />
       <div className="container mx-auto px-4 py-6 max-w-6xl">
         {/* Header Actions */}
         <div className="flex items-center justify-between mb-6">

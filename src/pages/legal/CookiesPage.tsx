@@ -8,10 +8,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { MetaTags } from '@/components/MetaTags'
 
 export default function CookiesPage() {
   return (
     <AppLayout>
+      <MetaTags
+        title="Cookie Policy"
+        description="Understand how Umbrella uses cookies and similar technologies to enhance your experience and improve our services."
+        url="/legal/cookies"
+      />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold tracking-tight mb-2">Cookie Policy</h1>
