@@ -114,7 +114,29 @@ async function handleUserCreated(userData: any, env: Env): Promise<Response> {
     console.log(`Created user ${userId} for Clerk ID ${clerkId}`)
     return successResponse({ message: 'User created successfully', userId }, 201)
   } catch (error) {
-    console.error('Error creating user:', error)
+    // Log detailed error information
+    console.error('[WEBHOOK ERROR] user.created failed:', {
+      clerkId: userData?.id,
+      email: userData?.email_addresses?.[0]?.email_address,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+    })
+
+    // Increment webhook failure counter
+    const today = new Date().toISOString().split('T')[0]
+    const counterKey = `webhook_failures:${today}`
+    try {
+      const currentCount = await env.KV.get(counterKey)
+      const newCount = currentCount ? parseInt(currentCount) + 1 : 1
+      await env.KV.put(counterKey, String(newCount), {
+        expirationTtl: 86400 * 7, // Keep for 7 days
+      })
+    } catch (kvError) {
+      console.error('[KV ERROR] Failed to increment webhook failure counter:', kvError)
+    }
+
+    // Return 500 to tell Clerk to retry
     return errorResponse('internal_error', 'Failed to create user', 500)
   }
 }
@@ -142,7 +164,29 @@ async function handleUserUpdated(userData: any, env: Env): Promise<Response> {
     console.log(`Updated user for Clerk ID ${clerkId}`)
     return successResponse({ message: 'User updated successfully' })
   } catch (error) {
-    console.error('Error updating user:', error)
+    // Log detailed error information
+    console.error('[WEBHOOK ERROR] user.updated failed:', {
+      clerkId: userData?.id,
+      email: userData?.email_addresses?.[0]?.email_address,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+    })
+
+    // Increment webhook failure counter
+    const today = new Date().toISOString().split('T')[0]
+    const counterKey = `webhook_failures:${today}`
+    try {
+      const currentCount = await env.KV.get(counterKey)
+      const newCount = currentCount ? parseInt(currentCount) + 1 : 1
+      await env.KV.put(counterKey, String(newCount), {
+        expirationTtl: 86400 * 7, // Keep for 7 days
+      })
+    } catch (kvError) {
+      console.error('[KV ERROR] Failed to increment webhook failure counter:', kvError)
+    }
+
+    // Return 500 to tell Clerk to retry
     return errorResponse('internal_error', 'Failed to update user', 500)
   }
 }
@@ -170,7 +214,28 @@ async function handleUserDeleted(userData: any, env: Env): Promise<Response> {
     console.log(`Deleted user for Clerk ID ${clerkId}`)
     return successResponse({ message: 'User deleted successfully' })
   } catch (error) {
-    console.error('Error deleting user:', error)
+    // Log detailed error information
+    console.error('[WEBHOOK ERROR] user.deleted failed:', {
+      clerkId: userData?.id,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+    })
+
+    // Increment webhook failure counter
+    const today = new Date().toISOString().split('T')[0]
+    const counterKey = `webhook_failures:${today}`
+    try {
+      const currentCount = await env.KV.get(counterKey)
+      const newCount = currentCount ? parseInt(currentCount) + 1 : 1
+      await env.KV.put(counterKey, String(newCount), {
+        expirationTtl: 86400 * 7, // Keep for 7 days
+      })
+    } catch (kvError) {
+      console.error('[KV ERROR] Failed to increment webhook failure counter:', kvError)
+    }
+
+    // Return 500 to tell Clerk to retry
     return errorResponse('internal_error', 'Failed to delete user', 500)
   }
 }
@@ -190,7 +255,28 @@ async function handleSessionCreated(sessionData: any, env: Env): Promise<Respons
 
     return successResponse({ message: 'Session logged successfully' })
   } catch (error) {
-    console.error('Error handling session creation:', error)
+    // Log detailed error information
+    console.error('[WEBHOOK ERROR] session.created failed:', {
+      userId: sessionData?.user_id,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+    })
+
+    // Increment webhook failure counter
+    const today = new Date().toISOString().split('T')[0]
+    const counterKey = `webhook_failures:${today}`
+    try {
+      const currentCount = await env.KV.get(counterKey)
+      const newCount = currentCount ? parseInt(currentCount) + 1 : 1
+      await env.KV.put(counterKey, String(newCount), {
+        expirationTtl: 86400 * 7, // Keep for 7 days
+      })
+    } catch (kvError) {
+      console.error('[KV ERROR] Failed to increment webhook failure counter:', kvError)
+    }
+
+    // Return 500 to tell Clerk to retry
     return errorResponse('internal_error', 'Failed to handle session creation', 500)
   }
 }
