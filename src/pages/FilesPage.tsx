@@ -35,7 +35,7 @@ import {
 import {
   Upload,
   Search,
-  Grid3x3,
+  LayoutGrid,
   List,
   FolderPlus,
   MoreVertical,
@@ -424,7 +424,7 @@ export default function FilesPage() {
   if (error && files.length === 0) {
     return (
       <AppLayout>
-        <ErrorState error={error} onRetry={fetchFiles} />
+        <ErrorState error={error} retry={fetchFiles} />
       </AppLayout>
     )
   }
@@ -544,7 +544,7 @@ export default function FilesPage() {
                   className="h-8 w-8"
                   onClick={() => setViewMode('grid')}
                 >
-                  <Grid3x3 className="h-4 w-4" />
+                  <LayoutGrid className="h-4 w-4" />
                 </Button>
                 <Button
                   variant={viewMode === 'list' ? 'secondary' : 'ghost'}

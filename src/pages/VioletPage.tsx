@@ -266,12 +266,9 @@ export default function VioletPage() {
     return (
       <AppLayout>
         <ErrorState
+          error={error}
           title="Failed to load Violet"
-          message={error.message}
-          action={{
-            label: 'Try Again',
-            onClick: fetchUsageData
-          }}
+          retry={fetchUsageData}
         />
       </AppLayout>
     )

@@ -39,7 +39,7 @@ const CONVERSATION_STARTERS = [
 export default function MessagesPage() {
   const { conversationId } = useParams<{ conversationId: string }>()
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, clerkUser } = useAuth()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -430,11 +430,11 @@ export default function MessagesPage() {
 
                           {isSender && (
                             <Avatar className="h-8 w-8">
-                              {user.avatar_url && (
-                                <AvatarImage src={user.avatar_url} />
+                              {clerkUser?.imageUrl && (
+                                <AvatarImage src={clerkUser.imageUrl} />
                               )}
                               <AvatarFallback>
-                                {getInitials(user.name || 'You')}
+                                {getInitials(user?.name || 'You')}
                               </AvatarFallback>
                             </Avatar>
                           )}

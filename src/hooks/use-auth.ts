@@ -10,7 +10,7 @@
  */
 
 import { useUser, useAuth as useClerkAuth } from '@clerk/clerk-react'
-import type { UserResource } from '@clerk/clerk-react'
+import type { UserResource } from '@clerk/types'
 
 /**
  * Return type for the useAuth hook
