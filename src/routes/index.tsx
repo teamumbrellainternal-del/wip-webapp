@@ -9,6 +9,7 @@ import MarketplacePage from '@/pages/MarketplacePage'
 import MessagesPage from '@/pages/MessagesPage'
 import MessageFansPage from '@/pages/MessageFansPage'
 import FilesPage from '@/pages/FilesPage'
+import CreativeStudioPage from '@/pages/CreativeStudioPage'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import OnboardingGuard from '@/components/auth/OnboardingGuard'
 import Step2 from '@/pages/onboarding/Step2'
@@ -266,7 +267,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <OnboardingGuard>
-          <PlaceholderPage title="Creative Studio" />
+          <CreativeStudioPage />
         </OnboardingGuard>
       </ProtectedRoute>
     ),

@@ -461,3 +461,72 @@ export interface BroadcastResponse {
   recipient_count: number
   broadcast_id: string
 }
+
+// ============================================================================
+// JOURNAL (CREATIVE STUDIO) TYPES
+// ============================================================================
+
+export type JournalEntryType = 'song_idea' | 'set_plan' | 'general_note'
+
+export type JournalBlockType = 'text' | 'image' | 'audio' | 'video' | 'checklist'
+
+export interface JournalBlock {
+  id: string
+  type: JournalBlockType
+  content: any
+  order: number
+}
+
+export interface TextBlockContent {
+  text: string
+}
+
+export interface ImageBlockContent {
+  url: string
+  caption?: string
+  file_id?: string
+}
+
+export interface AudioVideoBlockContent {
+  url: string
+  type: 'audio' | 'video'
+  title?: string
+  file_id?: string
+}
+
+export interface ChecklistBlockContent {
+  items: ChecklistItem[]
+}
+
+export interface ChecklistItem {
+  id: string
+  text: string
+  completed: boolean
+}
+
+export interface JournalEntry {
+  id: string
+  artist_id: string
+  title?: string
+  content: JournalBlock[]
+  entry_type: JournalEntryType
+  created_at: string
+  updated_at: string
+}
+
+export interface JournalEntriesResponse {
+  entries: JournalEntry[]
+  count: number
+}
+
+export interface CreateJournalEntryRequest {
+  entry_type: JournalEntryType
+  title?: string
+  blocks: JournalBlock[]
+}
+
+export interface UpdateJournalEntryRequest {
+  title?: string
+  blocks?: JournalBlock[]
+  entry_type?: JournalEntryType
+}

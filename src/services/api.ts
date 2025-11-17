@@ -37,6 +37,11 @@ import type {
   BroadcastMessage,
   BroadcastRequest,
   BroadcastResponse,
+  JournalEntry,
+  JournalEntriesResponse,
+  JournalEntryType,
+  CreateJournalEntryRequest,
+  UpdateJournalEntryRequest,
 } from '@/types'
 
 // ============================================================================
@@ -727,6 +732,52 @@ export const broadcastService = {
 }
 
 // ============================================================================
+// JOURNAL (CREATIVE STUDIO) SERVICES
+// ============================================================================
+
+export const journalService = {
+  /**
+   * List all journal entries (optionally filtered by entry_type)
+   */
+  list: (entryType?: JournalEntryType) =>
+    apiRequest<JournalEntriesResponse>('/journal', {
+      params: entryType ? { entry_type: entryType } : undefined,
+    }),
+
+  /**
+   * Get a single journal entry by ID
+   */
+  getById: (id: string) =>
+    apiRequest<JournalEntry>(`/journal/${id}`),
+
+  /**
+   * Create a new journal entry
+   */
+  create: (data: CreateJournalEntryRequest) =>
+    apiRequest<{ message: string; entry: JournalEntry }>('/journal', {
+      method: 'POST',
+      body: data,
+    }),
+
+  /**
+   * Update a journal entry
+   */
+  update: (id: string, data: UpdateJournalEntryRequest) =>
+    apiRequest<{ message: string; entry: JournalEntry }>(`/journal/${id}`, {
+      method: 'PUT',
+      body: data,
+    }),
+
+  /**
+   * Delete a journal entry
+   */
+  delete: (id: string) =>
+    apiRequest<{ message: string }>(`/journal/${id}`, {
+      method: 'DELETE',
+    }),
+}
+
+// ============================================================================
 // EXPORT ALL SERVICES
 // ============================================================================
 
@@ -745,6 +796,7 @@ export const api = {
   settings: settingsService,
   contacts: contactsService,
   broadcast: broadcastService,
+  journal: journalService,
 }
 
 export default api
