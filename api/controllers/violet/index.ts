@@ -81,6 +81,7 @@ export const getHistory: RouteHandler = async (ctx) => {
 /**
  * Get Violet usage stats
  * GET /v1/violet/usage
+ * Per task-9.2: Returns current usage, remaining prompts, and historical data
  */
 export const getUsage: RouteHandler = async (ctx) => {
   if (!ctx.userId) {
@@ -93,17 +94,85 @@ export const getUsage: RouteHandler = async (ctx) => {
     )
   }
 
-  // TODO: Get actual usage from KV/database
-  return successResponse(
-    {
-      promptsUsed: 0,
-      dailyLimit: 50,
-      remaining: 50,
-      resetAt: new Date(Date.now() + 86400000).toISOString(), // 24 hours from now
-    },
-    200,
-    ctx.requestId
-  )
+  try {
+    // 1. Get artist_id from user_id
+    const artist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE user_id = ?'
+    )
+      .bind(ctx.userId)
+      .first<{ id: string }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist profile not found',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    const artistId = artist.id
+
+    // 2. Get today's date in YYYY-MM-DD format (UTC)
+    const today = new Date().toISOString().split('T')[0]
+
+    // 3. Fetch current usage from KV: violet:{artist_id}:{date}
+    const kvKey = `violet:${artistId}:${today}`
+    const kvValue = await ctx.env.KV.get(kvKey)
+    const promptsUsedToday = kvValue ? parseInt(kvValue, 10) : 0
+
+    // 4. Calculate remaining prompts (D-062: 50 prompts/day limit)
+    const dailyLimit = 50
+    const promptsRemaining = Math.max(0, dailyLimit - promptsUsedToday)
+
+    // 5. Calculate reset time (midnight UTC tomorrow)
+    const now = new Date()
+    const tomorrow = new Date(now)
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
+    tomorrow.setUTCHours(0, 0, 0, 0)
+    const resetAt = tomorrow.toISOString()
+
+    // 6. Query D1 for last 7 days usage (historical data)
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0]
+
+    const historicalUsage = await ctx.env.DB.prepare(
+      `SELECT
+        date as prompt_date,
+        COUNT(*) as prompt_count
+      FROM violet_usage
+      WHERE artist_id = ? AND date >= ?
+      GROUP BY date
+      ORDER BY date DESC`
+    )
+      .bind(artistId, sevenDaysAgoStr)
+      .all<{ prompt_date: string; prompt_count: number }>()
+
+    // 7. Format historical data
+    const historical = historicalUsage.results || []
+
+    return successResponse(
+      {
+        prompts_used_today: promptsUsedToday,
+        prompts_remaining: promptsRemaining,
+        daily_limit: dailyLimit,
+        reset_at: resetAt,
+        historical_usage: historical,
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to fetch Violet usage statistics',
+      500,
+      error instanceof Error ? { error: error.message } : undefined,
+      ctx.requestId
+    )
+  }
 }
 
 /**
