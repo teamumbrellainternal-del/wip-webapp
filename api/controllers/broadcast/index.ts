@@ -2,11 +2,15 @@
  * Broadcast controller
  * Handles fan messaging broadcasts
  * Per D-049: Text-only broadcasts (no images in Release 1)
+ * Implements task-8.1: Broadcast Message Endpoint
  */
 
 import type { RouteHandler } from '../../router'
 import { successResponse, errorResponse } from '../../utils/response'
 import { ErrorCodes } from '../../utils/error-codes'
+import { generateUUIDv4 } from '../../utils/uuid'
+import { createResendService } from '../../services/resend'
+import { createTwilioService } from '../../services/twilio'
 
 /**
  * List broadcasts
@@ -88,6 +92,7 @@ export const getBroadcast: RouteHandler = async (ctx) => {
  * Create and send broadcast
  * POST /v1/broadcasts
  * Per D-049: Text-only (no image attachments)
+ * Implements task-8.1: Send broadcast messages via email and SMS
  */
 export const createBroadcast: RouteHandler = async (ctx) => {
   if (!ctx.userId) {
@@ -100,16 +105,234 @@ export const createBroadcast: RouteHandler = async (ctx) => {
     )
   }
 
-  // TODO: Validate message (text-only), send to all followers
-  return successResponse(
-    {
-      message: 'Broadcast created and queued for delivery',
-      id: 'new-broadcast-id',
-      recipientCount: 0,
-    },
-    201,
-    ctx.requestId
-  )
+  try {
+    // Parse request body
+    const body = await ctx.request.json()
+    const { list_ids, subject, body: messageBody } = body
+
+    // Validate required fields
+    if (!list_ids || !Array.isArray(list_ids) || list_ids.length === 0) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'list_ids must be a non-empty array',
+        400,
+        'list_ids',
+        ctx.requestId
+      )
+    }
+
+    if (!subject || typeof subject !== 'string' || subject.trim().length === 0) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'subject is required',
+        400,
+        'subject',
+        ctx.requestId
+      )
+    }
+
+    if (!messageBody || typeof messageBody !== 'string' || messageBody.trim().length === 0) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'body is required',
+        400,
+        'body',
+        ctx.requestId
+      )
+    }
+
+    // Validate text-only (D-049: no attachments in MVP)
+    // Body should be plain text, not HTML with images
+    if (messageBody.includes('<img') || messageBody.includes('data:image')) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'Image attachments not supported in MVP (D-049)',
+        400,
+        'body',
+        ctx.requestId
+      )
+    }
+
+    // Get artist_id from user_id
+    const artist = await ctx.env.DB.prepare(
+      'SELECT id, stage_name FROM artists WHERE user_id = ?'
+    )
+      .bind(ctx.userId)
+      .first<{ id: string; stage_name: string }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist profile not found',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Fetch contacts from selected lists with opt-in status
+    // Build query for multiple list_ids
+    const placeholders = list_ids.map(() => '?').join(',')
+    const contactsQuery = `
+      SELECT email, phone, opted_in_email, opted_in_sms
+      FROM contact_list_members
+      WHERE list_id IN (${placeholders})
+    `
+
+    const contacts = await ctx.env.DB.prepare(contactsQuery)
+      .bind(...list_ids)
+      .all<{
+        email: string | null
+        phone: string | null
+        opted_in_email: number
+        opted_in_sms: number
+      }>()
+
+    if (!contacts.results || contacts.results.length === 0) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'No contacts found in specified lists',
+        400,
+        'list_ids',
+        ctx.requestId
+      )
+    }
+
+    // Filter contacts by opt-in status
+    const emailRecipients: string[] = []
+    const smsRecipients: string[] = []
+
+    for (const contact of contacts.results) {
+      // Add to email list if opted in and has email
+      if (contact.opted_in_email && contact.email) {
+        emailRecipients.push(contact.email)
+      }
+
+      // Add to SMS list if opted in and has phone
+      if (contact.opted_in_sms && contact.phone) {
+        smsRecipients.push(contact.phone)
+      }
+    }
+
+    const totalRecipients = new Set([...emailRecipients, ...smsRecipients]).size
+    let emailsSent = 0
+    let smsSent = 0
+
+    // Send emails via Resend (batch processing, max 1000 per batch)
+    if (emailRecipients.length > 0) {
+      const resendService = createResendService(ctx.env.RESEND_API_KEY, ctx.env.DB)
+
+      // Convert plain text body to simple HTML
+      const htmlBody = `
+        <p>Hi there,</p>
+        <p>${messageBody.replace(/\n/g, '<br>')}</p>
+        <p>- ${artist.stage_name}</p>
+        <hr>
+        <p style="font-size: 12px; color: #666;">
+          <a href="{{unsubscribe_url}}">Unsubscribe</a> from future messages
+        </p>
+      `
+
+      const emailResult = await resendService.sendBroadcast({
+        recipients: emailRecipients,
+        subject,
+        html: htmlBody,
+        text: `${messageBody}\n\n- ${artist.stage_name}\n\nUnsubscribe: {{unsubscribe_url}}`,
+        artistId: artist.id,
+        unsubscribeUrl: `https://umbrella.app/unsubscribe`,
+      })
+
+      emailsSent = emailResult.successCount + emailResult.queuedCount
+    }
+
+    // Send SMS via Twilio (rate limited: 10/sec)
+    if (smsRecipients.length > 0) {
+      const twilioService = createTwilioService(
+        ctx.env.TWILIO_ACCOUNT_SID,
+        ctx.env.TWILIO_AUTH_TOKEN,
+        ctx.env.TWILIO_PHONE_NUMBER,
+        ctx.env.DB
+      )
+
+      // Add opt-out instructions to SMS (required by Twilio)
+      const smsMessage = `${messageBody}\n\n- ${artist.stage_name}\n\nReply STOP to unsubscribe`
+
+      const smsResult = await twilioService.sendBroadcast({
+        recipients: smsRecipients,
+        message: smsMessage,
+        artistId: artist.id,
+      })
+
+      smsSent = smsResult.successCount + smsResult.queuedCount
+    }
+
+    // Determine sent_via value
+    let sentVia: 'email' | 'sms' | 'both' = 'email'
+    if (emailRecipients.length > 0 && smsRecipients.length > 0) {
+      sentVia = 'both'
+    } else if (smsRecipients.length > 0) {
+      sentVia = 'sms'
+    }
+
+    // Record broadcast in broadcast_messages table
+    const broadcastId = generateUUIDv4()
+    const now = new Date().toISOString()
+
+    await ctx.env.DB.prepare(
+      `INSERT INTO broadcast_messages
+       (id, artist_id, subject, body, recipient_count, sent_via, sent_at, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+      .bind(broadcastId, artist.id, subject, messageBody, totalRecipients, sentVia, now, now)
+      .run()
+
+    // Return success with recipient count
+    return successResponse(
+      {
+        id: broadcastId,
+        message: 'Broadcast sent successfully',
+        recipient_count: totalRecipients,
+        emails_sent: emailsSent,
+        sms_sent: smsSent,
+        sent_at: now,
+      },
+      201,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Broadcast error:', error)
+
+    // Handle JSON parsing errors
+    if (error instanceof SyntaxError) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'Invalid JSON in request body',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Handle database errors
+    if (error instanceof Error && error.message.includes('D1_ERROR')) {
+      return errorResponse(
+        ErrorCodes.DATABASE_ERROR,
+        'Database error while creating broadcast',
+        500,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Generic error
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      error instanceof Error ? error.message : 'An error occurred while creating broadcast',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
 }
 
 /**

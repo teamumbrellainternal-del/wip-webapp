@@ -1,9 +1,10 @@
 ---
 id: task-8.1
 title: "Implement Broadcast Message Endpoint"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-17"
 labels: ["backend", "P2", "broadcast", "messaging"]
 milestone: "M8 - Broadcast & Journal Tools"
 dependencies: ["task-1.4"]
@@ -14,15 +15,15 @@ estimated_hours: 5
 Implement the endpoint for sending broadcast messages (text-only in MVP, D-049) to fan lists via email and SMS using Resend and Twilio.
 
 ## Acceptance Criteria
-- [ ] POST /v1/broadcast endpoint implemented
-- [ ] Requires authentication
-- [ ] Accepts: list_ids (array), subject, body (text-only, D-049)
-- [ ] Fetches contacts from selected lists with opted_in = true
-- [ ] Sends batch emails via Resend (max 1000 recipients per batch)
-- [ ] Sends individual SMS via Twilio (rate limit: 10/sec)
-- [ ] Records broadcast in broadcast_messages table
-- [ ] Returns success with recipient_count
-- [ ] Proper error handling (API failures, invalid lists)
+- [x] POST /v1/broadcast endpoint implemented
+- [x] Requires authentication
+- [x] Accepts: list_ids (array), subject, body (text-only, D-049)
+- [x] Fetches contacts from selected lists with opted_in = true
+- [x] Sends batch emails via Resend (max 1000 recipients per batch)
+- [x] Sends individual SMS via Twilio (rate limit: 10/sec)
+- [x] Records broadcast in broadcast_messages table
+- [x] Returns success with recipient_count
+- [x] Proper error handling (API failures, invalid lists)
 
 ## Implementation Plan
 1. Create POST /v1/broadcast route in api/controllers/broadcast/index.ts
