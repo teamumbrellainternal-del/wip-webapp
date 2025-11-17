@@ -66,20 +66,39 @@ database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
 binding = "KV"
 id = "04fceb9a09054bbd991d5252a9a169cf"
 
-# Production environment (for future use)
+# Production environment
 [env.production]
-name = "umbrella-api-production"
+name = "umbrella-prod"
+workers_dev = false
+# Custom domain configuration (requires DNS setup)
+# route = "umbrella.app/*"
 
+# Production database binding
 [[env.production.d1_databases]]
 binding = "DB"
-database_name = "umbrella-dev-db"
-database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
+database_name = "umbrella-prod-db"
+# database_id will be set after creating the production database via:
+# wrangler d1 create umbrella-prod-db --env production
 
+# Production KV namespace binding
 [[env.production.kv_namespaces]]
 binding = "KV"
-id = "04fceb9a09054bbd991d5252a9a169cf"
+# id will be set after creating the production KV namespace via:
+# wrangler kv:namespace create KV --env production
+# id = "production-kv-id"
 
-# Cron triggers (scheduled jobs)
+# Production R2 bucket binding
+[[env.production.r2_buckets]]
+binding = "BUCKET"
+bucket_name = "umbrella-prod"
+# Bucket should be created via:
+# wrangler r2 bucket create umbrella-prod
+
+# Production cron triggers
 # Analytics aggregation: Daily at midnight UTC
+[env.production.triggers]
+crons = ["0 0 * * *"]
+
+# Development/Staging cron triggers
 [triggers]
 crons = ["0 0 * * *"]
