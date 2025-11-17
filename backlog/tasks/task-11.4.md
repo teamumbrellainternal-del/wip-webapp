@@ -1,33 +1,34 @@
 ---
 id: task-11.4
 title: "Monitoring & Infrastructure"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-17"
 labels: ["devops", "P0", "monitoring"]
 milestone: "M11 - Pre-Launch Readiness & Compliance"
 dependencies: []
 estimated_hours: 5
+completed_date: "2025-11-17"
 ---
 
 ## Description
 Implement health check endpoint, document database backup strategy, and create detailed rollback procedures for production incidents.
 
 ## Acceptance Criteria
-- [ ] GET /health endpoint returns Worker and dependency status
-- [ ] Health check response includes: status, version, uptime, timestamp, dependencies (D1, KV, R2)
-- [ ] Returns 200 when healthy, 503 when any dependency down
-- [ ] Health check cached for 10 seconds (prevents abuse)
-- [ ] Response time <100ms
-- [ ] Database backup strategy documented in docs/DATABASE_BACKUP.md
-- [ ] Automatic backups verified (Cloudflare D1 point-in-time recovery)
-- [ ] Manual backup procedure documented
-- [ ] Restoration procedure documented with step-by-step instructions
-- [ ] Rollback procedure documented in docs/ROLLBACK.md
-- [ ] Rollback when-to-use criteria defined (P0/P1/P2 severity)
-- [ ] Worker rollback procedure documented (wrangler rollback command)
-- [ ] Database rollback procedure documented (migration rollback)
-- [ ] Post-mortem template created
+- [x] GET /health endpoint returns Worker and dependency status
+- [x] Health check response includes: status, version, uptime, timestamp, dependencies (D1, KV, R2)
+- [x] Returns 200 when healthy, 503 when any dependency down
+- [x] Health check cached for 10 seconds (prevents abuse)
+- [x] Response time <100ms
+- [x] Database backup strategy documented in docs/DATABASE_BACKUP.md
+- [x] Automatic backups verified (Cloudflare D1 point-in-time recovery)
+- [x] Manual backup procedure documented
+- [x] Restoration procedure documented with step-by-step instructions
+- [x] Rollback procedure documented in docs/ROLLBACK.md
+- [x] Rollback when-to-use criteria defined (P0/P1/P2 severity)
+- [x] Worker rollback procedure documented (wrangler rollback command)
+- [x] Database rollback procedure documented (migration rollback)
+- [x] Post-mortem template created
 
 ## Implementation Plan
 
