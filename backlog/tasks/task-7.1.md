@@ -1,28 +1,30 @@
 ---
 id: task-7.1
 title: "Implement File Upload Signed URL Endpoint"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-17"
 labels: ["backend", "P2", "files", "storage"]
 milestone: "M7 - File Management System"
 dependencies: ["task-1.4"]
 estimated_hours: 3
+actual_hours: 3
 ---
 
 ## Description
 Implement the endpoint that generates R2 signed upload URLs for file uploads, with 50GB quota enforcement (D-026).
 
 ## Acceptance Criteria
-- [ ] POST /v1/files/upload endpoint implemented
-- [ ] Requires authentication
-- [ ] Validates file type (image, audio, video, document)
-- [ ] Checks storage quota before generating URL (50GB limit per artist)
-- [ ] Generates signed R2 URL with 15-minute expiry
-- [ ] URL constraints: max 50MB per file, specific content types
-- [ ] Returns upload_id and signed_url
-- [ ] Stores temporary metadata in KV (15 min TTL)
-- [ ] Proper error handling (quota exceeded, invalid file type)
+- [x] POST /v1/files/upload endpoint implemented
+- [x] Requires authentication
+- [x] Validates file type (image, audio, video, document)
+- [x] Checks storage quota before generating URL (50GB limit per artist)
+- [x] Generates signed R2 URL with 15-minute expiry
+- [x] URL constraints: max 50MB per file, specific content types
+- [x] Returns upload_id and signed_url
+- [x] Stores temporary metadata in KV (15 min TTL)
+- [x] Proper error handling (quota exceeded, invalid file type)
 
 ## Implementation Plan
 1. Create POST /v1/files/upload route in api/controllers/files/index.ts
