@@ -4,7 +4,9 @@ import { ThemeProvider } from './components/theme-provider'
 import { Toaster } from './components/ui/toaster'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { AuthProvider } from './contexts/AuthContext'
+import { SessionTimeoutProvider } from './contexts/SessionTimeoutContext'
 import { CookieBanner } from './components/CookieBanner'
+import { OfflineBanner } from './components/OfflineBanner'
 import { router } from './routes'
 
 // Import Clerk publishable key from environment
@@ -19,11 +21,14 @@ export default function App() {
     <ErrorBoundary>
       <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
         <ThemeProvider defaultTheme="light" storageKey="umbrella-theme">
-          <AuthProvider>
-            <RouterProvider router={router} />
-            <Toaster />
-            <CookieBanner />
-          </AuthProvider>
+          <SessionTimeoutProvider>
+            <AuthProvider>
+              <OfflineBanner />
+              <RouterProvider router={router} />
+              <Toaster />
+              <CookieBanner />
+            </AuthProvider>
+          </SessionTimeoutProvider>
         </ThemeProvider>
       </ClerkProvider>
     </ErrorBoundary>
