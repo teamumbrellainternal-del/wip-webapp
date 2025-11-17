@@ -13,9 +13,10 @@ import { handleError } from './middleware/error-handler'
 import { loggerMiddleware } from './middleware/logger'
 import { errorResponse } from './utils/response'
 import { ErrorCodes } from './utils/error-codes'
-import { violetRateLimitMiddleware } from './middleware/rate-limit'
+import { violetRateLimitMiddleware, rateLimitPublic, rateLimitUser } from './middleware/rate-limit'
 import { authenticateRequest } from './middleware/auth'
 import { logger, setEnvironment } from './utils/logger'
+import { validateAndLogEnvironment } from './utils/validate-env'
 
 // Import controllers
 import * as profileController from './controllers/profile'
@@ -264,6 +265,57 @@ function initSentry(request: Request, env: Env, ctx: ExecutionContext): Toucan |
 }
 
 /**
+ * Add security headers to response
+ * Includes CSP, HSTS, and other security headers
+ */
+function addSecurityHeaders(response: Response, env: Env): Response {
+  const headers = new Headers(response.headers)
+
+  // Content Security Policy
+  const csp = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "font-src 'self' data:",
+    "connect-src 'self'",
+    "media-src 'self' https:",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join('; ')
+
+  headers.set('Content-Security-Policy', csp)
+
+  // Prevent MIME type sniffing
+  headers.set('X-Content-Type-Options', 'nosniff')
+
+  // Enable XSS protection (legacy browsers)
+  headers.set('X-XSS-Protection', '1; mode=block')
+
+  // Prevent clickjacking
+  headers.set('X-Frame-Options', 'DENY')
+
+  // HSTS (only in production)
+  if (env.ENVIRONMENT === 'production') {
+    headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
+  }
+
+  // Referrer policy
+  headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+
+  // Permissions policy
+  headers.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()')
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  })
+}
+
+/**
  * Main Worker export
  */
 export default {
@@ -273,12 +325,32 @@ export default {
     // Set environment for logger
     setEnvironment(env.ENVIRONMENT || 'development')
 
+    // Validate environment on startup
+    try {
+      validateAndLogEnvironment(env)
+    } catch (error) {
+      // Return 500 if environment validation fails
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Environment validation failed',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        }),
+        {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+    }
+
     // Initialize Sentry for error tracking
     const sentry = initSentry(request, env, ctx)
 
     // Handle CORS preflight
     if (request.method === 'OPTIONS') {
-      return handleCorsPrelight()
+      return handleCorsPrelight(request, env.ENVIRONMENT)
     }
 
     try {
@@ -288,9 +360,11 @@ export default {
       // Try to match route
       const response = await router.handle(request, env)
 
-      // If route matched, return the response
+      // If route matched, return the response with CORS and security headers
       if (response) {
-        return addCorsHeaders(response)
+        let finalResponse = addCorsHeaders(response, request, env.ENVIRONMENT)
+        finalResponse = addSecurityHeaders(finalResponse, env)
+        return finalResponse
       }
 
       // If no API route matched, serve static assets (SPA)
@@ -298,11 +372,13 @@ export default {
       return env.ASSETS.fetch(request)
     } catch (error) {
       // Global error handler with Sentry integration
-      const response = handleError(error, undefined, sentry, {
+      let response = handleError(error, undefined, sentry, {
         endpoint: url.pathname,
         method: request.method,
       })
-      return addCorsHeaders(response)
+      response = addCorsHeaders(response, request, env.ENVIRONMENT)
+      response = addSecurityHeaders(response, env)
+      return response
     }
   },
 
