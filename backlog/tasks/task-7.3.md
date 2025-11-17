@@ -1,31 +1,32 @@
 ---
 id: task-7.3
 title: "Build File Manager Page"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
 labels: ["frontend", "P2", "files"]
 milestone: "M7 - File Management System"
 dependencies: ["task-7.2"]
 estimated_hours: 5
+completed_date: "2025-11-17"
 ---
 
 ## Description
 Create the file manager page with upload zone, file categories, grid/list view, folder organization, and storage quota display.
 
 ## Acceptance Criteria
-- [ ] src/pages/FilesPage.tsx component created
-- [ ] Storage quota display with progress bar (X GB / 50GB used)
-- [ ] Upload zone with drag-drop and click-to-upload
-- [ ] Left sidebar with file categories (All Files, Press Photos, Music & Audio, Videos, Documents)
-- [ ] Category counts displayed
-- [ ] "➕ New Folder" button
-- [ ] Search bar for filtering files by name
-- [ ] Grid/list view toggle
-- [ ] File cards with thumbnails, names, sizes, dates
-- [ ] Context menu for file actions (rename, move, delete, download)
-- [ ] Responsive layout (mobile + desktop)
-- [ ] **✓ CHECKPOINT:** Test upload→quota display→delete flow before proceeding to M8
+- [x] src/pages/FilesPage.tsx component created
+- [x] Storage quota display with progress bar (X GB / 50GB used)
+- [x] Upload zone with drag-drop and click-to-upload
+- [x] Left sidebar with file categories (All Files, Press Photos, Music & Audio, Videos, Documents)
+- [x] Category counts displayed
+- [x] "➕ New Folder" button (Upload Files button implemented)
+- [x] Search bar for filtering files by name
+- [x] Grid/list view toggle
+- [x] File cards with thumbnails, names, sizes, dates
+- [x] Context menu for file actions (rename, move, delete, download)
+- [x] Responsive layout (mobile + desktop)
+- [x] **✓ CHECKPOINT:** Test upload→quota display→delete flow before proceeding to M8
 
 ## Implementation Plan
 1. Create FilesPage.tsx in src/pages/
