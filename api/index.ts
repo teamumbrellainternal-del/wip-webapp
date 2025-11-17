@@ -27,6 +27,7 @@ import * as filesController from './controllers/files'
 import * as journalController from './controllers/journal'
 import * as analyticsController from './controllers/analytics'
 import * as broadcastController from './controllers/broadcast'
+import * as contactsController from './controllers/contacts'
 import * as violetController from './controllers/violet'
 import * as searchController from './controllers/search'
 import { aggregateAnalytics, handleAnalyticsCron } from './controllers/cron/analytics'
@@ -195,6 +196,15 @@ function setupRouter(): Router {
   router.get('/v1/broadcasts/:id/stats', broadcastController.getBroadcastStats, [authMiddleware])
   router.post('/v1/broadcasts', broadcastController.createBroadcast, [authMiddleware])
   router.delete('/v1/broadcasts/:id', broadcastController.deleteBroadcast, [authMiddleware])
+
+  // Contacts routes (auth required) - task-8.2
+  router.get('/v1/contacts/lists', contactsController.getContactLists, [authMiddleware])
+  router.post('/v1/contacts/lists', contactsController.createContactList, [authMiddleware])
+  router.get('/v1/contacts', contactsController.getContacts, [authMiddleware])
+  router.post('/v1/contacts', contactsController.createContact, [authMiddleware])
+  router.post('/v1/contacts/import', contactsController.importContacts, [authMiddleware])
+  router.put('/v1/contacts/:contactId', contactsController.updateContact, [authMiddleware])
+  router.delete('/v1/contacts/:contactId', contactsController.deleteContact, [authMiddleware])
 
   // Violet AI routes (auth required, rate limited)
   router.post('/v1/violet/prompt', violetController.sendPrompt, [

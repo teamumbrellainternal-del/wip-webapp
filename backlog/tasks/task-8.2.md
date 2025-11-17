@@ -1,9 +1,10 @@
 ---
 id: task-8.2
 title: "Implement Contact List Management Endpoints"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-17"
 labels: ["backend", "P2", "broadcast", "contacts"]
 milestone: "M8 - Broadcast & Journal Tools"
 dependencies: ["task-1.4"]
@@ -14,16 +15,16 @@ estimated_hours: 3
 Implement endpoints for managing contact lists and individual contacts for the broadcast system.
 
 ## Acceptance Criteria
-- [ ] GET /v1/contacts/lists endpoint returns all contact lists for artist
-- [ ] Requires authentication
-- [ ] Returns lists with: list_id, list_name, contact_count, list_type
-- [ ] POST /v1/contacts/lists endpoint creates new list
-- [ ] GET /v1/contacts endpoint lists contacts (filter by list_id)
-- [ ] POST /v1/contacts endpoint adds single contact
-- [ ] POST /v1/contacts/import endpoint bulk imports contacts
-- [ ] PUT /v1/contacts/:contactId endpoint updates contact (opt-in status)
-- [ ] DELETE /v1/contacts/:contactId endpoint removes contact
-- [ ] Proper error handling
+- [x] GET /v1/contacts/lists endpoint returns all contact lists for artist
+- [x] Requires authentication
+- [x] Returns lists with: list_id, list_name, contact_count, list_description
+- [x] POST /v1/contacts/lists endpoint creates new list
+- [x] GET /v1/contacts endpoint lists contacts (filter by list_id)
+- [x] POST /v1/contacts endpoint adds single contact
+- [x] POST /v1/contacts/import endpoint bulk imports contacts
+- [x] PUT /v1/contacts/:contactId endpoint updates contact (opt-in status)
+- [x] DELETE /v1/contacts/:contactId endpoint removes contact
+- [x] Proper error handling
 
 ## Implementation Plan
 1. Create GET /v1/contacts/lists route in api/controllers/contacts/lists.ts
