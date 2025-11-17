@@ -716,6 +716,11 @@ export const submitStep5: RouteHandler = async (ctx) => {
  * Returns artist profile with redirect to dashboard
  */
 export const submitArtistStep5: RouteHandler = async (ctx) => {
+  // Delegate to the main submitStep5 implementation
+  return submitStep5(ctx)
+}
+
+/**
  * Submit Artist Onboarding Step 1: Identity & Basics
  * POST /v1/onboarding/artists/step1
  * Required: stage_name, location_city, location_state
@@ -738,14 +743,6 @@ export const submitArtistStep1: RouteHandler = async (ctx) => {
   try {
     const body = await ctx.request.json()
 
-    // Validate step 5 data
-    const validation = validateStep5(body)
-    if (!validation.valid) {
-      return errorResponse(
-        ErrorCodes.VALIDATION_ERROR,
-        JSON.stringify(validation.errors),
-        400,
-        undefined,
     // Validate step 1 data
     const validation = validateArtistStep1(body)
     if (!validation.valid) {
