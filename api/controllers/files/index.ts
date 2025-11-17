@@ -849,6 +849,74 @@ export const createFolder: RouteHandler = async (ctx) => {
 }
 
 /**
+ * Get storage quota information
+ * GET /v1/files/quota
+ *
+ * Returns current storage usage and quota limit per artist
+ * Per D-026: 50GB storage quota per artist
+ */
+export const getQuota: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    // Get artist profile
+    const artist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE user_id = ?'
+    ).bind(ctx.userId).first<{ id: string }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist profile not found',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Calculate total storage used from files table
+    const storageQuery = await ctx.env.DB.prepare(
+      'SELECT SUM(file_size_bytes) as total FROM files WHERE artist_id = ?'
+    ).bind(artist.id).first<{ total: number | null }>()
+
+    const storage_used = storageQuery?.total || 0
+
+    // Storage limit: 50GB in bytes (per D-026)
+    const storage_limit = 50 * 1024 * 1024 * 1024 // 53687091200 bytes
+
+    // Calculate percentage used
+    const percentage_used = storage_limit > 0 ? (storage_used / storage_limit) * 100 : 0
+
+    return successResponse(
+      {
+        storage_used,
+        storage_limit,
+        percentage_used: Math.round(percentage_used * 100) / 100,
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error getting storage quota:', error)
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Failed to get storage quota',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
  * Move file to a folder
  * PUT /v1/files/:fileId/move
  *

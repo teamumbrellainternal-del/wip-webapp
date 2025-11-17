@@ -1,9 +1,10 @@
 ---
 id: task-7.4
 title: "Implement Storage Quota Tracking System"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-17"
 labels: ["backend", "P2", "files", "storage"]
 milestone: "M7 - File Management System"
 dependencies: ["task-7.2"]
@@ -14,13 +15,13 @@ estimated_hours: 2
 Implement the system that tracks storage quota usage per artist and enforces the 50GB limit (D-026).
 
 ## Acceptance Criteria
-- [ ] GET /v1/files/quota endpoint returns current usage and limit
-- [ ] Requires authentication
-- [ ] Calculates total storage used: SUM(file_size) from files table
-- [ ] Returns: storage_used (bytes), storage_limit (50GB in bytes), percentage_used
-- [ ] Upload endpoints check quota before allowing uploads
-- [ ] File deletion updates quota (decrements usage)
-- [ ] Proper error handling
+- [x] GET /v1/files/quota endpoint returns current usage and limit
+- [x] Requires authentication
+- [x] Calculates total storage used: SUM(file_size) from files table
+- [x] Returns: storage_used (bytes), storage_limit (50GB in bytes), percentage_used
+- [x] Upload endpoints check quota before allowing uploads
+- [x] File deletion updates quota (decrements usage)
+- [x] Proper error handling
 
 ## Implementation Plan
 1. Create GET /v1/files/quota route in api/controllers/files/quota.ts

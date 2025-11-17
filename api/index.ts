@@ -161,6 +161,7 @@ function setupRouter(): Router {
   router.post('/v1/files', filesController.confirmFileUpload, [authMiddleware]) // Confirm upload
   router.get('/v1/files', filesController.listFiles, [authMiddleware])
   router.get('/v1/files/storage', filesController.getStorageStats, [authMiddleware])
+  router.get('/v1/files/quota', filesController.getQuota, [authMiddleware]) // task-7.4
   router.get('/v1/files/:id', filesController.getFile, [authMiddleware])
   router.post('/v1/files/upload', filesController.generateUploadUrl, [authMiddleware]) // task-7.1
   router.post('/v1/files/upload-url', filesController.getUploadUrl, [authMiddleware]) // legacy
