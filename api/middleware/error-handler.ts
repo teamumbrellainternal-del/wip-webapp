@@ -1,11 +1,13 @@
 /**
  * Error handling middleware
  * Converts errors to appropriate HTTP responses
- * Implements task-1.4 requirements for standardized error handling
+ * Implements task-1.4 and task-10.2 requirements for standardized error handling
  */
 
 import { errorResponse } from '../utils/response'
 import { AppError, isAppError } from '../utils/errors'
+import { logger, type LogContext } from '../utils/logger'
+import type { Toucan } from 'toucan-js'
 
 /**
  * Check if running in production environment
@@ -38,38 +40,66 @@ function sanitizeErrorMessage(message: string, statusCode: number): string {
 }
 
 /**
- * Log error with full details to console
+ * Log error with full details to console and Sentry
  * Includes stack trace, timestamp, and error context
  */
-function logError(error: unknown, context?: Record<string, any>): void {
-  const timestamp = new Date().toISOString()
-
+function logError(
+  error: unknown,
+  context?: LogContext,
+  sentry?: Toucan
+): void {
+  // Log to structured logger
   if (isAppError(error)) {
-    console.error('[ERROR]', {
-      timestamp,
+    logger.error(error.message, {
+      ...context,
       type: error.name,
       code: error.code,
-      message: error.message,
       statusCode: error.statusCode,
       details: error.details,
       stack: error.stack,
-      context,
     })
+
+    // Send to Sentry if available and severity warrants it
+    if (sentry && error.statusCode >= 500) {
+      sentry.captureException(error, {
+        level: 'error',
+        tags: {
+          error_code: error.code,
+          status_code: error.statusCode.toString(),
+        },
+        extra: {
+          details: error.details,
+          ...context,
+        },
+      })
+    }
   } else if (error instanceof Error) {
-    console.error('[ERROR]', {
-      timestamp,
+    logger.error(error.message, {
+      ...context,
       type: error.name,
-      message: error.message,
       stack: error.stack,
-      context,
     })
+
+    // Send all unhandled errors to Sentry
+    if (sentry) {
+      sentry.captureException(error, {
+        level: 'error',
+        extra: context,
+      })
+    }
   } else {
-    console.error('[ERROR]', {
-      timestamp,
-      type: 'Unknown',
+    logger.error('Unknown error occurred', {
+      ...context,
       error: String(error),
-      context,
     })
+
+    // Send unknown errors to Sentry
+    if (sentry) {
+      sentry.captureMessage(`Unknown error: ${String(error)}`, {
+        level: 'error',
+        extra: context,
+      })
+    }
   }
 }
 
@@ -77,11 +107,24 @@ function logError(error: unknown, context?: Record<string, any>): void {
  * Handle common errors and convert to appropriate responses
  * @param error - Error to handle
  * @param requestId - Optional request ID for tracing
+ * @param sentry - Optional Sentry instance for error tracking
+ * @param context - Additional context for logging
  * @returns Response with appropriate status code and error message
  */
-export function handleError(error: unknown, requestId?: string): Response {
-  // Log error with full details
-  logError(error, { requestId })
+export function handleError(
+  error: unknown,
+  requestId?: string,
+  sentry?: Toucan,
+  context?: LogContext
+): Response {
+  // Combine context with requestId
+  const fullContext: LogContext = {
+    requestId,
+    ...context,
+  }
+
+  // Log error with full details and send to Sentry
+  logError(error, fullContext, sentry)
 
   // Handle custom AppError instances
   if (isAppError(error)) {
