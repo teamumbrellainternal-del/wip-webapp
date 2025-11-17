@@ -7,13 +7,62 @@ compatibility_date = "2024-01-01"
 USE_MOCKS = "true"  # Use mock services for development (set to "false" in M10 for real services)
 ENVIRONMENT = "development"  # Environment name (development, staging, production)
 
-# Clerk Configuration (add actual keys from Clerk dashboard)
-# CLERK_PUBLISHABLE_KEY = "pk_test_..."  # Get from Clerk dashboard
-# CLERK_SECRET_KEY = "sk_test_..."       # Get from Clerk dashboard (KEEP SECRET)
-# CLERK_WEBHOOK_SECRET = "whsec_..."     # Get from Clerk webhook settings (KEEP SECRET)
+# =============================================================================
+# EXTERNAL SERVICE API CONFIGURATION (Task 10.7)
+# =============================================================================
+# All secrets should be set using Wrangler CLI, never committed to git
+# Reference: docs/api-configuration.md
 
-# Sentry Configuration (optional - for error tracking)
-# SENTRY_DSN = "https://...@sentry.io/..."  # Get from Sentry project settings (OPTIONAL)
+# Clerk Configuration (Authentication)
+# Get keys from: https://dashboard.clerk.com
+# Set secrets via:
+#   wrangler secret put CLERK_SECRET_KEY
+#   wrangler secret put CLERK_WEBHOOK_SECRET
+# CLERK_PUBLISHABLE_KEY = "pk_test_..."  # Public key (can be in vars)
+# Secrets (set via wrangler secret put):
+#   - CLERK_SECRET_KEY
+#   - CLERK_WEBHOOK_SECRET
+
+# Resend Configuration (Email Service)
+# Sign up at: https://resend.com
+# Documentation: https://resend.com/docs
+# Set secret via: wrangler secret put RESEND_API_KEY --env production
+# Secret required:
+#   - RESEND_API_KEY: API key from Resend dashboard
+# Note: Emails will be mocked when USE_MOCKS="true"
+
+# Twilio Configuration (SMS Service - D-045)
+# Sign up at: https://www.twilio.com
+# Get credentials from: https://console.twilio.com
+# Set secrets via:
+#   wrangler secret put TWILIO_ACCOUNT_SID --env production
+#   wrangler secret put TWILIO_AUTH_TOKEN --env production
+#   wrangler secret put TWILIO_PHONE_NUMBER --env production
+# Secrets required:
+#   - TWILIO_ACCOUNT_SID: Account SID from Twilio console
+#   - TWILIO_AUTH_TOKEN: Auth token from Twilio console
+#   - TWILIO_PHONE_NUMBER: Your Twilio phone number (E.164 format: +1234567890)
+# Note: SMS will be mocked when USE_MOCKS="true"
+
+# Claude AI Configuration (Content Generation - D-058, D-059, D-066, D-074)
+# Get API key from: https://console.anthropic.com
+# Documentation: https://docs.anthropic.com
+# Set secret via: wrangler secret put CLAUDE_API_KEY --env production
+# Secret required:
+#   - CLAUDE_API_KEY: API key from Anthropic console
+# Features:
+#   - Artist bio generation (D-058)
+#   - Cover letter generation (D-074)
+#   - EPK generation (D-066)
+#   - Token limit: 25,000/month per user (D-059)
+# Note: AI generation will be mocked when USE_MOCKS="true"
+
+# Sentry Configuration (Error Tracking - Optional)
+# Sign up at: https://sentry.io
+# Get DSN from: https://sentry.io/settings/projects/
+# Set secret via: wrangler secret put SENTRY_DSN --env production
+# Secret (optional):
+#   - SENTRY_DSN: Data Source Name from Sentry project settings
 
 # Assets configuration for serving frontend as SPA from Workers
 [assets]
@@ -37,7 +86,10 @@ database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
 binding = "KV"
 id = "04fceb9a09054bbd991d5252a9a169cf"
 
-# R2 bucket commented out - will add when credit card is available
+# R2 Storage Configuration (Task 10.7 - D-028: 24-hour download links)
+# Create bucket via: wrangler r2 bucket create umbrella-dev-media
+# CORS must be configured for presigned URLs
+# Uncomment when R2 is available (requires billing)
 # [[env.preview.r2_buckets]]
 # binding = "BUCKET"
 # bucket_name = "umbrella-dev-media"
@@ -58,7 +110,9 @@ database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
 binding = "KV"
 id = "04fceb9a09054bbd991d5252a9a169cf"
 
-# R2 bucket commented out
+# R2 Storage Configuration (Task 10.7 - D-028: 24-hour download links)
+# Create bucket via: wrangler r2 bucket create umbrella-dev-media
+# Uncomment when R2 is available (requires billing)
 # [[env.dev.r2_buckets]]
 # binding = "BUCKET"
 # bucket_name = "umbrella-dev-media"
