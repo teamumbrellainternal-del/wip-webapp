@@ -150,6 +150,7 @@ function setupRouter(): Router {
   // Messages routes (auth required)
   router.get('/v1/conversations', messagesController.listConversations, [authMiddleware])
   router.get('/v1/conversations/:id', messagesController.getConversation, [authMiddleware])
+  router.get('/v1/conversations/:id/messages', messagesController.getMessages, [authMiddleware])
   router.post('/v1/conversations', messagesController.startConversation, [authMiddleware])
   router.post('/v1/conversations/:id/messages', messagesController.sendMessage, [authMiddleware])
   router.post('/v1/conversations/:id/read', messagesController.markAsRead, [authMiddleware])

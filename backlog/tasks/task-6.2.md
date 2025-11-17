@@ -1,9 +1,10 @@
 ---
 id: task-6.2
 title: "Implement Message Send/Receive Endpoints"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
+completed_date: "2025-11-16"
 labels: ["backend", "P1", "messaging"]
 milestone: "M6 - In-App Messaging System"
 dependencies: ["task-6.1"]
@@ -14,16 +15,16 @@ estimated_hours: 4
 Implement endpoints for sending messages within conversations, fetching message threads, and marking conversations as read. 2000 character limit per message (D-043).
 
 ## Acceptance Criteria
-- [ ] GET /v1/conversations/:convId/messages endpoint fetches message thread
-- [ ] Requires authentication and participant validation
-- [ ] Returns messages sorted by created_at ASC
-- [ ] POST /v1/conversations/:convId/messages endpoint sends new message
-- [ ] Validates message content length (D-043: 2000 char limit)
-- [ ] Supports file attachments (URLs)
-- [ ] Updates conversation updated_at timestamp
-- [ ] POST /v1/conversations/:convId/read endpoint marks as read
-- [ ] No rate limits (D-087)
-- [ ] Proper error handling
+- [x] GET /v1/conversations/:convId/messages endpoint fetches message thread
+- [x] Requires authentication and participant validation
+- [x] Returns messages sorted by created_at ASC
+- [x] POST /v1/conversations/:convId/messages endpoint sends new message
+- [x] Validates message content length (D-043: 2000 char limit)
+- [x] Supports file attachments (URLs)
+- [x] Updates conversation updated_at timestamp
+- [x] POST /v1/conversations/:convId/read endpoint marks as read
+- [x] No rate limits (D-087)
+- [x] Proper error handling
 
 ## Implementation Plan
 1. Create GET /v1/conversations/:convId/messages route
