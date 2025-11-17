@@ -196,6 +196,7 @@ export const getHistory: RouteHandler = async (ctx) => {
 /**
  * Get Violet usage stats
  * GET /v1/violet/usage
+ * Per task-9.2: Returns current usage, remaining prompts, and historical data
  */
 export const getUsage: RouteHandler = async (ctx) => {
   if (!ctx.userId) {
@@ -224,6 +225,23 @@ export const getUsage: RouteHandler = async (ctx) => {
       )
     }
 
+    const artistId = artist.id
+
+    // 2. Get today's date in YYYY-MM-DD format (UTC)
+    const today = new Date().toISOString().split('T')[0]
+
+    // 3. Fetch current usage from KV: violet:{artist_id}:{date}
+    const kvKey = `violet:${artistId}:${today}`
+    const kvValue = await ctx.env.KV.get(kvKey)
+    const promptsUsedToday = kvValue ? parseInt(kvValue, 10) : 0
+
+    // 4. Calculate remaining prompts (D-062: 50 prompts/day limit)
+    const dailyLimit = 50
+    const promptsRemaining = Math.max(0, dailyLimit - promptsUsedToday)
+
+    // 5. Calculate reset time (midnight UTC tomorrow)
+    const now = new Date()
+    const tomorrow = new Date(now)
     // Get current usage from KV
     const rateLimitInfo = await checkRateLimit(
       ctx.userId,
@@ -240,6 +258,33 @@ export const getUsage: RouteHandler = async (ctx) => {
     tomorrow.setUTCHours(0, 0, 0, 0)
     const resetAt = tomorrow.toISOString()
 
+    // 6. Query D1 for last 7 days usage (historical data)
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0]
+
+    const historicalUsage = await ctx.env.DB.prepare(
+      `SELECT
+        date as prompt_date,
+        COUNT(*) as prompt_count
+      FROM violet_usage
+      WHERE artist_id = ? AND date >= ?
+      GROUP BY date
+      ORDER BY date DESC`
+    )
+      .bind(artistId, sevenDaysAgoStr)
+      .all<{ prompt_date: string; prompt_count: number }>()
+
+    // 7. Format historical data
+    const historical = historicalUsage.results || []
+
+    return successResponse(
+      {
+        prompts_used_today: promptsUsedToday,
+        prompts_remaining: promptsRemaining,
+        daily_limit: dailyLimit,
+        reset_at: resetAt,
+        historical_usage: historical,
     return successResponse(
       {
         promptsUsed,
@@ -251,6 +296,11 @@ export const getUsage: RouteHandler = async (ctx) => {
       ctx.requestId
     )
   } catch (error) {
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to fetch Violet usage statistics',
+      500,
+      error instanceof Error ? { error: error.message } : undefined,
     console.error('Error in getUsage:', error)
     return errorResponse(
       ErrorCodes.INTERNAL_ERROR,
