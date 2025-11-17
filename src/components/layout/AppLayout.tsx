@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { ProfileDropdown } from './ProfileDropdown'
 import { SearchModal } from './SearchModal'
 import { NotificationPanel } from './NotificationPanel'
+import { Footer } from './Footer'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -160,6 +161,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
       <main className="flex-1">
         {children}
       </main>
+
+      {/* Footer */}
+      <Footer />
 
       {/* Search Modal - D-071 */}
       <SearchModal open={searchOpen} onOpenChange={setSearchOpen} />

@@ -33,6 +33,7 @@ import * as broadcastController from './controllers/broadcast'
 import * as contactsController from './controllers/contacts'
 import * as violetController from './controllers/violet'
 import * as searchController from './controllers/search'
+import * as accountController from './controllers/account'
 import { aggregateAnalytics, handleAnalyticsCron } from './controllers/cron/analytics'
 
 /**
@@ -92,6 +93,9 @@ function setupRouter(): Router {
   router.get('/v1/auth/session', async (ctx) => handleSessionCheck(ctx.request, ctx.env))
   router.post('/v1/auth/logout', async (ctx) => handleLogout(ctx.request, ctx.env))
   router.post('/v1/auth/refresh', async (ctx) => handleSessionRefresh(ctx.request, ctx.env))
+
+  // Account routes (auth required)
+  router.delete('/v1/account', accountController.deleteAccount, [authMiddleware])
 
   // Profile routes (auth required)
   router.get('/v1/profile', profileController.getProfile, [authMiddleware])

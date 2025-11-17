@@ -16,6 +16,10 @@ import OnboardingGuard from '@/components/auth/OnboardingGuard'
 import Step2 from '@/pages/onboarding/Step2'
 import Step3 from '@/pages/onboarding/Step3'
 import OnboardingStep1 from '@/pages/onboarding/Step1'
+import TermsPage from '@/pages/legal/TermsPage'
+import PrivacyPage from '@/pages/legal/PrivacyPage'
+import CookiesPage from '@/pages/legal/CookiesPage'
+import SettingsPage from '@/pages/SettingsPage'
 
 /**
  * Main application router using React Router v6
@@ -47,11 +51,23 @@ export const router = createBrowserRouter([
   // Public: Legal pages
   {
     path: '/terms',
-    element: <PlaceholderPage title="Terms of Service" />,
+    element: <TermsPage />,
+  },
+  {
+    path: '/legal/terms',
+    element: <TermsPage />,
   },
   {
     path: '/privacy',
-    element: <PlaceholderPage title="Privacy Policy" />,
+    element: <PrivacyPage />,
+  },
+  {
+    path: '/legal/privacy',
+    element: <PrivacyPage />,
+  },
+  {
+    path: '/legal/cookies',
+    element: <CookiesPage />,
   },
 
   // Onboarding Routes (Protected but no OnboardingGuard)
@@ -280,7 +296,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <OnboardingGuard>
-          <PlaceholderPage title="Account Settings" />
+          <SettingsPage />
         </OnboardingGuard>
       </ProtectedRoute>
     ),

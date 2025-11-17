@@ -1,32 +1,34 @@
 ---
 id: task-11.1
 title: "Legal & Compliance Setup"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-17"
+completed_date: "2025-11-17"
 labels: ["legal", "P0", "compliance", "frontend", "backend"]
 milestone: "M11 - Pre-Launch Readiness & Compliance"
 dependencies: ["task-1.4"]
 estimated_hours: 8
+actual_hours: 8
 ---
 
 ## Description
 Create all legally required pages and functionality: Terms of Service, Privacy Policy, Cookie Policy, cookie consent banner, and account deletion flow (California CCPA compliance).
 
 ## Acceptance Criteria
-- [ ] Terms of Service page created at /legal/terms
-- [ ] Privacy Policy page created at /legal/privacy (discloses Clerk, Resend, Twilio, Cloudflare, Anthropic)
-- [ ] Cookie Policy page created at /legal/cookies
-- [ ] All legal pages linked in footer on every page
-- [ ] Cookie consent banner appears on first visit, dismisses on accept
-- [ ] Cookie consent choice stored in localStorage
-- [ ] DELETE /v1/account endpoint implemented
-- [ ] Account deletion requires typing "DELETE" for confirmation
-- [ ] Deletion removes all user data (users, artists, tracks, files, messages, reviews)
-- [ ] Deletion removes files from R2 bucket
-- [ ] Deletion removes Clerk user via Clerk API
-- [ ] Confirmation email sent after deletion
-- [ ] Settings page has "Delete Account" section with danger styling
+- [x] Terms of Service page created at /legal/terms
+- [x] Privacy Policy page created at /legal/privacy (discloses Clerk, Resend, Twilio, Cloudflare, Anthropic)
+- [x] Cookie Policy page created at /legal/cookies
+- [x] All legal pages linked in footer on every page
+- [x] Cookie consent banner appears on first visit, dismisses on accept
+- [x] Cookie consent choice stored in localStorage
+- [x] DELETE /v1/account endpoint implemented
+- [x] Account deletion requires typing "DELETE" for confirmation
+- [x] Deletion removes all user data (users, artists, tracks, files, messages, reviews)
+- [x] Deletion removes files from R2 bucket
+- [x] Deletion removes Clerk user via Clerk API
+- [x] Confirmation email sent after deletion
+- [x] Settings page has "Delete Account" section with danger styling
 
 ## Implementation Plan
 

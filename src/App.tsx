@@ -4,6 +4,7 @@ import { ThemeProvider } from './components/theme-provider'
 import { Toaster } from './components/ui/toaster'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { AuthProvider } from './contexts/AuthContext'
+import { CookieBanner } from './components/CookieBanner'
 import { router } from './routes'
 
 // Import Clerk publishable key from environment
@@ -21,6 +22,7 @@ export default function App() {
           <AuthProvider>
             <RouterProvider router={router} />
             <Toaster />
+            <CookieBanner />
           </AuthProvider>
         </ThemeProvider>
       </ClerkProvider>
