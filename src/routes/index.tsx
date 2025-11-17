@@ -7,6 +7,7 @@ import PlaceholderPage from '@/pages/placeholders/PlaceholderPage'
 import ProfileEditPage from '@/pages/ProfileEditPage'
 import MarketplacePage from '@/pages/MarketplacePage'
 import MessagesPage from '@/pages/MessagesPage'
+import FilesPage from '@/pages/FilesPage'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import OnboardingGuard from '@/components/auth/OnboardingGuard'
 import Step2 from '@/pages/onboarding/Step2'
@@ -254,7 +255,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <OnboardingGuard>
-          <PlaceholderPage title="My Files" />
+          <FilesPage />
         </OnboardingGuard>
       </ProtectedRoute>
     ),
