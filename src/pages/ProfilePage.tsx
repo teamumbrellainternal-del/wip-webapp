@@ -32,8 +32,8 @@ import {
   Heart,
   CheckCircle2,
 } from 'lucide-react'
-import { LoadingState } from '@/components/common/LoadingState'
-import { ErrorState } from '@/components/common/ErrorState'
+import LoadingState from '@/components/common/LoadingState'
+import ErrorState from '@/components/common/ErrorState'
 
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>()
