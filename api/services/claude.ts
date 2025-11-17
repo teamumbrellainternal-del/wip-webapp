@@ -18,7 +18,7 @@ import {
  * NOTE: API key is stored but not used in Release 1
  */
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages'
-const CLAUDE_MODEL = 'claude-3-5-sonnet-20241022'
+const CLAUDE_MODEL = 'claude-sonnet-4-5-20250929'
 const DEFAULT_MAX_TOKENS = 1024
 const DEFAULT_TEMPERATURE = 0.7
 
@@ -41,6 +41,11 @@ const PLACEHOLDER_RESPONSES: Record<ClaudePromptType, string[]> = {
     "Here's a starting point for your verse:\n\nVerse 1:\nIn the silence of the night, I hear your echo\nMemories dancing like shadows on the wall\nEvery moment that we shared, still feels so close though\nTime keeps moving, but I'm frozen in the fall",
     "How about this for a chorus:\n\nChorus:\nWe're chasing dreams under city lights\nHeartbeats racing through electric nights\nNothing's gonna stop us now, we're alive\nThis is our moment, this is our time",
     "Here's a bridge idea:\n\nBridge:\nMaybe we're just stardust, burning bright\nTwo souls colliding in the dead of night\nBut if this is all we get, I'll take the ride\nWith you right here, right by my side",
+  ],
+  career_advice: [
+    "Focus on building genuine relationships in your local music scene. Networking isn't just about what others can do for you - it's about mutual support and collaboration. Attend shows, support other artists, and be authentically engaged in your community.",
+    "Consider diversifying your income streams. Don't rely solely on gig income - explore teaching, session work, licensing opportunities, and digital revenue. This financial stability will give you more creative freedom in the long run.",
+    "Consistency is key to building a sustainable music career. Set realistic goals, create a regular content schedule, and show up for your audience even when it feels like no one's watching. The artists who make it are the ones who keep showing up.",
   ],
   bio_generator: [
     "A versatile artist blending genres with a unique sound that captivates audiences. With years of experience performing at venues across the region, they bring energy, passion, and professionalism to every show. Their music tells stories that resonate, creating connections that last long after the final note.",
@@ -91,6 +96,17 @@ Guidelines:
 - Match the mood/genre if specified
 - Provide 4-8 lines
 - Use vivid imagery`,
+
+  career_advice: `You are Violet, an AI assistant providing career guidance to musicians.
+Offer thoughtful career advice based on this question:
+
+{prompt}
+
+Guidelines:
+- Provide practical, actionable advice
+- Draw from music industry best practices
+- Be encouraging but realistic
+- Keep it concise and focused`,
 
   bio_generator: `You are Violet, an AI assistant helping musicians write compelling bios.
 Create a professional artist bio based on this information:

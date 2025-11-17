@@ -8,6 +8,9 @@
 import type { RouteHandler } from '../../router'
 import { successResponse, errorResponse } from '../../utils/response'
 import { ErrorCodes } from '../../utils/error-codes'
+import { createClaudeService } from '../../services/claude'
+import type { ClaudePromptType } from '../../services/types'
+import { checkRateLimit } from '../../middleware/rate-limit'
 
 /**
  * Send prompt to Violet
@@ -25,22 +28,134 @@ export const sendPrompt: RouteHandler = async (ctx) => {
     )
   }
 
-  // TODO: Parse request body for prompt
-  // TODO: Check rate limit (50/day)
-  // TODO: Return placeholder response (Release 1)
-  // TODO: Future: Call Claude API for real AI responses
+  try {
+    // Parse request body
+    const body = await ctx.request.json().catch(() => ({}))
+    const { user_prompt, context } = body
 
-  // Placeholder response for Release 1
-  return successResponse(
-    {
-      response:
-        "I'm Violet, your AI music assistant. I'm currently in development and will be able to help you with creative ideas, gig preparation, and more in future releases!",
-      promptId: 'placeholder-prompt-id',
-      remainingPrompts: 49,
-    },
-    200,
-    ctx.requestId
-  )
+    // Validate required fields
+    if (!user_prompt || typeof user_prompt !== 'string') {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'user_prompt is required and must be a string',
+        400,
+        'user_prompt',
+        ctx.requestId
+      )
+    }
+
+    if (!context || typeof context !== 'string') {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'context is required and must be a string',
+        400,
+        'context',
+        ctx.requestId
+      )
+    }
+
+    // Validate context value
+    const validContexts: ClaudePromptType[] = [
+      'draft_message',
+      'gig_inquiry',
+      'songwriting',
+      'career_advice',
+    ]
+    if (!validContexts.includes(context as ClaudePromptType)) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        `context must be one of: ${validContexts.join(', ')}`,
+        400,
+        'context',
+        ctx.requestId
+      )
+    }
+
+    // Validate prompt length
+    if (user_prompt.length > 2000) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'user_prompt must be 2000 characters or less',
+        400,
+        'user_prompt',
+        ctx.requestId
+      )
+    }
+
+    // Get artist profile
+    const artist = await ctx.env.DB.prepare('SELECT id FROM artists WHERE user_id = ?')
+      .bind(ctx.userId)
+      .first<{ id: string }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist profile not found',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Create Claude API service (placeholder mode for Release 1)
+    const claudeService = createClaudeService(
+      ctx.env.ANTHROPIC_API_KEY || '',
+      ctx.env.DB,
+      false // useRealAPI = false for Release 1
+    )
+
+    // Generate AI response
+    const result = await claudeService.generateResponse({
+      prompt: user_prompt,
+      promptType: context as ClaudePromptType,
+      artistId: artist.id,
+    })
+
+    // Handle service errors
+    if (!result.success || !result.data) {
+      const errorCode = result.error?.code === 'DAILY_LIMIT_EXCEEDED'
+        ? ErrorCodes.RATE_LIMIT_EXCEEDED
+        : ErrorCodes.INTERNAL_ERROR
+
+      return errorResponse(
+        errorCode,
+        result.error?.message || 'Failed to generate AI response',
+        errorCode === ErrorCodes.RATE_LIMIT_EXCEEDED ? 429 : 500,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Get remaining prompts from KV
+    const rateLimitInfo = await checkRateLimit(
+      ctx.userId,
+      'rate_limit:violet',
+      50,
+      ctx.env.KV
+    )
+
+    // Return successful response
+    return successResponse(
+      {
+        ai_response: result.data.response,
+        remaining_prompts: rateLimitInfo.remaining,
+        tokens_used: result.data.tokensUsed,
+        context: context,
+        is_placeholder: result.data.isPlaceholder,
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error in sendPrompt:', error)
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Internal server error',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
 }
 
 /**
@@ -95,10 +210,8 @@ export const getUsage: RouteHandler = async (ctx) => {
   }
 
   try {
-    // 1. Get artist_id from user_id
-    const artist = await ctx.env.DB.prepare(
-      'SELECT id FROM artists WHERE user_id = ?'
-    )
+    // Get artist profile
+    const artist = await ctx.env.DB.prepare('SELECT id FROM artists WHERE user_id = ?')
       .bind(ctx.userId)
       .first<{ id: string }>()
 
@@ -129,6 +242,18 @@ export const getUsage: RouteHandler = async (ctx) => {
     // 5. Calculate reset time (midnight UTC tomorrow)
     const now = new Date()
     const tomorrow = new Date(now)
+    // Get current usage from KV
+    const rateLimitInfo = await checkRateLimit(
+      ctx.userId,
+      'rate_limit:violet',
+      50,
+      ctx.env.KV
+    )
+
+    const promptsUsed = 50 - rateLimitInfo.remaining
+
+    // Calculate reset time (midnight UTC tomorrow)
+    const tomorrow = new Date()
     tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
     tomorrow.setUTCHours(0, 0, 0, 0)
     const resetAt = tomorrow.toISOString()
@@ -160,6 +285,12 @@ export const getUsage: RouteHandler = async (ctx) => {
         daily_limit: dailyLimit,
         reset_at: resetAt,
         historical_usage: historical,
+    return successResponse(
+      {
+        promptsUsed,
+        dailyLimit: 50,
+        remaining: rateLimitInfo.remaining,
+        resetAt,
       },
       200,
       ctx.requestId
@@ -170,6 +301,12 @@ export const getUsage: RouteHandler = async (ctx) => {
       'Failed to fetch Violet usage statistics',
       500,
       error instanceof Error ? { error: error.message } : undefined,
+    console.error('Error in getUsage:', error)
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Internal server error',
+      500,
+      undefined,
       ctx.requestId
     )
   }
