@@ -145,7 +145,7 @@ export default function ProfilePage() {
   if (error || !artist) {
     return (
       <AppLayout>
-        <ErrorState message={error || 'Artist not found'} />
+        <ErrorState error={error || 'Artist not found'} />
       </AppLayout>
     )
   }
@@ -171,7 +171,7 @@ export default function ProfilePage() {
           </Button>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
-              Profile {artist.profile_completion_percentage || 85}% complete
+              Profile 85% complete
             </span>
             {/* D-023: Profile actions menu */}
             <DropdownMenu>
