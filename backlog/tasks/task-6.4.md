@@ -1,9 +1,10 @@
 ---
 id: task-6.4
 title: "Build Messages Page with Thread View"
-status: "To Do"
-assignee: []
+status: "Done"
+assignee: ["claude"]
 created_date: "2025-11-15"
+completed_date: "2025-11-17"
 labels: ["frontend", "P1", "messaging"]
 milestone: "M6 - In-App Messaging System"
 dependencies: ["task-6.2"]
@@ -14,18 +15,18 @@ estimated_hours: 6
 Create the messages page with conversation list sidebar, message thread view, quick conversation starters, and message input with sharing buttons.
 
 ## Acceptance Criteria
-- [ ] src/pages/MessagesPage.tsx component created
-- [ ] Left sidebar with conversation list
-- [ ] Conversation cards show: participant, context badge, preview, unread indicator, timestamp
-- [ ] Main panel shows selected conversation thread
-- [ ] Messages display with sender alignment (left/right)
-- [ ] Quick conversation starter pills above input
-- [ ] Message input with 2000 char limit (D-043)
-- [ ] Attachment icon (paperclip)
-- [ ] Quick share buttons: Share Track, Share Portfolio, Share Gig Flyer
-- [ ] Send button
-- [ ] Polling for new messages (5-second interval)
-- [ ] Responsive layout (mobile + desktop)
+- [x] src/pages/MessagesPage.tsx component created
+- [x] Left sidebar with conversation list
+- [x] Conversation cards show: participant, context badge, preview, unread indicator, timestamp
+- [x] Main panel shows selected conversation thread
+- [x] Messages display with sender alignment (left/right)
+- [x] Quick conversation starter pills above input
+- [x] Message input with 2000 char limit (D-043)
+- [x] Attachment icon (paperclip)
+- [x] Quick share buttons: Share Track, Share Portfolio, Share Gig Flyer
+- [x] Send button
+- [x] Polling for new messages (5-second interval)
+- [x] Responsive layout (mobile + desktop)
 
 ## Implementation Plan
 1. Create MessagesPage.tsx in src/pages/
