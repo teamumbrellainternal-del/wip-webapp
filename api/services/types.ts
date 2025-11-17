@@ -131,6 +131,7 @@ export type ClaudePromptType =
   | 'draft_message'
   | 'gig_inquiry'
   | 'songwriting'
+  | 'career_advice'
   | 'bio_generator'
   | 'general'
 
