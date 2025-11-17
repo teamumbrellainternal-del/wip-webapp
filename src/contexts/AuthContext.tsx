@@ -39,6 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null)
       setIsLoading(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clerkUser, clerkLoaded])
 
   const fetchUserProfile = async () => {
@@ -111,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext)
   if (context === undefined) {

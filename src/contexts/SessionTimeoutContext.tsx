@@ -30,6 +30,7 @@ export function SessionTimeoutProvider({ children }: { children: ReactNode }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSessionTimeout() {
   const context = useContext(SessionTimeoutContext)
   if (context === undefined) {
@@ -41,10 +42,12 @@ export function useSessionTimeout() {
 // Global function to show session timeout from outside React components
 let globalShowSessionTimeout: (() => void) | null = null
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function setGlobalSessionTimeoutHandler(handler: () => void) {
   globalShowSessionTimeout = handler
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function triggerSessionTimeout() {
   if (globalShowSessionTimeout) {
     globalShowSessionTimeout()

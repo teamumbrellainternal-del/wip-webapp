@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
@@ -18,7 +18,6 @@ import {
   MapPin,
   Calendar,
   DollarSign,
-  Music,
   Star,
   CheckCircle2,
   X,
@@ -26,7 +25,6 @@ import {
   Users
 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
-import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
 import { gigsService, artistsService } from '@/services/api'
 import type { Gig, Artist, GigSearchParams, ArtistSearchParams } from '@/types'
@@ -85,7 +83,6 @@ export default function MarketplacePage() {
   // Detail sidebar state
   const [selectedGig, setSelectedGig] = useState<Gig | null>(null)
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null)
-  const [detailLoading, setDetailLoading] = useState(false)
 
   // Favorites state (in-memory for MVP)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
@@ -106,6 +103,7 @@ export default function MarketplacePage() {
     setCurrentPage(1)
     setHasMore(true)
     fetchData(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, debouncedQuery, selectedGenres, locationFilter, priceRange, urgentOnly, verifiedOnly])
 
   // Update URL when tab changes
@@ -222,7 +220,7 @@ export default function MarketplacePage() {
       setApplyingGigId(gigId)
       await gigsService.apply(gigId)
       toast.success('Application submitted successfully!')
-    } catch (err) {
+    } catch {
       toast.error('Failed to apply to gig')
     } finally {
       setApplyingGigId(null)

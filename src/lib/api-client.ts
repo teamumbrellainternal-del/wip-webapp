@@ -77,7 +77,7 @@ class APIClient {
           ...options?.headers,
         },
       });
-    } catch (error) {
+    } catch {
       // Network error - might be offline or server unreachable
       if (!navigator.onLine) {
         throw new Error('You are offline. Please check your internet connection.');

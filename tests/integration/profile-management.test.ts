@@ -14,7 +14,6 @@ import {
   createOnboardingStep3Data,
   createOnboardingStep4Data,
   createOnboardingStep5Data,
-  createTestArtist,
 } from '../helpers/test-data'
 import type { Env } from '../../api/index'
 import type { RequestContext } from '../../api/router'
@@ -349,8 +348,7 @@ describe('Profile Management Integration Tests', () => {
       })
 
       const auth2Response = await handleAuthCallback(auth2Request, env)
-      const auth2Data = (await auth2Response.json()) as any
-      const otherUserId = auth2Data.data.user.id
+      await auth2Response.json()
 
       // Try to update profile using first user's token
       const updateRequest = new Request('https://api.example.com/v1/profile', {

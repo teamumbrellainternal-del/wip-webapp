@@ -4,7 +4,7 @@
  * Implements task-8.5: Creative Studio page with auto-save
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,7 +13,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import {
   Type,
@@ -81,6 +80,7 @@ export default function CreativeStudioPage() {
   // Load entries on mount
   useEffect(() => {
     loadEntries()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Auto-save functionality (every 30 seconds)

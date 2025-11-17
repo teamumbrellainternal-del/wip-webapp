@@ -5,7 +5,6 @@ import { apiClient } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -21,7 +20,6 @@ import {
 } from '@/components/ui/form'
 import { Loader2, AlertCircle, Upload, X, Plus, Trash2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import type { Artist } from '../../api/models/artist'
 
 interface ProfileFormData {
   stage_name: string
@@ -44,12 +42,6 @@ interface ProfileFormData {
   twitter_url?: string
   bandcamp_url?: string
   available_dates?: string[]
-}
-
-interface SocialLink {
-  id: string
-  platform: string
-  url: string
 }
 
 const SOCIAL_PLATFORMS = [
@@ -106,6 +98,7 @@ export default function ProfileEditPage() {
   // Load profile data on mount
   useEffect(() => {
     loadProfile()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadProfile = async () => {

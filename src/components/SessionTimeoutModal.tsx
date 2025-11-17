@@ -36,6 +36,7 @@ export function SessionTimeoutModal({ isOpen }: SessionTimeoutModalProps) {
       // Attempt to save any form data (best effort)
       saveFormData()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
   const saveFormData = () => {
