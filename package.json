@@ -42,7 +42,8 @@
     "validate:staging": "node scripts/validate-env.js staging",
     "validate:prod": "node scripts/validate-env.js production",
     "perf:check": "node scripts/performance-check.js",
-    "rollback": "node scripts/rollback.js"
+    "rollback": "node scripts/rollback.js",
+    "verify:deployment": "node scripts/post-deployment-verification.js"
   },
   "dependencies": {
     "@clerk/backend": "^2.21.0",
