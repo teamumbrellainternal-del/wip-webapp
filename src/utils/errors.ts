@@ -1,7 +1,12 @@
 /**
  * Error Handling Utilities for Umbrella MVP
  * Custom error classes and error message formatting
+ *
+ * @see docs/ERROR_MESSAGES.md for error message style guide
+ * @see src/lib/error-messages.ts for error message constants
  */
+
+import { getErrorFromStatus, formatErrorForToast, type ErrorMessage } from '@/lib/error-messages'
 
 /**
  * Custom API Error class with status code and details
@@ -20,45 +25,59 @@ export class ApiError extends Error {
 
 /**
  * Convert API errors to user-friendly messages
+ * Uses standardized error messages from error-messages.ts
  */
 export function handleApiError(error: unknown): string {
   if (error instanceof ApiError) {
-    switch (error.status) {
-      case 400:
-        return error.details?.message as string || 'Invalid request. Please check your input.'
-      case 401:
-        return 'Please sign in to continue'
-      case 403:
-        return "You don't have permission to do that"
-      case 404:
-        return 'Resource not found'
-      case 409:
-        return 'This action conflicts with existing data'
-      case 422:
-        return 'Please check your input and try again'
-      case 429:
-        return 'Too many requests. Please try again later.'
-      case 500:
-        return 'Something went wrong on our end. Please try again.'
-      case 502:
-      case 503:
-        return 'Service temporarily unavailable. Please try again in a moment.'
-      case 504:
-        return 'Request timed out. Please try again.'
-      default:
-        return error.message || 'Something went wrong. Please try again.'
+    // If the API response includes a user-friendly message, use it
+    if (error.details?.message && typeof error.details.message === 'string') {
+      return error.details.message as string
     }
+
+    // Otherwise, use standardized messages based on status code
+    const errorMessage = getErrorFromStatus(error.status)
+    return formatErrorForToast(errorMessage)
   }
 
   if (error instanceof Error) {
     // Network errors
     if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-      return 'Network error. Please check your connection and try again.'
+      return 'You\'re offline. Please check your internet connection and try again'
     }
+
+    // Timeout errors
+    if (error.message.includes('timeout')) {
+      return 'The connection timed out. Please check your internet and try again'
+    }
+
     return error.message
   }
 
-  return 'An unexpected error occurred'
+  return 'An unexpected error occurred. Please try again'
+}
+
+/**
+ * Get full error message object from error
+ */
+export function getErrorMessage(error: unknown): ErrorMessage {
+  if (error instanceof ApiError) {
+    return getErrorFromStatus(error.status)
+  }
+
+  if (error instanceof Error) {
+    return {
+      title: 'Error',
+      message: error.message,
+      action: 'Please try again',
+      code: error.name,
+    }
+  }
+
+  return {
+    title: 'Unknown Error',
+    message: 'An unexpected error occurred',
+    action: 'Please try again',
+  }
 }
 
 /**

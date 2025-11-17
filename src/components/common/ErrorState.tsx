@@ -1,14 +1,17 @@
 /**
  * ErrorState Component
  * Reusable error display for failed API requests
+ *
+ * @see docs/ERROR_MESSAGES.md for error message style guide
  */
 
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { handleApiError } from '@/utils/errors'
+import { handleApiError, getErrorMessage } from '@/utils/errors'
+import type { ErrorMessage } from '@/lib/error-messages'
 
 interface ErrorStateProps {
-  error: Error | string
+  error: Error | string | ErrorMessage
   retry?: () => void
   fullScreen?: boolean
   title?: string
@@ -18,9 +21,28 @@ export default function ErrorState({
   error,
   retry,
   fullScreen = false,
-  title = 'Something went wrong',
+  title,
 }: ErrorStateProps) {
-  const message = typeof error === 'string' ? error : handleApiError(error)
+  // Handle different error types
+  let errorTitle: string
+  let errorMessage: string
+  let errorAction: string | undefined
+
+  if (typeof error === 'string') {
+    errorTitle = title || 'Something went wrong'
+    errorMessage = error
+  } else if ('title' in error && 'message' in error) {
+    // ErrorMessage object
+    errorTitle = title || error.title
+    errorMessage = error.message
+    errorAction = error.action
+  } else {
+    // Error object
+    const errMsg = getErrorMessage(error)
+    errorTitle = title || errMsg.title
+    errorMessage = errMsg.message
+    errorAction = errMsg.action
+  }
 
   const containerClasses = fullScreen
     ? 'fixed inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-50'
@@ -32,10 +54,13 @@ export default function ErrorState({
         <div className="text-destructive text-5xl mb-4" aria-hidden="true">
           ⚠️
         </div>
-        <h3 className="text-lg font-semibold mb-2">{title}</h3>
-        <p className="text-muted-foreground mb-6">{message}</p>
+        <h3 className="text-lg font-semibold mb-2">{errorTitle}</h3>
+        <p className="text-muted-foreground mb-2">{errorMessage}</p>
+        {errorAction && (
+          <p className="text-sm text-muted-foreground mb-6">{errorAction}</p>
+        )}
         {retry && (
-          <Button onClick={retry} variant="default">
+          <Button onClick={retry} variant="default" className="mt-4">
             Try Again
           </Button>
         )}
@@ -47,13 +72,25 @@ export default function ErrorState({
 /**
  * Inline error message for forms and small spaces
  */
-export function InlineError({ error }: { error: Error | string }) {
-  const message = typeof error === 'string' ? error : handleApiError(error)
+export function InlineError({ error, title }: { error: Error | string | ErrorMessage; title?: string }) {
+  let errorTitle: string
+  let errorMessage: string
+
+  if (typeof error === 'string') {
+    errorTitle = title || 'Error'
+    errorMessage = error
+  } else if ('title' in error && 'message' in error) {
+    errorTitle = title || error.title
+    errorMessage = `${error.message}. ${error.action}`
+  } else {
+    errorTitle = title || 'Error'
+    errorMessage = handleApiError(error)
+  }
 
   return (
     <Alert variant="destructive" className="my-4">
-      <AlertTitle>Error</AlertTitle>
-      <AlertDescription>{message}</AlertDescription>
+      <AlertTitle>{errorTitle}</AlertTitle>
+      <AlertDescription>{errorMessage}</AlertDescription>
     </Alert>
   )
 }
@@ -65,10 +102,18 @@ export function ErrorMessage({
   error,
   retry,
 }: {
-  error: Error | string
+  error: Error | string | ErrorMessage
   retry?: () => void
 }) {
-  const message = typeof error === 'string' ? error : handleApiError(error)
+  let message: string
+
+  if (typeof error === 'string') {
+    message = error
+  } else if ('title' in error && 'message' in error) {
+    message = `${error.message}. ${error.action}`
+  } else {
+    message = handleApiError(error)
+  }
 
   return (
     <div className="flex items-center justify-between p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
