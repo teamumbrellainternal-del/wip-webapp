@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SignIn, useAuth } from '@clerk/clerk-react'
+import { MetaTags } from '../components/MetaTags'
 
 export default function LoginPage() {
   const { isSignedIn, isLoaded } = useAuth()
@@ -32,8 +33,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950 p-4">
-      <div className="w-full max-w-md space-y-8">
+    <>
+      <MetaTags
+        title="Log In"
+        description="Sign in to your Umbrella account to access your artist dashboard, manage gigs, and connect with opportunities."
+        url="/auth"
+        noIndex={true}
+      />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950 p-4">
+        <div className="w-full max-w-md space-y-8">
         {/* Logo & Title */}
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-600 mb-4">
@@ -76,7 +84,8 @@ export default function LoginPage() {
         <p className="text-center text-xs text-muted-foreground">
           By signing in, you agree to our Terms of Service and Privacy Policy
         </p>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

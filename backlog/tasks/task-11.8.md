@@ -1,7 +1,7 @@
 ---
 id: task-11.8
 title: "SEO Meta Tags"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-17"
 labels: ["frontend", "P1", "seo"]
@@ -14,15 +14,15 @@ estimated_hours: 3
 Add SEO meta tags and Open Graph tags to all public pages for search engine discoverability and social media sharing.
 
 ## Acceptance Criteria
-- [ ] MetaTags component created with title, description, keywords, image, URL props
-- [ ] Applied to all public pages (login, marketplace, artist profiles)
-- [ ] Each page has unique title and description
-- [ ] Open Graph tags for social sharing (og:title, og:description, og:image, og:url, og:type)
-- [ ] Twitter Card tags (twitter:card, twitter:title, twitter:description, twitter:image)
-- [ ] Canonical URL set on all pages
-- [ ] Robot meta tags configured (index/follow for public, noindex for auth/settings)
-- [ ] Default OG image created (1200x630px) with Umbrella branding
-- [ ] Verified with Google Rich Results Test and Facebook Debugger
+- [x] MetaTags component created with title, description, keywords, image, URL props
+- [x] Applied to all public pages (login, marketplace, artist profiles)
+- [x] Each page has unique title and description
+- [x] Open Graph tags for social sharing (og:title, og:description, og:image, og:url, og:type)
+- [x] Twitter Card tags (twitter:card, twitter:title, twitter:description, twitter:image)
+- [x] Canonical URL set on all pages
+- [x] Robot meta tags configured (index/follow for public, noindex for auth/settings)
+- [x] Default OG image created (1200x630px) with Umbrella branding
+- [x] Verified with Google Rich Results Test and Facebook Debugger
 
 ## Implementation Plan
 1. Create MetaTags.tsx component:

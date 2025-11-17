@@ -31,6 +31,7 @@ import ErrorState from '@/components/common/ErrorState'
 import { gigsService, artistsService } from '@/services/api'
 import type { Gig, Artist, GigSearchParams, ArtistSearchParams } from '@/types'
 import { toast } from 'sonner'
+import { MetaTags } from '@/components/MetaTags'
 
 type TabType = 'gigs' | 'artists'
 
@@ -323,6 +324,12 @@ export default function MarketplacePage() {
 
   return (
     <AppLayout>
+      <MetaTags
+        title="Find Gigs & Discover Artists"
+        description="Connect independent artists with gigs, tools, and opportunities. Browse available gigs or discover talented artists for your venue."
+        keywords={['music gigs', 'artist marketplace', 'live music', 'independent artists', 'venue booking']}
+        url="/marketplace"
+      />
       <div className="container mx-auto px-4 py-6 h-screen flex flex-col">
         {/* Header */}
         <div className="mb-6">
