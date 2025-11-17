@@ -1,7 +1,7 @@
 ---
 id: task-9.4
 title: "Build Violet Toolkit Page with Intent Picker"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
 labels: ["frontend", "P2", "violet"]
@@ -14,19 +14,19 @@ estimated_hours: 5
 Create the Violet Toolkit page with 10 categories, 30+ sub-tools, hero section, and intent picker modal (D-058).
 
 ## Acceptance Criteria
-- [ ] src/pages/VioletPage.tsx component created
-- [ ] Hero section with "Meet Violet" heading and feature grid
-- [ ] "Start Creating Together" button (D-058: opens intent picker modal)
-- [ ] "Explore My Toolkit" button (scrolls to categories)
-- [ ] Left sidebar with 10 toolkit categories
-- [ ] Categories expand/collapse on click
-- [ ] Sub-tools listed under each category
-- [ ] "Popular" badges on high-usage categories
-- [ ] Intent picker modal with 6 intent options
-- [ ] Free-form question input in modal
-- [ ] Usage counter: "X/50 prompts used today"
-- [ ] Responsive layout (mobile + desktop)
-- [ ] **✓ CHECKPOINT:** Test Violet prompt→usage counter→rate limit enforcement before proceeding to M10
+- [x] src/pages/VioletPage.tsx component created
+- [x] Hero section with "Meet Violet" heading and feature grid
+- [x] "Start Creating Together" button (D-058: opens intent picker modal)
+- [x] "Explore My Toolkit" button (scrolls to categories)
+- [x] Left sidebar with 10 toolkit categories
+- [x] Categories expand/collapse on click
+- [x] Sub-tools listed under each category
+- [x] "Popular" badges on high-usage categories
+- [x] Intent picker modal with 6 intent options
+- [x] Free-form question input in modal
+- [x] Usage counter: "X/50 prompts used today"
+- [x] Responsive layout (mobile + desktop)
+- [x] **✓ CHECKPOINT:** Test Violet prompt→usage counter→rate limit enforcement before proceeding to M10
 
 ## Implementation Plan
 1. Create VioletPage.tsx in src/pages/
