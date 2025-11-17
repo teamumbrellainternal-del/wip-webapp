@@ -8,14 +8,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Calendar,
   TrendingUp,
-  Eye,
   MessageCircle,
   Sparkles,
   Search,
   Users,
   BarChart3,
-  Star,
-  Clock
+  Star
 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import LoadingState from '@/components/common/LoadingState'
@@ -298,7 +296,7 @@ export default function DashboardPage() {
             <CardContent>
               {data.messages && data.messages.length > 0 ? (
                 <div className="space-y-4">
-                  {data.messages.slice(0, 3).map((message, index) => (
+                  {data.messages.slice(0, 3).map((message) => (
                     <div
                       key={message.conversation_id}
                       className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"

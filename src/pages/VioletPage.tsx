@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -24,10 +23,8 @@ import {
   ArrowLeft,
   Loader2,
   Send,
-  Star,
   Lightbulb,
   Target,
-  Zap,
   MessageCircle
 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'

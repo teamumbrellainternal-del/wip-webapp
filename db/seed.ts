@@ -177,7 +177,7 @@ function escapeSQL(str: string | null): string {
   return `'${str.replace(/'/g, "''")}'`
 }
 
-function formatSQLValue(value: any): string {
+function formatSQLValue(value: unknown): string {
   if (value === null || value === undefined) return 'NULL'
   if (typeof value === 'boolean') return value ? '1' : '0'
   if (typeof value === 'number') return value.toString()
@@ -303,7 +303,6 @@ function generateArtists(users: User[]): Artist[] {
 
   // Generate 20 artists (may need additional users if only 7 completed onboarding)
   // For seed data, we'll create up to 20 from the 7 completed users, with some reuse
-  const artistCount = Math.min(20, completedUsers.length)
 
   for (let i = 0; i < 20; i++) {
     const user = completedUsers[i % completedUsers.length]
@@ -580,19 +579,13 @@ function generateFilesAndQuotas(artists: Artist[]): { files: File[], quotas: Sto
   const files: File[] = []
   const quotas: StorageQuota[] = []
 
-  const FILE_CATEGORIES: ('press_photo' | 'music' | 'video' | 'document' | 'other')[] = [
-    'press_photo', 'music', 'video', 'document', 'other'
-  ]
-
   // Generate files for first 10 artists
   for (let i = 0; i < Math.min(10, artists.length); i++) {
     const artist = artists[i]
-    let totalSize = 0
 
     // 10 audio files (MP3s for tracks)
     for (let j = 0; j < 10; j++) {
       const fileSize = randomInt(3000000, 8000000) // 3-8 MB
-      totalSize += fileSize
 
       files.push({
         id: generateId('file'),
@@ -609,7 +602,6 @@ function generateFilesAndQuotas(artists: Artist[]): { files: File[], quotas: Sto
     // 5 images (profile pictures, promo photos)
     for (let j = 0; j < 5; j++) {
       const fileSize = randomInt(500000, 2000000) // 0.5-2 MB
-      totalSize += fileSize
 
       files.push({
         id: generateId('file'),
@@ -626,7 +618,6 @@ function generateFilesAndQuotas(artists: Artist[]): { files: File[], quotas: Sto
     // 3 documents (EPKs, contracts)
     for (let j = 0; j < 3; j++) {
       const fileSize = randomInt(100000, 1000000) // 0.1-1 MB
-      totalSize += fileSize
 
       files.push({
         id: generateId('file'),
@@ -717,7 +708,7 @@ function generateReviews(artists: Artist[], users: User[]): Review[] {
 // SQL GENERATION FUNCTIONS
 // ============================================================================
 
-function generateInsertSQL(table: string, records: any[]): string {
+function generateInsertSQL(table: string, records: Record<string, unknown>[]): string {
   if (records.length === 0) return ''
 
   const keys = Object.keys(records[0])

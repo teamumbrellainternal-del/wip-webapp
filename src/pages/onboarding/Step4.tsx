@@ -77,28 +77,6 @@ export default function OnboardingStep4() {
     }
   }
 
-  const handleDateSelect = (date: Date | undefined) => {
-    if (!date) return
-
-    const currentDates = form.getValues('available_dates') || []
-
-    // Check if date is already selected
-    const dateExists = currentDates.some(
-      (d: Date) => format(d, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
-    )
-
-    if (dateExists) {
-      // Remove the date
-      form.setValue(
-        'available_dates',
-        currentDates.filter((d: Date) => format(d, 'yyyy-MM-dd') !== format(date, 'yyyy-MM-dd'))
-      )
-    } else if (currentDates.length < 3) {
-      // Add the date (max 3)
-      form.setValue('available_dates', [...currentDates, date])
-    }
-  }
-
   const removeDate = (dateToRemove: Date) => {
     const currentDates = form.getValues('available_dates') || []
     form.setValue(

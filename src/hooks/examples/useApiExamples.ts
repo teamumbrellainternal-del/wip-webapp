@@ -6,7 +6,7 @@
  * the API service layer for common use cases.
  */
 
-import { useApi, useGet, usePost, usePatch, useDelete } from '@/hooks/use-api'
+import { useGet, usePost, usePatch } from '@/hooks/use-api'
 import type {
   DashboardMetrics,
   UserProfile,
@@ -113,18 +113,13 @@ export function useGig(gigId: string) {
  * }
  * ```
  */
-export function useApplyToGig() {
-  const { mutate, loading, error } = useApi<void, { gigId: string }>(
-    '/gigs/:gigId/apply',
-    { method: 'POST' }
+export function useApplyToGig(gigId: string) {
+  const { mutate, loading, error } = usePost<void>(
+    `/gigs/${gigId}/apply`
   )
 
   return {
-    applyToGig: async (gigId: string) => {
-      // Replace :gigId with actual ID
-      const endpoint = `/gigs/${gigId}/apply`
-      return usePost<void>(endpoint).mutate()
-    },
+    applyToGig: mutate,
     loading,
     error,
   }
@@ -327,7 +322,7 @@ export function useFileUpload() {
     uploadFile: async (file: File) => {
       const formData = new FormData()
       formData.append('file', file)
-      return mutate(formData as any)
+      return mutate(formData)
     },
     loading,
     error,
