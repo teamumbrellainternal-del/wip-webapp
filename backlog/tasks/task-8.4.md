@@ -1,30 +1,31 @@
 ---
 id: task-8.4
 title: "Build Message Fans Page with AI Draft"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
 labels: ["frontend", "P2", "broadcast"]
 milestone: "M8 - Broadcast & Journal Tools"
 dependencies: ["task-8.1", "task-8.2"]
 estimated_hours: 5
+completed_date: "2025-11-17"
 ---
 
 ## Description
 Create the Message Fans tool page with contact list selection, message composer, AI draft button (D-046), and send options.
 
 ## Acceptance Criteria
-- [ ] src/pages/MessageFansPage.tsx component created
-- [ ] Left sidebar with contact lists (search, multi-select)
-- [ ] Recipient count updates dynamically based on selections
-- [ ] "Ask Violet to Draft" button (D-046: real AI via Claude API)
-- [ ] Subject line input
-- [ ] Message body textarea (text-only, D-049)
-- [ ] Character/word counter
-- [ ] "Save Draft", "Schedule Send", "Send Now" buttons
-- [ ] Datetime picker modal for scheduling
-- [ ] Confirmation modal before sending
-- [ ] Responsive layout (mobile + desktop)
+- [x] src/pages/MessageFansPage.tsx component created
+- [x] Left sidebar with contact lists (search, multi-select)
+- [x] Recipient count updates dynamically based on selections
+- [x] "Ask Violet to Draft" button (D-046: real AI via Claude API)
+- [x] Subject line input
+- [x] Message body textarea (text-only, D-049)
+- [x] Character/word counter
+- [x] "Save Draft", "Schedule Send", "Send Now" buttons
+- [x] Datetime picker modal for scheduling
+- [x] Confirmation modal before sending
+- [x] Responsive layout (mobile + desktop)
 
 ## Implementation Plan
 1. Create MessageFansPage.tsx in src/pages/

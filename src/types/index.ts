@@ -409,3 +409,55 @@ export interface GlobalSearchResults {
   artists: Artist[]
   gigs: Gig[]
 }
+
+// ============================================================================
+// CONTACT & BROADCAST TYPES
+// ============================================================================
+
+export interface ContactList {
+  id: string
+  artist_id: string
+  list_name: string
+  list_type: 'fans' | 'venue_contacts' | 'industry' | 'custom'
+  contact_count: number
+  created_at: string
+  updated_at: string
+}
+
+export interface Contact {
+  id: string
+  artist_id: string
+  list_id: string
+  email?: string
+  phone?: string
+  name?: string
+  opted_in: boolean
+  created_at: string
+}
+
+export interface BroadcastMessage {
+  id: string
+  artist_id: string
+  subject: string
+  body: string
+  recipient_count: number
+  sent_at?: string
+  scheduled_at?: string
+  list_ids: string[]
+  status: 'draft' | 'scheduled' | 'sent' | 'failed'
+  created_at: string
+  updated_at: string
+}
+
+export interface BroadcastRequest {
+  list_ids: string[]
+  subject: string
+  body: string
+  scheduled_at?: string
+}
+
+export interface BroadcastResponse {
+  message: string
+  recipient_count: number
+  broadcast_id: string
+}
