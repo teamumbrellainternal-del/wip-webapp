@@ -11,6 +11,7 @@ import MessageFansPage from '@/pages/MessageFansPage'
 import FilesPage from '@/pages/FilesPage'
 import CreativeStudioPage from '@/pages/CreativeStudioPage'
 import VioletPage from '@/pages/VioletPage'
+import NotFoundPage from '@/pages/NotFoundPage'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import OnboardingGuard from '@/components/auth/OnboardingGuard'
 import Step2 from '@/pages/onboarding/Step2'
@@ -305,6 +306,6 @@ export const router = createBrowserRouter([
   // 404 Fallback
   {
     path: '*',
-    element: <PlaceholderPage title="404 - Page Not Found" />,
+    element: <NotFoundPage />,
   },
 ])

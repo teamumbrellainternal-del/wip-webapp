@@ -1,7 +1,7 @@
 ---
 id: task-11.3
 title: "Error Pages & Session Handling"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-17"
 labels: ["frontend", "P0", "ux"]
@@ -14,20 +14,20 @@ estimated_hours: 6
 Create custom 404 and 500 error pages, implement offline state detection, and handle Clerk session timeout gracefully without losing user work.
 
 ## Acceptance Criteria
-- [ ] 404 page created with navigation options (Dashboard, Browse Gigs, Home)
-- [ ] 500 page created with refresh and contact support options
-- [ ] Invalid routes redirect to 404 page
-- [ ] Unhandled exceptions show 500 page
-- [ ] Error boundary wraps entire app
-- [ ] Session timeout modal shows when Clerk session expires
-- [ ] Session timeout modal requires re-login (cannot dismiss)
-- [ ] Unsaved form data preserved in localStorage before redirect
-- [ ] After re-login, attempt to restore user to previous location
-- [ ] Offline banner appears when browser loses connection
-- [ ] Offline banner shows: "You're offline. Some features may not work."
-- [ ] API calls fail gracefully when offline
-- [ ] Offline banner disappears when connection restored
-- [ ] All pages styled with brand kit, mobile responsive
+- [x] 404 page created with navigation options (Dashboard, Browse Gigs, Home)
+- [x] 500 page created with refresh and contact support options
+- [x] Invalid routes redirect to 404 page
+- [x] Unhandled exceptions show 500 page
+- [x] Error boundary wraps entire app
+- [x] Session timeout modal shows when Clerk session expires
+- [x] Session timeout modal requires re-login (cannot dismiss)
+- [x] Unsaved form data preserved in localStorage before redirect
+- [x] After re-login, attempt to restore user to previous location
+- [x] Offline banner appears when browser loses connection
+- [x] Offline banner shows: "You're offline. Some features may not work."
+- [x] API calls fail gracefully when offline
+- [x] Offline banner disappears when connection restored
+- [x] All pages styled with brand kit, mobile responsive
 
 ## Implementation Plan
 

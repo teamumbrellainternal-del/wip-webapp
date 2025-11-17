@@ -9,6 +9,7 @@ import type { Artist, ArtistPublicProfile, UpdateArtistInput } from '../../api/m
 import type { Gig } from '../../api/models/gig'
 import type { Conversation } from '../../api/models/conversation'
 import type { Message } from '../../api/models/message'
+import { triggerSessionTimeout } from '@/contexts/SessionTimeoutContext'
 
 interface APIResponse<T> {
   success: boolean;
@@ -60,21 +61,35 @@ class APIClient {
     endpoint: string,
     options?: RequestInit
   ): Promise<T> {
+    // Check if offline before making request
+    if (!navigator.onLine) {
+      throw new Error('You are offline. Please check your internet connection.');
+    }
+
     const url = `${this.baseURL}${endpoint}`;
 
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        ...this.getHeaders(),
-        ...options?.headers,
-      },
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        ...options,
+        headers: {
+          ...this.getHeaders(),
+          ...options?.headers,
+        },
+      });
+    } catch (error) {
+      // Network error - might be offline or server unreachable
+      if (!navigator.onLine) {
+        throw new Error('You are offline. Please check your internet connection.');
+      }
+      throw new Error('Failed to connect to server. Please try again later.');
+    }
 
-    // Handle 401 specially (don't toast, just redirect)
+    // Handle 401 specially - trigger session timeout modal
     if (response.status === 401) {
       clearSession();
-      window.location.href = '/?error=session_expired';
-      throw new Error('Unauthorized');
+      triggerSessionTimeout();
+      throw new Error('Session expired. Please log in again.');
     }
 
     // Try to parse JSON
