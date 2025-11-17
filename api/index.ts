@@ -175,7 +175,6 @@ function setupRouter(): Router {
 
   // Journal routes (auth required)
   router.get('/v1/journal', journalController.listEntries, [authMiddleware])
-  router.get('/v1/journal/tags', journalController.getTags, [authMiddleware])
   router.get('/v1/journal/:id', journalController.getEntry, [authMiddleware])
   router.post('/v1/journal', journalController.createEntry, [authMiddleware])
   router.put('/v1/journal/:id', journalController.updateEntry, [authMiddleware])

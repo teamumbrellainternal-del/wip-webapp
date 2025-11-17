@@ -1,7 +1,7 @@
 ---
 id: task-8.3
 title: "Implement Journal (Creative Studio) Endpoints"
-status: "To Do"
+status: "Done"
 assignee: []
 created_date: "2025-11-15"
 labels: ["backend", "P2", "journal"]
@@ -14,17 +14,17 @@ estimated_hours: 4
 Implement CRUD endpoints for journal entries in the Creative Studio tool, supporting block-based content storage.
 
 ## Acceptance Criteria
-- [ ] GET /v1/journal endpoint lists all journal entries for artist
-- [ ] Requires authentication
-- [ ] Supports query param: entry_type (song_idea/set_plan/general_note)
-- [ ] GET /v1/journal/:entryId endpoint fetches single entry
-- [ ] POST /v1/journal endpoint creates new entry
-- [ ] Accepts: entry_type, title (optional), blocks (JSON array)
-- [ ] PUT /v1/journal/:entryId endpoint updates entry
-- [ ] DELETE /v1/journal/:entryId endpoint deletes entry
-- [ ] Blocks stored as JSON with type, content, order
-- [ ] Auto-save timestamps tracked
-- [ ] Proper error handling
+- [x] GET /v1/journal endpoint lists all journal entries for artist
+- [x] Requires authentication
+- [x] Supports query param: entry_type (song_idea/set_plan/general_note)
+- [x] GET /v1/journal/:entryId endpoint fetches single entry
+- [x] POST /v1/journal endpoint creates new entry
+- [x] Accepts: entry_type, title (optional), blocks (JSON array)
+- [x] PUT /v1/journal/:entryId endpoint updates entry
+- [x] DELETE /v1/journal/:entryId endpoint deletes entry
+- [x] Blocks stored as JSON with type, content, order
+- [x] Auto-save timestamps tracked
+- [x] Proper error handling
 
 ## Implementation Plan
 1. Create GET /v1/journal route in api/controllers/journal/index.ts
