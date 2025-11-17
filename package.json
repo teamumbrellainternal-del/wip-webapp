@@ -10,6 +10,8 @@
     "build:worker": "node scripts/build-worker.js",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy",
+    "deploy:staging": "npm run build && wrangler deploy --env staging",
+    "deploy:prod": "npm run build && wrangler deploy --env production",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 30",
     "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit",
