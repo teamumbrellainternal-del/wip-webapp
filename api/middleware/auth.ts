@@ -4,7 +4,7 @@
  * Implements task-1.4 requirements for authentication and authorization
  */
 
-import { verifyToken } from '@clerk/backend/jwt'
+import { verifyToken } from '@clerk/backend'
 import { verifyJWT, type JWTPayload } from '../utils/jwt'
 import type { User } from '../models/user'
 import {

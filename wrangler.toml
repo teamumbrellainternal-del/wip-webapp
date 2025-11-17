@@ -5,11 +5,15 @@ compatibility_date = "2024-01-01"
 # Environment variables
 [vars]
 USE_MOCKS = "true"  # Use mock services for development (set to "false" in M10 for real services)
+ENVIRONMENT = "development"  # Environment name (development, staging, production)
 
 # Clerk Configuration (add actual keys from Clerk dashboard)
 # CLERK_PUBLISHABLE_KEY = "pk_test_..."  # Get from Clerk dashboard
 # CLERK_SECRET_KEY = "sk_test_..."       # Get from Clerk dashboard (KEEP SECRET)
 # CLERK_WEBHOOK_SECRET = "whsec_..."     # Get from Clerk webhook settings (KEEP SECRET)
+
+# Sentry Configuration (optional - for error tracking)
+# SENTRY_DSN = "https://...@sentry.io/..."  # Get from Sentry project settings (OPTIONAL)
 
 # Assets configuration for serving frontend as SPA from Workers
 [assets]
@@ -20,6 +24,9 @@ not_found_handling = "single-page-application"
 # Preview environment (for PR deployments)
 [env.preview]
 name = "umbrella-api-preview"
+
+[env.preview.vars]
+ENVIRONMENT = "preview"
 
 [[env.preview.d1_databases]]
 binding = "DB"
@@ -39,6 +46,9 @@ id = "04fceb9a09054bbd991d5252a9a169cf"
 [env.dev]
 name = "umbrella-api-dev"
 
+[env.dev.vars]
+ENVIRONMENT = "development"
+
 [[env.dev.d1_databases]]
 binding = "DB"
 database_name = "umbrella-dev-db"
@@ -57,6 +67,9 @@ id = "04fceb9a09054bbd991d5252a9a169cf"
 [env.staging]
 name = "umbrella-api-staging"
 
+[env.staging.vars]
+ENVIRONMENT = "staging"
+
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "umbrella-dev-db"
@@ -74,6 +87,9 @@ workers_dev = false
 # route = "umbrella.app/*"
 
 # Production database binding
+[env.production.vars]
+ENVIRONMENT = "production"
+
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "umbrella-prod-db"

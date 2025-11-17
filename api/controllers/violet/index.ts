@@ -239,10 +239,7 @@ export const getUsage: RouteHandler = async (ctx) => {
     const dailyLimit = 50
     const promptsRemaining = Math.max(0, dailyLimit - promptsUsedToday)
 
-    // 5. Calculate reset time (midnight UTC tomorrow)
-    const now = new Date()
-    const tomorrow = new Date(now)
-    // Get current usage from KV
+    // 5. Get current usage from KV
     const rateLimitInfo = await checkRateLimit(
       ctx.userId,
       'rate_limit:violet',
@@ -285,28 +282,17 @@ export const getUsage: RouteHandler = async (ctx) => {
         daily_limit: dailyLimit,
         reset_at: resetAt,
         historical_usage: historical,
-    return successResponse(
-      {
-        promptsUsed,
-        dailyLimit: 50,
-        remaining: rateLimitInfo.remaining,
-        resetAt,
       },
       200,
       ctx.requestId
     )
   } catch (error) {
+    console.error('Error in getUsage:', error)
     return errorResponse(
       ErrorCodes.DATABASE_ERROR,
       'Failed to fetch Violet usage statistics',
       500,
       error instanceof Error ? { error: error.message } : undefined,
-    console.error('Error in getUsage:', error)
-    return errorResponse(
-      ErrorCodes.INTERNAL_ERROR,
-      'Internal server error',
-      500,
-      undefined,
       ctx.requestId
     )
   }
