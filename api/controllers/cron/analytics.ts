@@ -7,7 +7,7 @@
  */
 
 import type { Env } from '../../index'
-import { generateUUID } from '../../utils/uuid'
+import { generateUUIDv4 } from '../../utils/uuid'
 
 /**
  * Cron log entry
@@ -67,7 +67,7 @@ async function createCronLog(
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .bind(
-      generateUUID(),
+      generateUUIDv4(),
       jobName,
       options.startTime,
       options.endTime || null,
@@ -281,7 +281,7 @@ export async function aggregateAnalytics(env: Env): Promise<Response> {
               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
             )
             .bind(
-              generateUUID(),
+              generateUUIDv4(),
               artist.id,
               yesterdayStr,
               metrics.profile_views,
