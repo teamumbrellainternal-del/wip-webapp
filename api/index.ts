@@ -326,24 +326,29 @@ export default {
     // Set environment for logger
     setEnvironment(env.ENVIRONMENT || 'development')
 
-    // Validate environment on startup
-    try {
-      validateAndLogEnvironment(env)
-    } catch (error) {
-      // Return 500 if environment validation fails
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Environment validation failed',
-          message: error instanceof Error ? error.message : 'Unknown error',
-        }),
-        {
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
+    // Validate environment on startup (skip for test auth route)
+    const isTestAuthRoute =
+      url.pathname === '/test/auth/login' || url.pathname === '/api/test/auth/login'
+
+    if (!isTestAuthRoute) {
+      try {
+        validateAndLogEnvironment(env)
+      } catch (error) {
+        // Return 500 if environment validation fails
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Environment validation failed',
+            message: error instanceof Error ? error.message : 'Unknown error',
+          }),
+          {
+            status: 500,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        )
+      }
     }
 
     // Initialize Sentry for error tracking
