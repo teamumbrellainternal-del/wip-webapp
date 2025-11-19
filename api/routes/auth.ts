@@ -486,6 +486,14 @@ export async function handleLogout(request: Request, env: Env): Promise<Response
     try {
       const user = await authenticateRequest(request, env)
       userId = user.userId
+
+      // Delete session from KV storage
+      const sessionKey = `session:${userId}`
+      await env.KV.delete(sessionKey)
+
+      // Also clear any related auth tokens
+      const tokenKey = `token:${userId}`
+      await env.KV.delete(tokenKey)
     } catch (error) {
       // If auth fails, still log the attempt
       console.log({
