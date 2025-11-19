@@ -89,14 +89,27 @@ jobs:
           command: deploy --env production
 
       - name: Display Deployment URLs
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+          DEPLOYMENT_NAME: umbrella-prod
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          URL=${DEPLOYMENT_URL}
+
+          if [ -z "$URL" ]; then
+            echo "Deployment URL not available from wrangler output" >&2
+            exit 1
+          fi
+
+          DEMO_URL="$URL/auth/test"
+
           echo "### 🚀 Deployment Successful!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Production URL:** https://umbrella-prod.${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.workers.dev" >> $GITHUB_STEP_SUMMARY
+          echo "**Production URL:** ${URL}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Demo Mode URL (no login required):** https://umbrella-prod.${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.workers.dev/auth/test" >> $GITHUB_STEP_SUMMARY
+          echo "**Demo Mode URL (no login required):** ${DEMO_URL}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 Demo Mode URL (no login): https://umbrella-prod.${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.workers.dev/auth/test"
-          echo "🌐 Production URL: https://umbrella-prod.${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.workers.dev"
+          echo "🔗 Demo Mode URL (no login): ${DEMO_URL}"
+          echo "🌐 Production URL: ${URL}"
