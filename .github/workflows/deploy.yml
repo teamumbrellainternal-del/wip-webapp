@@ -81,8 +81,22 @@ jobs:
         run: npm run build
 
       - name: Deploy to Cloudflare Workers
+        id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy --env production
+
+      - name: Display Deployment URLs
+        run: |
+          echo "### 🚀 Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Production URL:** https://umbrella-prod.${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.workers.dev" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Demo Mode URL (no login required):** https://umbrella-prod.${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.workers.dev/auth/test" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 Demo Mode URL (no login): https://umbrella-prod.${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.workers.dev/auth/test"
+          echo "🌐 Production URL: https://umbrella-prod.${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.workers.dev"
