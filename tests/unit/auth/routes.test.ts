@@ -3,10 +3,50 @@
  * Umbrella MVP - OAuth Flow Tests
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { handleAuthCallback, handleSessionCheck, handleLogout, handleSessionRefresh } from '../../../api/routes/auth'
 import { createJWT } from '../../../api/utils/jwt'
 import type { Env } from '../../../api/index'
+
+// Mock Clerk backend for token verification
+vi.mock('@clerk/backend', () => ({
+  verifyToken: vi.fn().mockImplementation(async (token: string) => {
+    // Mock successful token verification
+    // Parse the JWT to extract payload (simplified for testing)
+    try {
+      const parts = token.split('.')
+      if (parts.length !== 3) {
+        throw new Error('Invalid token format')
+      }
+      // Decode base64url payload
+      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+      const payload = JSON.parse(atob(base64))
+      return payload
+    } catch (error) {
+      throw new Error('Invalid token')
+    }
+  }),
+}))
+
+// Mock Clerk JWT verification (dynamic import)
+vi.mock('@clerk/backend/jwt', () => ({
+  verifyToken: vi.fn().mockImplementation(async (token: string) => {
+    // Mock successful token verification
+    // Parse the JWT to extract payload (simplified for testing)
+    try {
+      const parts = token.split('.')
+      if (parts.length !== 3) {
+        throw new Error('Invalid token format')
+      }
+      // Decode base64url payload
+      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+      const payload = JSON.parse(atob(base64))
+      return payload
+    } catch (error) {
+      throw new Error('Invalid token')
+    }
+  }),
+}))
 
 // Mock KV Namespace
 class MockKVNamespace implements KVNamespace {
@@ -65,6 +105,13 @@ class MockD1Database implements D1Database {
               const [provider, oauthId] = values
               return Array.from(this.users.values()).find(
                 (u) => u.oauth_provider === provider && u.oauth_id === oauthId
+              )
+            }
+
+            if (query.includes('SELECT * FROM users WHERE clerk_id')) {
+              const [clerkId] = values
+              return Array.from(this.users.values()).find(
+                (u) => u.clerk_id === clerkId
               )
             }
 
@@ -134,6 +181,8 @@ describe('Authentication Routes', () => {
       KV: mockKV as any,
       BUCKET: {} as any,
       JWT_SECRET: 'test-jwt-secret-123456',
+      CLERK_SECRET_KEY: 'sk_test_12345',
+      CLERK_PUBLISHABLE_KEY: 'pk_test_12345',
       CLAUDE_API_KEY: 'test-claude-key',
       RESEND_API_KEY: 'test-resend-key',
       TWILIO_ACCOUNT_SID: 'test-twilio-sid',
@@ -292,8 +341,10 @@ describe('Authentication Routes', () => {
   describe('handleSessionCheck', () => {
     it('should return user data for valid session', async () => {
       const userId = 'session-user-123'
+      const clerkId = 'clerk_session_123'
       const user = {
         id: userId,
+        clerk_id: clerkId,
         oauth_provider: 'google',
         oauth_id: 'google-session',
         email: 'session@example.com',
@@ -305,10 +356,10 @@ describe('Authentication Routes', () => {
       // @ts-ignore
       mockDB.users.set(userId, user)
 
-      // Create session token
+      // Create session token with clerk_id as sub
       const token = await createJWT(
         {
-          sub: userId,
+          sub: clerkId,
           email: user.email,
           oauth_provider: user.oauth_provider,
           oauth_id: user.oauth_id,
@@ -331,7 +382,9 @@ describe('Authentication Routes', () => {
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
       expect(data.data.user.id).toBe(userId)
-      expect(data.data.valid).toBe(true)
+      expect(data.data.user.clerk_user_id).toBe(clerkId)
+      expect(data.data.session).toBeDefined()
+      expect(data.data.session.expires_at).toBeDefined()
     })
 
     it('should return error for missing auth header', async () => {
@@ -350,8 +403,10 @@ describe('Authentication Routes', () => {
   describe('handleLogout', () => {
     it('should clear session and return success', async () => {
       const userId = 'logout-user-123'
+      const clerkId = 'clerk_logout_123'
       const user = {
         id: userId,
+        clerk_id: clerkId,
         oauth_provider: 'google',
         oauth_id: 'google-logout',
         email: 'logout@example.com',
@@ -366,10 +421,10 @@ describe('Authentication Routes', () => {
       // Set session in KV
       await mockKV.put(`session:${userId}`, JSON.stringify({ userId }))
 
-      // Create auth token
+      // Create auth token with clerk_id as sub
       const token = await createJWT(
         {
-          sub: userId,
+          sub: clerkId,
           email: user.email,
           oauth_provider: user.oauth_provider,
           oauth_id: user.oauth_id,
@@ -414,8 +469,10 @@ describe('Authentication Routes', () => {
   describe('handleSessionRefresh', () => {
     it('should refresh token and extend session', async () => {
       const userId = 'refresh-user-123'
+      const clerkId = 'clerk_refresh_123'
       const user = {
         id: userId,
+        clerk_id: clerkId,
         oauth_provider: 'google',
         oauth_id: 'google-refresh',
         email: 'refresh@example.com',
@@ -427,10 +484,10 @@ describe('Authentication Routes', () => {
       // @ts-ignore
       mockDB.users.set(userId, user)
 
-      // Create expiring token
+      // Create expiring token with clerk_id as sub
       const oldToken = await createJWT(
         {
-          sub: userId,
+          sub: clerkId,
           email: user.email,
           oauth_provider: user.oauth_provider,
           oauth_id: user.oauth_id,
