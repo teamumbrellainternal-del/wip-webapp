@@ -7,12 +7,24 @@ const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const { isSignedIn, isLoaded } = useAuth()
+
+  useEffect(() => {
+    if (DEMO_MODE) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [navigate])
+
+  // Auto-redirect to dashboard if already authenticated
+  useEffect(() => {
+    if (DEMO_MODE) return
+
+    if (isLoaded && isSignedIn) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [isLoaded, isSignedIn, navigate])
 
   if (DEMO_MODE) {
-    useEffect(() => {
-      navigate('/dashboard', { replace: true })
-    }, [navigate])
-
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950 p-4">
         <div className="w-full max-w-md space-y-6 text-center">
@@ -27,15 +39,6 @@ export default function LoginPage() {
       </div>
     )
   }
-
-  const { isSignedIn, isLoaded } = useAuth()
-
-  // Auto-redirect to dashboard if already authenticated
-  useEffect(() => {
-    if (isLoaded && isSignedIn) {
-      navigate('/dashboard', { replace: true })
-    }
-  }, [isLoaded, isSignedIn, navigate])
 
   // Show nothing while checking auth state
   if (!isLoaded) {
