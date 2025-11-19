@@ -43,6 +43,7 @@ jobs:
 
       - name: Build
         env:
+          VITE_DEMO_MODE: true
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
         run: npm run build
 
@@ -75,6 +76,7 @@ jobs:
 
       - name: Build
         env:
+          VITE_DEMO_MODE: true
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
         run: npm run build
 
