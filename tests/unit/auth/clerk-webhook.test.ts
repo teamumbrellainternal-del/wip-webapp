@@ -7,15 +7,17 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { handleClerkWebhook } from '../../../api/routes/auth'
 import type { Env } from '../../../api/index'
 
-// Mock Svix Webhook
+// Mock Svix Webhook with proper constructor
 vi.mock('svix', () => {
+  class MockWebhook {
+    verify(payload: string) {
+      // Mock successful verification by default
+      return JSON.parse(payload)
+    }
+  }
+
   return {
-    Webhook: vi.fn().mockImplementation(() => ({
-      verify: vi.fn().mockImplementation((payload: string) => {
-        // Mock successful verification by default
-        return JSON.parse(payload)
-      }),
-    })),
+    Webhook: MockWebhook,
   }
 })
 
