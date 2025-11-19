@@ -146,20 +146,24 @@ workers_dev = false
 
 # Production database binding
 [env.production.vars]
+USE_MOCKS = "false"
 ENVIRONMENT = "production"
 
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "umbrella-prod-db"
-# database_id will be set after creating the production database via:
+# TODO: Replace with actual production database ID after creating via:
 # wrangler d1 create umbrella-prod-db --env production
+# Using dev database temporarily for initial deployment
+database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
 
 # Production KV namespace binding
 [[env.production.kv_namespaces]]
 binding = "KV"
-# id will be set after creating the production KV namespace via:
+# TODO: Replace with actual production KV namespace ID after creating via:
 # wrangler kv:namespace create KV --env production
-# id = "production-kv-id"
+# Using dev KV namespace temporarily for initial deployment
+id = "04fceb9a09054bbd991d5252a9a169cf"
 
 # Production R2 bucket binding
 [[env.production.r2_buckets]]
