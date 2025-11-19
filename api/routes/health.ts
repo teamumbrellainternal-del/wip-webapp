@@ -72,6 +72,10 @@ async function checkKV(env: Env): Promise<'healthy' | 'unhealthy'> {
  */
 async function checkStorage(env: Env): Promise<'healthy' | 'unhealthy'> {
   try {
+    // If BUCKET is not configured, skip the check
+    if (!env.BUCKET) {
+      return 'unhealthy'
+    }
     // List objects with limit 1 to verify R2 connectivity
     const objects = await env.BUCKET.list({ limit: 1 })
     return objects !== null ? 'healthy' : 'unhealthy'

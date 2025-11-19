@@ -166,11 +166,10 @@ binding = "KV"
 id = "04fceb9a09054bbd991d5252a9a169cf"
 
 # Production R2 bucket binding
-[[env.production.r2_buckets]]
-binding = "BUCKET"
-bucket_name = "umbrella-prod"
-# Bucket should be created via:
-# wrangler r2 bucket create umbrella-prod
+# Uncomment after creating the bucket via: wrangler r2 bucket create umbrella-prod
+# [[env.production.r2_buckets]]
+# binding = "BUCKET"
+# bucket_name = "umbrella-prod"
 
 # Production cron triggers
 # Analytics aggregation: Daily at midnight UTC
