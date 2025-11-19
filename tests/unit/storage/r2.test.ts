@@ -375,7 +375,40 @@ describe('R2 Storage - Quota Management', () => {
     const existingSize = 49.5 * 1024 * 1024 * 1024
     const newFileSize = 1 * 1024 * 1024 * 1024 // 1GB (would exceed)
 
-    await bucket.put(`tracks/${artistId}/large.mp3`, new ArrayBuffer(existingSize))
+    // Mock the file size without actual allocation
+    const mockFile = {
+      key: `tracks/${artistId}/large.mp3`,
+      version: '1',
+      size: existingSize,
+      etag: 'mock-etag',
+      httpEtag: 'mock-http-etag',
+      uploaded: new Date(),
+      httpMetadata: undefined,
+      customMetadata: undefined,
+      range: { offset: 0, length: existingSize },
+      checksums: {},
+    }
+
+    // Override list method to return mocked large file only for tracks prefix
+    bucket.list = async (options?: R2ListOptions) => {
+      const prefix = options?.prefix || ''
+      // Only return the mock file for the tracks folder
+      if (prefix === `tracks/${artistId}/`) {
+        return {
+          objects: [mockFile as R2Object],
+          truncated: false,
+          cursor: undefined,
+          delimitedPrefixes: [],
+        }
+      }
+      // Return empty for other folders
+      return {
+        objects: [],
+        truncated: false,
+        cursor: undefined,
+        delimitedPrefixes: [],
+      }
+    }
 
     const result = await checkStorageQuota(bucket, artistId, newFileSize)
     expect(result.success).toBe(true)
@@ -386,7 +419,40 @@ describe('R2 Storage - Quota Management', () => {
     const artistId = 'artist-quota-percent'
     const size = 25 * 1024 * 1024 * 1024 // 25GB (50% of quota)
 
-    await bucket.put(`tracks/${artistId}/large.mp3`, new ArrayBuffer(size))
+    // Mock the file size without actual allocation
+    const mockFile = {
+      key: `tracks/${artistId}/large.mp3`,
+      version: '1',
+      size: size,
+      etag: 'mock-etag',
+      httpEtag: 'mock-http-etag',
+      uploaded: new Date(),
+      httpMetadata: undefined,
+      customMetadata: undefined,
+      range: { offset: 0, length: size },
+      checksums: {},
+    }
+
+    // Override list method to return mocked large file only for tracks prefix
+    bucket.list = async (options?: R2ListOptions) => {
+      const prefix = options?.prefix || ''
+      // Only return the mock file for the tracks folder
+      if (prefix === `tracks/${artistId}/`) {
+        return {
+          objects: [mockFile as R2Object],
+          truncated: false,
+          cursor: undefined,
+          delimitedPrefixes: [],
+        }
+      }
+      // Return empty for other folders
+      return {
+        objects: [],
+        truncated: false,
+        cursor: undefined,
+        delimitedPrefixes: [],
+      }
+    }
 
     const result = await calculateStorageUsage(bucket, artistId)
     expect(result.success).toBe(true)
