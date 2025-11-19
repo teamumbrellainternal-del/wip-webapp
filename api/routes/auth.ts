@@ -9,6 +9,7 @@ import { authenticateRequest, checkOnboardingComplete, type Env } from '../middl
 import type { User } from '../models/user'
 import { Webhook } from 'svix'
 import { createJWT } from '../utils/jwt'
+import { verifyJwt } from '@clerk/backend/jwt'
 
 /**
  * POST /v1/auth/webhook
@@ -425,8 +426,7 @@ export async function handleSessionCheck(request: Request, env: Env): Promise<Re
 
   try {
     // Verify Clerk token and get full payload
-    const { verifyToken } = await import('@clerk/backend/jwt')
-    const payload = await verifyToken(token, {
+    const payload = await verifyJwt(token, {
       secretKey: env.CLERK_SECRET_KEY,
     })
 

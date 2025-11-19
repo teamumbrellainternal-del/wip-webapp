@@ -64,8 +64,14 @@ async function getOnboardingSession(
   userId: string
 ): Promise<OnboardingSession | null> {
   const key = getOnboardingSessionKey(userId)
-  const sessionData = await kv.get(key, 'json')
-  return sessionData as OnboardingSession | null
+  const sessionData = await kv.get(key, 'json') as OnboardingSession | null
+
+  // Ensure completedSteps is always an array (defensive programming)
+  if (sessionData && !Array.isArray(sessionData.completedSteps)) {
+    sessionData.completedSteps = []
+  }
+
+  return sessionData
 }
 
 /**
@@ -249,6 +255,7 @@ export const submitStep1: RouteHandler = async (ctx) => {
     return successResponse(
       {
         message: 'Step 1 completed',
+        step_completed: 1,
         nextStep: 2,
         completedSteps: session.completedSteps,
       },
@@ -333,6 +340,7 @@ export const submitStep2: RouteHandler = async (ctx) => {
     return successResponse(
       {
         message: 'Step 2 completed',
+        step_completed: 2,
         nextStep: 3,
         completedSteps: session.completedSteps,
       },
@@ -408,6 +416,7 @@ export const submitStep3: RouteHandler = async (ctx) => {
     return successResponse(
       {
         message: 'Step 3 completed',
+        step_completed: 3,
         nextStep: 4,
         completedSteps: session.completedSteps,
       },
@@ -483,6 +492,7 @@ export const submitStep4: RouteHandler = async (ctx) => {
     return successResponse(
       {
         message: 'Step 4 completed',
+        step_completed: 4,
         nextStep: 5,
         completedSteps: session.completedSteps,
       },
@@ -691,6 +701,7 @@ export const submitStep5: RouteHandler = async (ctx) => {
     return successResponse(
       {
         message: 'Onboarding completed successfully',
+        step_completed: 5,
         complete: true,
         artistId,
       },

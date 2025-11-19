@@ -61,7 +61,7 @@ describe('E2E Critical Path Tests', () => {
       expect(users.length).toBe(1)
       expect(users[0].email).toBe(userData.email)
       expect(users[0].oauth_provider).toBe(userData.oauth_provider)
-      expect(users[0].onboarding_complete).toBe(false)
+      expect(users[0].onboarding_complete).toBe(0) // SQLite stores as 0/1, not boolean
 
       // Verify session in KV
       const sessionKey = `session:${users[0].id}`

@@ -958,3 +958,57 @@ export const confirmAvatarUpload: RouteHandler = async (ctx) => {
     )
   }
 }
+
+/**
+ * Get profile statistics
+ * GET /v1/profile/stats
+ * Returns view counts and other profile metrics
+ */
+export const getProfileStats: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    // Get artist profile
+    const artist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE user_id = ?'
+    ).bind(ctx.userId).first<{ id: string }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist profile not found',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Get analytics data for total views
+    // In a real implementation, this would query analytics_daily table
+    // For now, return a placeholder
+    const stats = {
+      total_views: 0,
+      total_followers: 0,
+      total_gig_applications: 0,
+    }
+
+    return successResponse(stats, 200, ctx.requestId)
+  } catch (error) {
+    console.error('Error getting profile stats:', error)
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Failed to get profile stats',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
