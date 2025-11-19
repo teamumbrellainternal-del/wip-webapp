@@ -41,8 +41,9 @@ export function validateEnvironment(env: Env): ValidationResult {
     missing.push('KV (KV namespace binding)')
   }
 
+  // R2 bucket is optional (can be added later when created)
   if (!env.BUCKET) {
-    missing.push('BUCKET (R2 bucket binding)')
+    warnings.push('BUCKET (R2 bucket binding) not set - file storage features will be limited')
   }
 
   // Required secrets for authentication (always required)
