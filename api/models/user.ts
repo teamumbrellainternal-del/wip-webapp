@@ -12,7 +12,7 @@ export interface User {
   oauth_provider: 'apple' | 'google'
   oauth_id: string
   email: string
-  onboarding_complete: boolean
+  onboarding_complete: number // 0 or 1 in SQLite
   created_at: string
   updated_at: string
 }

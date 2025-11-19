@@ -3,7 +3,7 @@
  * Provides factory functions for creating realistic test data
  */
 
-import { generateUUID } from '../../api/utils/uuid'
+import { generateUUIDv4 } from '../../api/utils/uuid'
 
 /**
  * Create test user data
@@ -14,7 +14,7 @@ export function createTestUser(overrides?: {
   oauth_id?: string
   onboarding_complete?: boolean
 }) {
-  const id = generateUUID()
+  const id = generateUUIDv4()
   return {
     id,
     email: overrides?.email || `test-${id}@example.com`,
@@ -30,7 +30,7 @@ export function createTestUser(overrides?: {
  * Create test artist profile data
  */
 export function createTestArtist(userId: string, overrides?: Partial<any>) {
-  const id = generateUUID()
+  const id = generateUUIDv4()
   return {
     id,
     user_id: userId,
@@ -62,7 +62,7 @@ export function createTestArtist(userId: string, overrides?: Partial<any>) {
  * Create test gig data
  */
 export function createTestGig(artistId: string, overrides?: Partial<any>) {
-  const id = generateUUID()
+  const id = generateUUIDv4()
   return {
     id,
     artist_id: artistId,
@@ -89,7 +89,7 @@ export function createTestGig(artistId: string, overrides?: Partial<any>) {
  * Create test track data
  */
 export function createTestTrack(artistId: string, overrides?: Partial<any>) {
-  const id = generateUUID()
+  const id = generateUUIDv4()
   return {
     id,
     artist_id: artistId,
@@ -114,7 +114,7 @@ export function createTestTrack(artistId: string, overrides?: Partial<any>) {
  * Create test message data
  */
 export function createTestMessage(conversationId: string, senderId: string, overrides?: Partial<any>) {
-  const id = generateUUID()
+  const id = generateUUIDv4()
   return {
     id,
     conversation_id: conversationId,
@@ -130,7 +130,7 @@ export function createTestMessage(conversationId: string, senderId: string, over
  * Create test review data
  */
 export function createTestReview(artistId: string, overrides?: Partial<any>) {
-  const id = generateUUID()
+  const id = generateUUIDv4()
   return {
     id,
     artist_id: artistId,
@@ -138,7 +138,7 @@ export function createTestReview(artistId: string, overrides?: Partial<any>) {
     reviewer_email: overrides?.reviewer_email || `reviewer-${id.substring(0, 8)}@example.com`,
     rating: overrides?.rating || 5,
     review_text: overrides?.review_text || 'Excellent artist to work with!',
-    invite_token: overrides?.invite_token || generateUUID(),
+    invite_token: overrides?.invite_token || generateUUIDv4(),
     status: overrides?.status || 'approved',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -150,7 +150,7 @@ export function createTestReview(artistId: string, overrides?: Partial<any>) {
  * Create test file metadata
  */
 export function createTestFile(artistId: string, overrides?: Partial<any>) {
-  const id = generateUUID()
+  const id = generateUUIDv4()
   return {
     id,
     artist_id: artistId,
