@@ -52,7 +52,7 @@ export interface UserProfile {
  * Check if user has completed onboarding
  */
 export function hasCompletedOnboarding(user: User): boolean {
-  return user.onboarding_complete === true
+  return user.onboarding_complete === 1
 }
 
 /**
@@ -69,7 +69,7 @@ export function sanitizeUser(user: User): UserProfile {
   return {
     id: user.id,
     email: user.email,
-    onboarding_complete: user.onboarding_complete,
+    onboarding_complete: user.onboarding_complete === 1,
     created_at: user.created_at,
   }
 }
