@@ -8,14 +8,18 @@ export default tseslint.config(
   {
     ignores: [
       'dist/**',
+      '**/dist/**',
       'node_modules/**',
       '.wrangler/**',
       'eslint.config.js',
       'api/**',
       'docs/**',
       'scripts/**',
+      '**/scripts/**',
       '*.cjs',
-      'inspiration/**'
+      '**/*.cjs',
+      'inspiration/**',
+      'brand/**'
     ]
   },
   js.configs.recommended,
