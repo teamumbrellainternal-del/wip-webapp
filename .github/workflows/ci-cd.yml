@@ -103,6 +103,8 @@ jobs:
         run: npm ci
 
       - name: Build frontend
+        env:
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
         run: npm run build
 
       - name: Upload build artifacts
