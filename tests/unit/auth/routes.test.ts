@@ -22,7 +22,7 @@ vi.mock('@clerk/backend', () => ({
       const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
       const payload = JSON.parse(atob(base64))
       return payload
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Invalid token')
     }
   }),
@@ -42,7 +42,7 @@ vi.mock('@clerk/backend/jwt', () => ({
       const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
       const payload = JSON.parse(atob(base64))
       return payload
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Invalid token')
     }
   }),
