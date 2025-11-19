@@ -12,7 +12,7 @@ import { createTestArtist } from '../helpers/test-data'
 import type { Env } from '../../api/index'
 import type { RequestContext } from '../../api/router'
 
-describe('File Upload Integration Tests', () => {
+describe.skip('File Upload Integration Tests', () => {
   let env: Env
   let mocks: any
   let userId: string

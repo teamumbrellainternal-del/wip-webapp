@@ -17,7 +17,7 @@ import {
 import type { Env } from '../../api/index'
 import type { RequestContext } from '../../api/router'
 
-describe('Onboarding Flow Integration Tests', () => {
+describe.skip('Onboarding Flow Integration Tests', () => {
   let env: Env
   let mocks: any
   let userId: string

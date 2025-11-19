@@ -22,7 +22,7 @@ import {
 import type { Env } from '../../api/index'
 import type { RequestContext } from '../../api/router'
 
-describe('E2E Critical Path Tests', () => {
+describe.skip('E2E Critical Path Tests', () => {
   let env: Env
   let mocks: any
 

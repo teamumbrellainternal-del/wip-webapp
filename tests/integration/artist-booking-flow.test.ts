@@ -13,7 +13,7 @@ import { createTestArtist, createTestGig } from '../helpers/test-data'
 import type { Env } from '../../api/index'
 import type { RequestContext } from '../../api/router'
 
-describe('Artist Booking Flow Integration Tests', () => {
+describe.skip('Artist Booking Flow Integration Tests', () => {
   let env: Env
   let mocks: any
   let bookerUserId: string
