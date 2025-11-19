@@ -3,12 +3,31 @@ import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { Loader2 } from 'lucide-react'
 
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
+
 /**
  * SSO Callback Page
  * Handles the OAuth redirect after successful authentication
  */
 export default function SSOCallbackPage() {
   const navigate = useNavigate()
+
+  if (DEMO_MODE) {
+    useEffect(() => {
+      navigate('/dashboard', { replace: true })
+    }, [navigate])
+
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto text-purple-600" />
+          <h2 className="text-xl font-semibold">Demo mode active</h2>
+          <p className="text-muted-foreground">Redirecting to the dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
   const { isLoaded, isSignedIn } = useUser()
 
   useEffect(() => {

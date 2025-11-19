@@ -29,17 +29,15 @@ export default function App() {
       <ErrorBoundary>
         <HelmetProvider>
           <ThemeProvider defaultTheme="light" storageKey="umbrella-theme">
-            <SessionTimeoutProvider>
-              <MockAuthProvider>
-                <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2 text-center text-sm text-yellow-800">
-                  🎭 Demo Mode - Logged in as demo user
-                </div>
-                <OfflineBanner />
-                <RouterProvider router={router} />
-                <Toaster />
-                <CookieBanner />
-              </MockAuthProvider>
-            </SessionTimeoutProvider>
+            <MockAuthProvider>
+              <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2 text-center text-sm text-yellow-800">
+                🎭 Demo Mode - Logged in as demo user
+              </div>
+              <OfflineBanner />
+              <RouterProvider router={router} />
+              <Toaster />
+              <CookieBanner />
+            </MockAuthProvider>
           </ThemeProvider>
         </HelmetProvider>
       </ErrorBoundary>

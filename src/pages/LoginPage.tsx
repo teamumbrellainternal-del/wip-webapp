@@ -3,9 +3,32 @@ import { useNavigate } from 'react-router-dom'
 import { SignIn, useAuth } from '@clerk/clerk-react'
 import { MetaTags } from '../components/MetaTags'
 
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
+
 export default function LoginPage() {
-  const { isSignedIn, isLoaded } = useAuth()
   const navigate = useNavigate()
+
+  if (DEMO_MODE) {
+    useEffect(() => {
+      navigate('/dashboard', { replace: true })
+    }, [navigate])
+
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950 p-4">
+        <div className="w-full max-w-md space-y-6 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-600 mb-2">
+            <span className="text-2xl font-bold text-white">U</span>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight">Demo Mode</h1>
+          <p className="text-muted-foreground">
+            You are already logged in as the demo user. Redirecting you to the dashboard...
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  const { isSignedIn, isLoaded } = useAuth()
 
   // Auto-redirect to dashboard if already authenticated
   useEffect(() => {
