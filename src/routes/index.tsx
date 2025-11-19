@@ -6,6 +6,7 @@ import ProfilePage from '@/pages/ProfilePage'
 import PlaceholderPage from '@/pages/placeholders/PlaceholderPage'
 import ProfileEditPage from '@/pages/ProfileEditPage'
 import MarketplacePage from '@/pages/MarketplacePage'
+import TestAuthPage from '@/pages/TestAuthPage'
 import MessagesPage from '@/pages/MessagesPage'
 import MessageFansPage from '@/pages/MessageFansPage'
 import FilesPage from '@/pages/FilesPage'
@@ -43,6 +44,10 @@ export const router = createBrowserRouter([
   {
     path: '/auth',
     element: <LoginPage />,
+  },
+  {
+    path: '/auth/test',
+    element: <TestAuthPage />,
   },
   {
     path: '/sso-callback',
