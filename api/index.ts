@@ -326,9 +326,11 @@ export default {
     // Set environment for logger
     setEnvironment(env.ENVIRONMENT || 'development')
 
-    // Validate environment on startup (skip for test auth route)
+    // Validate environment on startup (skip for test/demo routes)
     const isTestAuthRoute =
-      url.pathname === '/test/auth/login' || url.pathname === '/api/test/auth/login'
+      url.pathname === '/auth/test' ||
+      url.pathname === '/test/auth/login' ||
+      url.pathname === '/api/test/auth/login'
 
     if (!isTestAuthRoute) {
       try {
