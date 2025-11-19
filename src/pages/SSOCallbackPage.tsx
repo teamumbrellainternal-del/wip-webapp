@@ -11,27 +11,16 @@ const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
  */
 export default function SSOCallbackPage() {
   const navigate = useNavigate()
-
-  if (DEMO_MODE) {
-    useEffect(() => {
-      navigate('/dashboard', { replace: true })
-    }, [navigate])
-
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-12 w-12 animate-spin mx-auto text-purple-600" />
-          <h2 className="text-xl font-semibold">Demo mode active</h2>
-          <p className="text-muted-foreground">Redirecting to the dashboard...</p>
-        </div>
-      </div>
-    )
-  }
-
   const { isLoaded, isSignedIn } = useUser()
 
   useEffect(() => {
-    if (!isLoaded) return
+    if (DEMO_MODE) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [navigate])
+
+  useEffect(() => {
+    if (!isLoaded || DEMO_MODE) return
 
     // Clerk automatically handles the OAuth callback
     // We just need to redirect based on sign-in status
@@ -44,6 +33,18 @@ export default function SSOCallbackPage() {
       navigate('/auth?error=callback_failed')
     }
   }, [isLoaded, isSignedIn, navigate])
+
+  if (DEMO_MODE) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto text-purple-600" />
+          <h2 className="text-xl font-semibold">Demo mode active</h2>
+          <p className="text-muted-foreground">Redirecting to the dashboard...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950">
