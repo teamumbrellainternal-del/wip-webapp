@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -22,6 +24,13 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Build brand package
+        run: |
+          cd brand
+          npm ci || true
+          npm run build || echo "Brand build skipped"
+          cd ..
 
       - name: Type check
         run: npm run type-check
@@ -43,6 +52,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -52,6 +63,13 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Build brand package
+        run: |
+          cd brand
+          npm ci || true
+          npm run build || echo "Brand build skipped"
+          cd ..
 
       - name: Build
         run: npm run build
