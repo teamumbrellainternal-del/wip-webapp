@@ -45,6 +45,7 @@ export interface Env {
   DB: D1Database // D1 database binding
   KV: KVNamespace // KV namespace binding
   BUCKET?: R2Bucket // R2 bucket binding (optional until created)
+  USE_MOCKS?: string // Demo/preview mode flag
   JWT_SECRET: string // JWT signing secret
   CLERK_SECRET_KEY: string // Clerk secret key
   CLERK_PUBLISHABLE_KEY: string // Clerk publishable key

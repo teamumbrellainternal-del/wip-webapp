@@ -23,6 +23,13 @@ function isDevelopment(env: Env): boolean {
 }
 
 /**
+ * Check if the worker is running in mock/demo mode
+ */
+function isMockMode(env: Env): boolean {
+  return env.USE_MOCKS === true || env.USE_MOCKS === 'true'
+}
+
+/**
  * Validate environment variables and bindings
  * @param env - Worker environment
  * @returns Validation result
@@ -31,6 +38,17 @@ function isDevelopment(env: Env): boolean {
 export function validateEnvironment(env: Env): ValidationResult {
   const missing: string[] = []
   const warnings: string[] = []
+
+  // In demo/mock mode we don't require any bindings or secrets.
+  // This allows preview deployments without GitHub secrets configured.
+  if (isMockMode(env)) {
+    warnings.push('USE_MOCKS enabled - skipping strict environment validation for demo mode')
+    return {
+      valid: true,
+      missing,
+      warnings,
+    }
+  }
 
   // Required bindings (always required)
   if (!env.DB) {
