@@ -140,7 +140,7 @@ id = "04fceb9a09054bbd991d5252a9a169cf"
 # Production environment
 [env.production]
 name = "umbrella-prod"
-workers_dev = false
+# workers_dev = false  # Commented out until custom domain is configured
 # Custom domain configuration (requires DNS setup)
 # route = "umbrella.app/*"
 
