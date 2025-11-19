@@ -146,7 +146,7 @@ name = "umbrella-prod"
 
 # Production database binding
 [env.production.vars]
-USE_MOCKS = "false"
+USE_MOCKS = "true"  # Enable mock mode to allow demo deployment without secrets
 ENVIRONMENT = "production"
 
 [[env.production.d1_databases]]
