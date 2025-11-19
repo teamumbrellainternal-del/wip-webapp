@@ -282,6 +282,132 @@ async function handleSessionCreated(sessionData: any, env: Env): Promise<Respons
 }
 
 /**
+ * POST /v1/auth/callback
+ * OAuth callback handler - creates or authenticates users from OAuth providers
+ * @param request - Request with OAuth data (email, oauth_provider, oauth_id)
+ * @param env - Worker environment
+ * @returns User data with JWT token and redirect URL
+ */
+export async function handleAuthCallback(request: Request, env: Env): Promise<Response> {
+  try {
+    // Parse OAuth data from request body
+    const body = await request.json() as {
+      email: string
+      oauth_provider: string
+      oauth_id: string
+    }
+
+    const { email, oauth_provider, oauth_id } = body
+
+    // Validate required fields
+    if (!email || !oauth_provider || !oauth_id) {
+      return errorResponse('validation_error', 'Missing required OAuth fields', 400)
+    }
+
+    // Check if user already exists by OAuth provider and ID
+    const existingUser = await env.DB.prepare(
+      'SELECT * FROM users WHERE oauth_provider = ? AND oauth_id = ?'
+    )
+      .bind(oauth_provider, oauth_id)
+      .first<User>()
+
+    let user: User
+    let isNewUser = false
+
+    if (existingUser) {
+      // User exists - use existing user
+      user = existingUser
+    } else {
+      // New user - create account
+      const userId = generateUUIDv4()
+      const now = new Date().toISOString()
+
+      await env.DB.prepare(
+        `INSERT INTO users (id, oauth_provider, oauth_id, email, onboarding_complete, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
+      )
+        .bind(userId, oauth_provider, oauth_id, email, 0, now, now)
+        .run()
+
+      user = {
+        id: userId,
+        oauth_provider,
+        oauth_id,
+        email,
+        onboarding_complete: 0,
+        created_at: now,
+        updated_at: now,
+      } as User
+
+      isNewUser = true
+    }
+
+    // Generate JWT token
+    const token = await createJWT(
+      {
+        sub: user.id,
+        email: user.email,
+        oauth_provider: user.oauth_provider,
+        oauth_id: user.oauth_id,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days
+      },
+      env.JWT_SECRET
+    )
+
+    // Store session in KV
+    await env.KV.put(
+      `session:${user.id}`,
+      JSON.stringify({
+        userId: user.id,
+        email: user.email,
+        oauthProvider: user.oauth_provider,
+      }),
+      { expirationTtl: 7 * 24 * 60 * 60 } // 7 days
+    )
+
+    // Determine redirect URL based on onboarding status
+    let redirectUrl = '/dashboard'
+
+    if (!user.onboarding_complete) {
+      // Check if user has an artist profile
+      const artistProfile = await env.DB.prepare(
+        'SELECT id FROM artists WHERE user_id = ?'
+      )
+        .bind(user.id)
+        .first()
+
+      if (artistProfile) {
+        // Has artist profile but incomplete onboarding - continue from step 1
+        redirectUrl = '/onboarding/artists/step1'
+      } else {
+        // No artist profile - start from role selection
+        redirectUrl = '/onboarding/role-selection'
+      }
+    }
+
+    // Return user data and token
+    const statusCode = isNewUser ? 201 : 200
+    return successResponse(
+      {
+        user: {
+          id: user.id,
+          email: user.email,
+          oauth_provider: user.oauth_provider,
+          onboarding_complete: Boolean(user.onboarding_complete),
+        },
+        token,
+        redirect_url: redirectUrl,
+      },
+      statusCode
+    )
+  } catch (error) {
+    console.error('Auth callback error:', error)
+    return errorResponse('internal_error', 'Authentication failed', 500)
+  }
+}
+
+/**
  * GET /v1/auth/session
  * Validates Clerk session token and returns current user data
  * @param request - Request with Authorization header (Bearer format)
