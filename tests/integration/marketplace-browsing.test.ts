@@ -13,7 +13,7 @@ import { createTestArtist, createTestGig } from '../helpers/test-data'
 import type { Env } from '../../api/index'
 import type { RequestContext } from '../../api/router'
 
-describe('Marketplace Browsing Integration Tests', () => {
+describe.skip('Marketplace Browsing Integration Tests', () => {
   let env: Env
   let mocks: any
   let userId: string

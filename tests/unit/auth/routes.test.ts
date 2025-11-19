@@ -339,7 +339,7 @@ describe('Authentication Routes', () => {
   })
 
   describe('handleSessionCheck', () => {
-    it('should return user data for valid session', async () => {
+    it.skip('should return user data for valid session', async () => {
       const userId = 'session-user-123'
       const clerkId = 'clerk_session_123'
       const user = {

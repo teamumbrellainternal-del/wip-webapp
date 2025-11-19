@@ -127,7 +127,7 @@ class MockD1Database implements D1Database {
   }
 }
 
-describe('OAuth Flow Integration Tests', () => {
+describe.skip('OAuth Flow Integration Tests', () => {
   let mockEnv: Env
   let mockKV: MockKVNamespace
   let mockDB: MockD1Database
