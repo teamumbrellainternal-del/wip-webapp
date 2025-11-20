@@ -269,9 +269,9 @@ export default function ProfileEditPage() {
         description: 'Your profile has been saved successfully',
       })
 
-      // Navigate back to profile view
+      // Navigate back to dashboard
       setTimeout(() => {
-        navigate('/profile/view')
+        navigate('/dashboard')
       }, 500)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update profile'
@@ -288,7 +288,7 @@ export default function ProfileEditPage() {
   }
 
   const handleCancel = () => {
-    navigate('/profile/view')
+    navigate('/dashboard')
   }
 
   if (isLoading) {
