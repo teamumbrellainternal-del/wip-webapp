@@ -23,6 +23,8 @@ import PrivacyPage from '@/pages/legal/PrivacyPage'
 import CookiesPage from '@/pages/legal/CookiesPage'
 import SettingsPage from '@/pages/SettingsPage'
 
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
+
 /**
  * Main application router using React Router v6
  *
@@ -43,7 +45,7 @@ export const router = createBrowserRouter([
   // Public: Authentication
   {
     path: '/auth',
-    element: <LoginPage />,
+    element: DEMO_MODE ? <Navigate to="/dashboard" replace /> : <LoginPage />,
   },
   {
     path: '/auth/test',
@@ -51,7 +53,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/sso-callback',
-    element: <SSOCallbackPage />,
+    element: DEMO_MODE ? <Navigate to="/dashboard" replace /> : <SSOCallbackPage />,
   },
 
   // Public: Legal pages
