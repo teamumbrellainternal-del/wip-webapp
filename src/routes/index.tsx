@@ -3,6 +3,7 @@ import LoginPage from '@/pages/LoginPage'
 import SSOCallbackPage from '@/pages/SSOCallbackPage'
 import DashboardPage from '@/pages/DashboardPage'
 import ProfilePage from '@/pages/ProfilePage'
+import ProfileViewPage from '@/pages/ProfileViewPage'
 import PlaceholderPage from '@/pages/placeholders/PlaceholderPage'
 import ProfileEditPage from '@/pages/ProfileEditPage'
 import MarketplacePage from '@/pages/MarketplacePage'
@@ -194,7 +195,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <OnboardingGuard>
-          <PlaceholderPage title="My Profile" />
+          <ProfileViewPage />
         </OnboardingGuard>
       </ProtectedRoute>
     ),
