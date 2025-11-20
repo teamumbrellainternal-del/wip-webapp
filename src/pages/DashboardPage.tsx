@@ -350,7 +350,7 @@ export default function DashboardPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate('/profile/view')}
+                onClick={() => navigate('/profile/edit')}
               >
                 View All
               </Button>
