@@ -1,8 +1,8 @@
-const brandPreset = require('./brand/dist/tailwind.preset.cjs')
+// const brandPreset = require('./brand/dist/tailwind.preset.cjs')
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  presets: [brandPreset],
+  // presets: [brandPreset],
   darkMode: ["class"],
   content: [
     './pages/**/*.{ts,tsx}',

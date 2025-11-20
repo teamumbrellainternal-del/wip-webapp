@@ -1,6 +1,6 @@
 /* Import brand kit - NO manual CSS variables needed */
-@import '../brand/dist/fonts.css';
-@import '../brand/dist/tokens.css';
+/* @import '../brand/dist/fonts.css'; */
+/* @import '../brand/dist/tokens.css'; */
 
 @tailwind base;
 @tailwind components;

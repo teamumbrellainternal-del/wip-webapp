@@ -13,6 +13,7 @@ import MessageFansPage from '@/pages/MessageFansPage'
 import FilesPage from '@/pages/FilesPage'
 import CreativeStudioPage from '@/pages/CreativeStudioPage'
 import VioletPage from '@/pages/VioletPage'
+import ToolsPage from '@/pages/ToolsPage'
 import NotFoundPage from '@/pages/NotFoundPage'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import OnboardingGuard from '@/components/auth/OnboardingGuard'
@@ -263,7 +264,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <OnboardingGuard>
-          <PlaceholderPage title="Artist Toolbox" />
+          <ToolsPage />
         </OnboardingGuard>
       </ProtectedRoute>
     ),

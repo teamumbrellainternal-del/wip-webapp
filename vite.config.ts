@@ -1,10 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
-import { copyFileSync, mkdirSync, readdirSync } from 'fs'
+import { copyFileSync, mkdirSync, readdirSync, existsSync } from 'fs'
 
 // Helper to recursively copy directory
 function copyDirRecursive(src: string, dest: string) {
+  if (!existsSync(src)) {
+    console.log(`⚠️ Source directory does not exist, skipping: ${src}`)
+    return
+  }
   mkdirSync(dest, { recursive: true })
   const entries = readdirSync(src, { withFileTypes: true })
 
