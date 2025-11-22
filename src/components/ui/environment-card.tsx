@@ -1,18 +1,25 @@
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { MoreHorizontal, ExternalLink } from "lucide-react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { MoreHorizontal, ExternalLink } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu'
 
 interface EnvironmentCardProps {
   name: string
-  type: "production" | "preview" | "development"
+  type: 'production' | 'preview' | 'development'
   domain?: string
   branchName?: string
   variableCount: number
@@ -35,12 +42,12 @@ export function EnvironmentCard({
 }: EnvironmentCardProps) {
   const getBadgeVariant = () => {
     switch (type) {
-      case "production":
-        return "default"
-      case "preview":
-        return "secondary"
-      case "development":
-        return "outline"
+      case 'production':
+        return 'default'
+      case 'preview':
+        return 'secondary'
+      case 'development':
+        return 'outline'
     }
   }
 

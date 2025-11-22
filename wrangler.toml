@@ -161,7 +161,11 @@ name = "umbrella-prod"
 
 # Production database binding
 [env.production.vars]
-USE_MOCKS = "true"  # Enable mock mode to allow demo deployment without secrets
+# IMPORTANT: Set to "false" before production deployment!
+# Requires all secrets to be configured via: wrangler secret put <SECRET_NAME> --env production
+# Required secrets: CLERK_SECRET_KEY, CLERK_WEBHOOK_SECRET, RESEND_API_KEY, TWILIO_ACCOUNT_SID,
+#                   TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, CLAUDE_API_KEY
+USE_MOCKS = "false"  # Use real services in production (requires secrets)
 ENVIRONMENT = "production"
 
 [[env.production.d1_databases]]

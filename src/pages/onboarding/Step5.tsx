@@ -56,7 +56,7 @@ export default function OnboardingStep5() {
       navigate('/dashboard', { replace: true })
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to complete onboarding'
-      
+
       // Handle "Step 4 must be completed first" error
       if (errorMessage.includes('Step 4 must be completed first')) {
         setError('Please complete Step 4 first. Redirecting...')
@@ -104,16 +104,16 @@ export default function OnboardingStep5() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950 p-4">
-      <div className="max-w-3xl mx-auto py-8">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-slate-50 p-4 dark:from-slate-950 dark:to-purple-950">
+      <div className="mx-auto max-w-3xl py-8">
         {/* Progress Indicator */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-2 flex items-center justify-between">
             <span className="text-sm font-medium text-muted-foreground">Step 5 of 5</span>
             <span className="text-sm font-medium text-muted-foreground">100% Complete</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-            <div className="bg-purple-600 h-2.5 rounded-full" style={{ width: '100%' }}></div>
+          <div className="h-2.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+            <div className="h-2.5 rounded-full bg-purple-600" style={{ width: '100%' }}></div>
           </div>
         </div>
 
@@ -123,7 +123,7 @@ export default function OnboardingStep5() {
               <PartyPopper className="h-8 w-8 text-purple-600" />
               <div>
                 <CardTitle className="text-3xl">Almost There!</CardTitle>
-                <CardDescription className="text-lg mt-1">
+                <CardDescription className="mt-1 text-lg">
                   Just a few quick questions to help us understand your journey
                 </CardDescription>
               </div>
@@ -137,7 +137,8 @@ export default function OnboardingStep5() {
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    All questions are optional. These help us personalize your Umbrella experience, but you can skip any or all of them.
+                    All questions are optional. These help us personalize your Umbrella experience,
+                    but you can skip any or all of them.
                   </AlertDescription>
                 </Alert>
 
@@ -149,15 +150,12 @@ export default function OnboardingStep5() {
                       control={form.control}
                       name={question.id}
                       render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4 shadow-sm hover:bg-accent/50 transition-colors">
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4 shadow-sm transition-colors hover:bg-accent/50">
                           <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
                           <div className="space-y-1 leading-none">
-                            <FormLabel className="text-base font-medium cursor-pointer">
+                            <FormLabel className="cursor-pointer text-base font-medium">
                               {question.label}
                             </FormLabel>
                             <FormDescription>{question.description}</FormDescription>
@@ -177,7 +175,7 @@ export default function OnboardingStep5() {
                 )}
 
                 {/* Navigation */}
-                <div className="flex justify-between items-center pt-6">
+                <div className="flex items-center justify-between pt-6">
                   <Button
                     type="button"
                     variant="outline"
@@ -203,8 +201,9 @@ export default function OnboardingStep5() {
                 </div>
 
                 {/* Help Text */}
-                <p className="text-sm text-center text-muted-foreground pt-4">
-                  By completing onboarding, you'll have full access to all Umbrella features including the marketplace, messaging, and Violet AI toolkit.
+                <p className="pt-4 text-center text-sm text-muted-foreground">
+                  By completing onboarding, you'll have full access to all Umbrella features
+                  including the marketplace, messaging, and Violet AI toolkit.
                 </p>
               </form>
             </Form>

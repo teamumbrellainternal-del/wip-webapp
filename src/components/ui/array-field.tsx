@@ -1,10 +1,10 @@
-import type React from "react"
-import { useState } from "react"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Plus, X } from "lucide-react"
-import { FormDescription } from "@/components/ui/form"
+import type React from 'react'
+import { useState } from 'react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Plus, X } from 'lucide-react'
+import { FormDescription } from '@/components/ui/form'
 
 interface ArrayFieldProps {
   label: string
@@ -22,17 +22,17 @@ export function ArrayField({
   description,
   values,
   onChange,
-  placeholder = "Enter a value",
+  placeholder = 'Enter a value',
   maxItems,
   id,
 }: ArrayFieldProps) {
-  const [newValue, setNewValue] = useState("")
-  const fieldId = id || label.toLowerCase().replace(/\s+/g, "-")
+  const [newValue, setNewValue] = useState('')
+  const fieldId = id || label.toLowerCase().replace(/\s+/g, '-')
 
   const handleAdd = () => {
     if (newValue.trim() && (!maxItems || values.length < maxItems)) {
       onChange([...values, newValue.trim()])
-      setNewValue("")
+      setNewValue('')
     }
   }
 
@@ -43,7 +43,7 @@ export function ArrayField({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault()
       handleAdd()
     }

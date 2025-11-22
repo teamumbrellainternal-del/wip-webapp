@@ -47,7 +47,7 @@ async function apiRequest<TResponse, TRequest = unknown>(
   return apiClient['request']<TResponse>(endpoint, {
     method,
     headers,
-    body: body && method !== 'GET' ? JSON.stringify(body) : undefined
+    body: body && method !== 'GET' ? JSON.stringify(body) : undefined,
   })
 }
 
@@ -73,15 +73,7 @@ export function useApi<TResponse, TRequest = unknown>(
   endpoint: string,
   options: UseApiOptions<TRequest> = {}
 ): UseApiResult<TResponse, TRequest> {
-  const {
-    method = 'GET',
-    skip = false,
-    params,
-    body,
-    headers,
-    onSuccess,
-    onError,
-  } = options
+  const { method = 'GET', skip = false, params, body, headers, onSuccess, onError } = options
 
   const [data, setData] = useState<TResponse | null>(null)
   const [error, setError] = useState<Error | null>(null)
@@ -145,7 +137,7 @@ export function useApi<TResponse, TRequest = unknown>(
 
   // Refetch function
   const refetch = useCallback(() => {
-    setRefetchTrigger(prev => prev + 1)
+    setRefetchTrigger((prev) => prev + 1)
   }, [])
 
   // Mutate function for POST/PATCH/PUT/DELETE
@@ -212,36 +204,28 @@ export function useGet<TResponse>(
 /**
  * Hook for POST mutations
  */
-export function usePost<TResponse, TRequest = unknown>(
-  endpoint: string
-) {
+export function usePost<TResponse, TRequest = unknown>(endpoint: string) {
   return useApi<TResponse, TRequest>(endpoint, { method: 'POST' })
 }
 
 /**
  * Hook for PATCH mutations
  */
-export function usePatch<TResponse, TRequest = unknown>(
-  endpoint: string
-) {
+export function usePatch<TResponse, TRequest = unknown>(endpoint: string) {
   return useApi<TResponse, TRequest>(endpoint, { method: 'PATCH' })
 }
 
 /**
  * Hook for PUT mutations
  */
-export function usePut<TResponse, TRequest = unknown>(
-  endpoint: string
-) {
+export function usePut<TResponse, TRequest = unknown>(endpoint: string) {
   return useApi<TResponse, TRequest>(endpoint, { method: 'PUT' })
 }
 
 /**
  * Hook for DELETE mutations
  */
-export function useDelete<TResponse = void>(
-  endpoint: string
-) {
+export function useDelete<TResponse = void>(endpoint: string) {
   return useApi<TResponse>(endpoint, { method: 'DELETE' })
 }
 

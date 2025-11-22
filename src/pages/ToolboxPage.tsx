@@ -12,7 +12,7 @@ import {
   Zap,
   FileAudio,
   Users,
-  Wand2
+  Wand2,
 } from 'lucide-react'
 import { MetaTags } from '@/components/MetaTags'
 
@@ -33,7 +33,8 @@ export default function ToolboxPage() {
     {
       id: 'violet',
       name: 'Violet AI',
-      description: 'Your AI-powered creative assistant for brainstorming, songwriting, and career advice',
+      description:
+        'Your AI-powered creative assistant for brainstorming, songwriting, and career advice',
       icon: Sparkles,
       iconBg: 'bg-purple-100',
       iconColor: 'text-purple-600',
@@ -43,15 +44,16 @@ export default function ToolboxPage() {
         'Songwriting assistance',
         'Career strategy guidance',
         'Music industry insights',
-        'Marketing ideas'
+        'Marketing ideas',
       ],
       badge: 'AI-Powered',
-      badgeVariant: 'default' as const
+      badgeVariant: 'default' as const,
     },
     {
       id: 'files',
       name: 'File Manager',
-      description: 'Organize, upload, and manage your music files, press kits, and promotional materials',
+      description:
+        'Organize, upload, and manage your music files, press kits, and promotional materials',
       icon: FolderOpen,
       iconBg: 'bg-blue-100',
       iconColor: 'text-blue-600',
@@ -61,8 +63,8 @@ export default function ToolboxPage() {
         'Store press kits and EPKs',
         'Organize promotional materials',
         'Share files with venues',
-        'Cloud storage integration'
-      ]
+        'Cloud storage integration',
+      ],
     },
     {
       id: 'studio',
@@ -77,8 +79,8 @@ export default function ToolboxPage() {
         'Share behind-the-scenes content',
         'Showcase your creative process',
         'Build your artist brand',
-        'Engage with your community'
-      ]
+        'Engage with your community',
+      ],
     },
     {
       id: 'message-fans',
@@ -93,18 +95,18 @@ export default function ToolboxPage() {
         'Segment your audience',
         'Schedule announcements',
         'Track engagement',
-        'Build fan relationships'
+        'Build fan relationships',
       ],
       badge: 'Beta',
-      badgeVariant: 'secondary' as const
-    }
+      badgeVariant: 'secondary' as const,
+    },
   ]
 
   const usageStats = [
     { label: 'AI Conversations', value: '24', icon: Sparkles },
     { label: 'Files Stored', value: '156', icon: FileAudio },
     { label: 'Studio Posts', value: '12', icon: Palette },
-    { label: 'Fans Reached', value: '1.2K', icon: Users }
+    { label: 'Fans Reached', value: '1.2K', icon: Users },
   ]
 
   return (
@@ -115,25 +117,25 @@ export default function ToolboxPage() {
         url="/tools"
       />
 
-      <div className="container max-w-7xl mx-auto py-8 space-y-8">
+      <div className="container mx-auto max-w-7xl space-y-8 py-8">
         {/* Header */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Wand2 className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold tracking-tight">Artist Toolbox</h1>
           </div>
-          <p className="text-lg text-muted-foreground max-w-2xl">
+          <p className="max-w-2xl text-lg text-muted-foreground">
             Everything you need to create, manage, and grow your music career in one place.
           </p>
         </div>
 
         {/* Usage Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {usageStats.map((stat) => (
             <Card key={stat.label}>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-muted">
+                  <div className="rounded-lg bg-muted p-2">
                     <stat.icon className="h-4 w-4 text-primary" />
                   </div>
                   <div>
@@ -147,32 +149,30 @@ export default function ToolboxPage() {
         </div>
 
         {/* Tools Grid */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid gap-6 md:grid-cols-2">
           {tools.map((tool) => {
             const Icon = tool.icon
             return (
               <Card
                 key={tool.id}
-                className="group hover:shadow-lg transition-all cursor-pointer relative"
+                className="group relative cursor-pointer transition-all hover:shadow-lg"
                 onClick={() => navigate(tool.path)}
               >
                 {tool.badge && (
-                  <div className="absolute top-4 right-4">
+                  <div className="absolute right-4 top-4">
                     <Badge variant={tool.badgeVariant}>{tool.badge}</Badge>
                   </div>
                 )}
                 <CardHeader className="space-y-4">
                   <div className="flex items-start gap-4">
-                    <div className={`p-3 rounded-xl ${tool.iconBg}`}>
+                    <div className={`rounded-xl p-3 ${tool.iconBg}`}>
                       <Icon className={`h-8 w-8 ${tool.iconColor}`} />
                     </div>
                     <div className="flex-1 space-y-1">
-                      <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                      <CardTitle className="text-xl transition-colors group-hover:text-primary">
                         {tool.name}
                       </CardTitle>
-                      <CardDescription className="text-base">
-                        {tool.description}
-                      </CardDescription>
+                      <CardDescription className="text-base">{tool.description}</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -180,8 +180,11 @@ export default function ToolboxPage() {
                   {/* Features List */}
                   <ul className="space-y-2">
                     {tool.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <Zap className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <li
+                        key={idx}
+                        className="flex items-start gap-2 text-sm text-muted-foreground"
+                      >
+                        <Zap className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
                         <span>{feature}</span>
                       </li>
                     ))}
@@ -190,7 +193,7 @@ export default function ToolboxPage() {
                   {/* Action Button */}
                   <Button
                     variant="outline"
-                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                    className="w-full transition-colors group-hover:bg-primary group-hover:text-primary-foreground"
                     onClick={(e) => {
                       e.stopPropagation()
                       navigate(tool.path)
@@ -215,24 +218,24 @@ export default function ToolboxPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
-              <h4 className="font-medium text-sm">🎯 Start with Violet AI</h4>
+              <h4 className="text-sm font-medium">🎯 Start with Violet AI</h4>
               <p className="text-sm text-muted-foreground">
-                Not sure where to begin? Chat with Violet for personalized recommendations
-                on how to use these tools to achieve your goals.
+                Not sure where to begin? Chat with Violet for personalized recommendations on how to
+                use these tools to achieve your goals.
               </p>
             </div>
             <div className="space-y-2">
-              <h4 className="font-medium text-sm">📁 Keep Your Files Organized</h4>
+              <h4 className="text-sm font-medium">📁 Keep Your Files Organized</h4>
               <p className="text-sm text-muted-foreground">
-                Upload high-quality audio files and press materials to make it easy for
-                venues to book you. A well-organized portfolio increases booking rates by 40%.
+                Upload high-quality audio files and press materials to make it easy for venues to
+                book you. A well-organized portfolio increases booking rates by 40%.
               </p>
             </div>
             <div className="space-y-2">
-              <h4 className="font-medium text-sm">📢 Engage Regularly</h4>
+              <h4 className="text-sm font-medium">📢 Engage Regularly</h4>
               <p className="text-sm text-muted-foreground">
-                Use Creative Studio and Fan Messaging to stay connected with your audience.
-                Artists who post weekly see 3x more engagement than those who don't.
+                Use Creative Studio and Fan Messaging to stay connected with your audience. Artists
+                who post weekly see 3x more engagement than those who don't.
               </p>
             </div>
           </CardContent>
@@ -247,21 +250,21 @@ export default function ToolboxPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div className="p-4 rounded-lg bg-muted/50 space-y-2">
-                <div className="font-medium text-sm">📊 Analytics Dashboard</div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-2 rounded-lg bg-muted/50 p-4">
+                <div className="text-sm font-medium">📊 Analytics Dashboard</div>
                 <p className="text-xs text-muted-foreground">
                   Deep insights into your performance and growth trends
                 </p>
               </div>
-              <div className="p-4 rounded-lg bg-muted/50 space-y-2">
-                <div className="font-medium text-sm">🤝 Collaboration Hub</div>
+              <div className="space-y-2 rounded-lg bg-muted/50 p-4">
+                <div className="text-sm font-medium">🤝 Collaboration Hub</div>
                 <p className="text-xs text-muted-foreground">
                   Connect and collaborate with other artists
                 </p>
               </div>
-              <div className="p-4 rounded-lg bg-muted/50 space-y-2">
-                <div className="font-medium text-sm">💰 Revenue Tracking</div>
+              <div className="space-y-2 rounded-lg bg-muted/50 p-4">
+                <div className="text-sm font-medium">💰 Revenue Tracking</div>
                 <p className="text-xs text-muted-foreground">
                   Track earnings, splits, and financial analytics
                 </p>

@@ -17,7 +17,7 @@ export default function ComponentShowcase() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b">
-        <div className="container mx-auto px-4 py-6 flex items-center justify-between">
+        <div className="container mx-auto flex items-center justify-between px-4 py-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Umbrella Design System</h1>
             <p className="text-muted-foreground">
@@ -28,37 +28,37 @@ export default function ComponentShowcase() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="container mx-auto space-y-8 px-4 py-8">
         {/* Brand Colors */}
         <section>
-          <h2 className="text-2xl font-bold mb-4">Brand Colors</h2>
+          <h2 className="mb-4 text-2xl font-bold">Brand Colors</h2>
           <Card>
             <CardContent className="pt-6">
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
                 <div className="space-y-2">
-                  <div className="h-20 bg-purple-600 rounded-lg shadow-sm" />
+                  <div className="h-20 rounded-lg bg-purple-600 shadow-sm" />
                   <p className="text-sm font-medium">Primary</p>
-                  <p className="text-xs text-muted-foreground font-mono">#9333EA</p>
+                  <p className="font-mono text-xs text-muted-foreground">#9333EA</p>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-20 bg-purple-100 dark:bg-purple-900 rounded-lg shadow-sm" />
+                  <div className="h-20 rounded-lg bg-purple-100 shadow-sm dark:bg-purple-900" />
                   <p className="text-sm font-medium">Primary Light</p>
-                  <p className="text-xs text-muted-foreground font-mono">#F3E8FF</p>
+                  <p className="font-mono text-xs text-muted-foreground">#F3E8FF</p>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-20 bg-slate-900 dark:bg-slate-100 rounded-lg shadow-sm" />
+                  <div className="h-20 rounded-lg bg-slate-900 shadow-sm dark:bg-slate-100" />
                   <p className="text-sm font-medium">Foreground</p>
-                  <p className="text-xs text-muted-foreground font-mono">#0F172A</p>
+                  <p className="font-mono text-xs text-muted-foreground">#0F172A</p>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-20 bg-slate-100 dark:bg-slate-900 rounded-lg shadow-sm" />
+                  <div className="h-20 rounded-lg bg-slate-100 shadow-sm dark:bg-slate-900" />
                   <p className="text-sm font-medium">Background</p>
-                  <p className="text-xs text-muted-foreground font-mono">#F8FAFC</p>
+                  <p className="font-mono text-xs text-muted-foreground">#F8FAFC</p>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-20 bg-amber-500 rounded-lg shadow-sm" />
+                  <div className="h-20 rounded-lg bg-amber-500 shadow-sm" />
                   <p className="text-sm font-medium">Accent</p>
-                  <p className="text-xs text-muted-foreground font-mono">#F59E0B</p>
+                  <p className="font-mono text-xs text-muted-foreground">#F59E0B</p>
                 </div>
               </div>
             </CardContent>
@@ -67,22 +67,22 @@ export default function ComponentShowcase() {
 
         {/* Typography */}
         <section>
-          <h2 className="text-2xl font-bold mb-4">Typography</h2>
+          <h2 className="mb-4 text-2xl font-bold">Typography</h2>
           <Card>
-            <CardContent className="pt-6 space-y-4">
+            <CardContent className="space-y-4 pt-6">
               <div>
                 <h1 className="text-4xl font-bold tracking-tight">Heading 1</h1>
-                <p className="text-sm text-muted-foreground font-mono">text-4xl font-bold</p>
+                <p className="font-mono text-sm text-muted-foreground">text-4xl font-bold</p>
               </div>
               <Separator />
               <div>
                 <h2 className="text-3xl font-bold tracking-tight">Heading 2</h2>
-                <p className="text-sm text-muted-foreground font-mono">text-3xl font-bold</p>
+                <p className="font-mono text-sm text-muted-foreground">text-3xl font-bold</p>
               </div>
               <Separator />
               <div>
                 <h3 className="text-2xl font-semibold tracking-tight">Heading 3</h3>
-                <p className="text-sm text-muted-foreground font-mono">text-2xl font-semibold</p>
+                <p className="font-mono text-sm text-muted-foreground">text-2xl font-semibold</p>
               </div>
               <Separator />
               <div>
@@ -90,14 +90,16 @@ export default function ComponentShowcase() {
                   Body text: The quick brown fox jumps over the lazy dog. This is how regular
                   paragraph text will appear throughout the application.
                 </p>
-                <p className="text-sm text-muted-foreground font-mono">text-base</p>
+                <p className="font-mono text-sm text-muted-foreground">text-base</p>
               </div>
               <Separator />
               <div>
                 <p className="text-sm text-muted-foreground">
                   Secondary text: Used for supporting information and metadata.
                 </p>
-                <p className="text-sm text-muted-foreground font-mono">text-sm text-muted-foreground</p>
+                <p className="font-mono text-sm text-muted-foreground">
+                  text-sm text-muted-foreground
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -105,12 +107,12 @@ export default function ComponentShowcase() {
 
         {/* Buttons */}
         <section>
-          <h2 className="text-2xl font-bold mb-4">Buttons</h2>
+          <h2 className="mb-4 text-2xl font-bold">Buttons</h2>
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm font-medium mb-2">Variants</p>
+                  <p className="mb-2 text-sm font-medium">Variants</p>
                   <div className="flex flex-wrap gap-2">
                     <Button>Default</Button>
                     <Button variant="secondary">Secondary</Button>
@@ -122,7 +124,7 @@ export default function ComponentShowcase() {
                 </div>
                 <Separator />
                 <div>
-                  <p className="text-sm font-medium mb-2">Sizes</p>
+                  <p className="mb-2 text-sm font-medium">Sizes</p>
                   <div className="flex flex-wrap items-center gap-2">
                     <Button size="sm">Small</Button>
                     <Button size="default">Default</Button>
@@ -131,7 +133,7 @@ export default function ComponentShowcase() {
                 </div>
                 <Separator />
                 <div>
-                  <p className="text-sm font-medium mb-2">With Icons</p>
+                  <p className="mb-2 text-sm font-medium">With Icons</p>
                   <div className="flex flex-wrap gap-2">
                     <Button>
                       <Music className="mr-2 h-4 w-4" />
@@ -154,8 +156,8 @@ export default function ComponentShowcase() {
 
         {/* Cards & Badges */}
         <section>
-          <h2 className="text-2xl font-bold mb-4">Cards & Badges</h2>
-          <div className="grid md:grid-cols-3 gap-4">
+          <h2 className="mb-4 text-2xl font-bold">Cards & Badges</h2>
+          <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader>
                 <CardTitle>Artist Profile</CardTitle>
@@ -217,9 +219,9 @@ export default function ComponentShowcase() {
 
         {/* Form Inputs */}
         <section>
-          <h2 className="text-2xl font-bold mb-4">Form Inputs</h2>
+          <h2 className="mb-4 text-2xl font-bold">Form Inputs</h2>
           <Card>
-            <CardContent className="pt-6 space-y-4">
+            <CardContent className="space-y-4 pt-6">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" placeholder="artist@example.com" />
@@ -242,7 +244,7 @@ export default function ComponentShowcase() {
 
         {/* Alerts */}
         <section>
-          <h2 className="text-2xl font-bold mb-4">Alerts</h2>
+          <h2 className="mb-4 text-2xl font-bold">Alerts</h2>
           <div className="space-y-4">
             <Alert>
               <Star className="h-4 w-4" />
@@ -262,7 +264,7 @@ export default function ComponentShowcase() {
 
         {/* Tabs Example */}
         <section>
-          <h2 className="text-2xl font-bold mb-4">Tabs</h2>
+          <h2 className="mb-4 text-2xl font-bold">Tabs</h2>
           <Tabs defaultValue="overview" className="w-full">
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -277,8 +279,8 @@ export default function ComponentShowcase() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    Tab content goes here. This demonstrates the 6-tab profile system we'll
-                    build for artist profiles.
+                    Tab content goes here. This demonstrates the 6-tab profile system we'll build
+                    for artist profiles.
                   </p>
                 </CardContent>
               </Card>
@@ -308,7 +310,7 @@ export default function ComponentShowcase() {
       </div>
 
       {/* Footer */}
-      <div className="border-t mt-12">
+      <div className="mt-12 border-t">
         <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
           <p>Umbrella Design System • Built with shadcn/ui + Tailwind CSS</p>
         </div>

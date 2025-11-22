@@ -1,6 +1,6 @@
 /**
  * Frontend Logger Utility
- * 
+ *
  * Mirrors the backend logger structure for consistent tracing.
  * Outputs structured JSON to console for easy debugging.
  */
@@ -22,20 +22,16 @@ class Logger {
       message,
       ...context,
     }
-    
+
     // Style the output based on level
     const styles = {
       info: 'color: #3b82f6',
       warn: 'color: #eab308',
       error: 'color: #ef4444',
-      debug: 'color: #a8a29e'
+      debug: 'color: #a8a29e',
     }
 
-    console.log(
-      `%c[${level.toUpperCase()}] ${message}`,
-      styles[level],
-      entry
-    )
+    console.log(`%c[${level.toUpperCase()}] ${message}`, styles[level], entry)
   }
 
   info(message: string, context?: LogContext) {
@@ -49,11 +45,10 @@ class Logger {
   error(message: string, context?: LogContext) {
     this.log('error', message, context)
   }
-  
+
   debug(message: string, context?: LogContext) {
     this.log('debug', message, context)
   }
 }
 
 export const logger = new Logger()
-

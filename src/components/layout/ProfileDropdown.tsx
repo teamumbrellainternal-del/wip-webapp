@@ -38,10 +38,10 @@ const mockUser = {
 
 export function ProfileDropdown() {
   const navigate = useNavigate()
-  
+
   // Always call the hook - hooks must be called unconditionally
   const clerk = useClerk()
-  
+
   // Determine if we should use Clerk based on demo mode
   const shouldUseClerk = !DEMO_MODE
 
@@ -94,9 +94,7 @@ export function ProfileDropdown() {
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{mockUser.full_name}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {mockUser.email}
-            </p>
+            <p className="text-xs leading-none text-muted-foreground">{mockUser.email}</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

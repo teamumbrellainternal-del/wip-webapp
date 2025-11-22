@@ -1,8 +1,8 @@
-import React from "react"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { cn } from "@/lib/utils"
-import { FormDescription } from "@/components/ui/form"
+import React from 'react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
+import { FormDescription } from '@/components/ui/form'
 
 interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string
@@ -23,7 +23,7 @@ export function TextField({
   ...props
 }: TextFieldProps) {
   const [charCount, setCharCount] = React.useState(props.value?.toString().length || 0)
-  const fieldId = id || label.toLowerCase().replace(/\s+/g, "-")
+  const fieldId = id || label.toLowerCase().replace(/\s+/g, '-')
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCharCount(e.target.value.length)
@@ -32,16 +32,16 @@ export function TextField({
 
   return (
     <div className="space-y-2">
-      <div className="flex justify-between items-center">
-        <Label htmlFor={fieldId} className={error ? "text-destructive" : ""}>
+      <div className="flex items-center justify-between">
+        <Label htmlFor={fieldId} className={error ? 'text-destructive' : ''}>
           {label}
         </Label>
         {showCharCount && maxLength && (
           <span
             className={cn(
-              "text-xs text-muted-foreground",
-              charCount > maxLength * 0.8 && "text-amber-500",
-              charCount >= maxLength && "text-destructive",
+              'text-xs text-muted-foreground',
+              charCount > maxLength * 0.8 && 'text-amber-500',
+              charCount >= maxLength && 'text-destructive'
             )}
           >
             {charCount}/{maxLength}
@@ -50,7 +50,7 @@ export function TextField({
       </div>
       <Input
         id={fieldId}
-        className={cn(error && "border-destructive", className)}
+        className={cn(error && 'border-destructive', className)}
         maxLength={maxLength}
         onChange={handleChange}
         {...props}

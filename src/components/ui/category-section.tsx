@@ -1,7 +1,14 @@
-import type React from "react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Loader2 } from "lucide-react"
+import type React from 'react'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Loader2 } from 'lucide-react'
 
 interface CategorySectionProps {
   title: string
@@ -26,7 +33,7 @@ export function CategorySection({
   isDirty = false,
   isLoading = false,
   onSave,
-  saveText = "Save",
+  saveText = 'Save',
   documentationLink,
 }: CategorySectionProps) {
   return (

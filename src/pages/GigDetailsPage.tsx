@@ -19,7 +19,7 @@ import {
   Building2,
   ArrowLeft,
   Share2,
-  Flag
+  Flag,
 } from 'lucide-react'
 import { gigsService } from '@/services/api'
 import type { Gig } from '@/types'
@@ -85,12 +85,12 @@ export default function GigDetailsPage() {
       await gigsService.apply(id)
       setHasApplied(true)
       toast.success('Application submitted!', {
-        description: 'The venue will review your profile and get back to you.'
+        description: 'The venue will review your profile and get back to you.',
       })
     } catch (err) {
       console.error('Failed to apply to gig:', err)
       toast.error('Failed to submit application', {
-        description: err instanceof Error ? err.message : 'Please try again later'
+        description: err instanceof Error ? err.message : 'Please try again later',
       })
     } finally {
       setApplying(false)
@@ -105,7 +105,7 @@ export default function GigDetailsPage() {
 
   const handleReport = () => {
     toast.info('Report feature coming soon', {
-      description: 'We appreciate you helping keep our community safe.'
+      description: 'We appreciate you helping keep our community safe.',
     })
   }
 
@@ -115,7 +115,7 @@ export default function GigDetailsPage() {
       weekday: 'long',
       month: 'long',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     })
   }
 
@@ -123,7 +123,7 @@ export default function GigDetailsPage() {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(amount)
   }
 
@@ -131,10 +131,10 @@ export default function GigDetailsPage() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="container max-w-6xl mx-auto py-8 space-y-6">
+        <div className="container mx-auto max-w-6xl space-y-6 py-8">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-64 w-full" />
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid gap-6 md:grid-cols-3">
             <Skeleton className="h-48 md:col-span-2" />
             <Skeleton className="h-48" />
           </div>
@@ -167,13 +167,9 @@ export default function GigDetailsPage() {
         url={`/gig/${gig.id}`}
       />
 
-      <div className="container max-w-6xl mx-auto py-8 space-y-6">
+      <div className="container mx-auto max-w-6xl space-y-6 py-8">
         {/* Back Button */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/marketplace/gigs')}
-          className="mb-4"
-        >
+        <Button variant="ghost" onClick={() => navigate('/marketplace/gigs')} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Marketplace
         </Button>
@@ -182,8 +178,8 @@ export default function GigDetailsPage() {
         <Card>
           <CardHeader>
             <div className="flex items-start justify-between">
-              <div className="space-y-2 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex-1 space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <CardTitle className="text-3xl">{gig.title}</CardTitle>
                   {isUrgent && (
                     <Badge variant="destructive" className="animate-pulse">
@@ -231,8 +227,8 @@ export default function GigDetailsPage() {
 
           <CardContent className="space-y-6">
             {/* Key Details Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-4">
                 <Calendar className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">Date</p>
@@ -240,7 +236,7 @@ export default function GigDetailsPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
+              <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-4">
                 <Clock className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">Time</p>
@@ -248,7 +244,7 @@ export default function GigDetailsPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
+              <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-4">
                 <MapPin className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">Location</p>
@@ -256,13 +252,11 @@ export default function GigDetailsPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
+              <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-4">
                 <DollarSign className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">Payment</p>
-                  <p className="font-medium text-green-600">
-                    {formatCurrency(gig.payment_amount)}
-                  </p>
+                  <p className="font-medium text-green-600">{formatCurrency(gig.payment_amount)}</p>
                 </div>
               </div>
             </div>
@@ -276,16 +270,14 @@ export default function GigDetailsPage() {
               {gig.application_deadline && (
                 <div className="flex items-center gap-2">
                   <AlertCircle className="h-4 w-4" />
-                  <span>
-                    Apply by: {formatDate(gig.application_deadline)}
-                  </span>
+                  <span>Apply by: {formatDate(gig.application_deadline)}</span>
                 </div>
               )}
             </div>
 
             {/* Genres */}
             {gig.genre_tags && gig.genre_tags.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex flex-wrap items-center gap-2">
                 <Music className="h-4 w-4 text-muted-foreground" />
                 {gig.genre_tags.map((genre) => (
                   <Badge key={genre} variant="secondary">
@@ -300,15 +292,13 @@ export default function GigDetailsPage() {
             {/* Description */}
             {gig.description && (
               <div className="space-y-2">
-                <h3 className="font-semibold text-lg">About This Gig</h3>
-                <p className="text-muted-foreground whitespace-pre-wrap">
-                  {gig.description}
-                </p>
+                <h3 className="text-lg font-semibold">About This Gig</h3>
+                <p className="whitespace-pre-wrap text-muted-foreground">{gig.description}</p>
               </div>
             )}
 
             {/* Apply Section */}
-            <div className="bg-muted/30 p-6 rounded-lg space-y-4">
+            <div className="space-y-4 rounded-lg bg-muted/30 p-6">
               {hasApplied ? (
                 <div className="flex items-center gap-2 text-green-600">
                   <CheckCircle2 className="h-5 w-5" />
@@ -322,10 +312,10 @@ export default function GigDetailsPage() {
               ) : (
                 <>
                   <div className="space-y-2">
-                    <h3 className="font-semibold text-lg">Ready to Apply?</h3>
+                    <h3 className="text-lg font-semibold">Ready to Apply?</h3>
                     <p className="text-sm text-muted-foreground">
-                      Your profile will be shared with the venue. They'll review your
-                      experience, media, and availability before making a decision.
+                      Your profile will be shared with the venue. They'll review your experience,
+                      media, and availability before making a decision.
                     </p>
                   </div>
                   <Button
@@ -336,7 +326,7 @@ export default function GigDetailsPage() {
                   >
                     {applying ? (
                       <>
-                        <span className="animate-spin mr-2">⏳</span>
+                        <span className="mr-2 animate-spin">⏳</span>
                         Submitting...
                       </>
                     ) : (
@@ -355,48 +345,48 @@ export default function GigDetailsPage() {
             <CardTitle>What to Expect</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <h4 className="font-medium flex items-center gap-2">
+                <h4 className="flex items-center gap-2 font-medium">
                   <CheckCircle2 className="h-4 w-4 text-green-600" />
                   Application Review
                 </h4>
                 <p className="text-sm text-muted-foreground">
-                  The venue will review your application within 48 hours and reach out
-                  via messages if interested.
+                  The venue will review your application within 48 hours and reach out via messages
+                  if interested.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-medium flex items-center gap-2">
+                <h4 className="flex items-center gap-2 font-medium">
                   <CheckCircle2 className="h-4 w-4 text-green-600" />
                   Confirmation Process
                 </h4>
                 <p className="text-sm text-muted-foreground">
-                  Once selected, you'll receive a booking confirmation with full event
-                  details and next steps.
+                  Once selected, you'll receive a booking confirmation with full event details and
+                  next steps.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-medium flex items-center gap-2">
+                <h4 className="flex items-center gap-2 font-medium">
                   <CheckCircle2 className="h-4 w-4 text-green-600" />
                   Payment Terms
                 </h4>
                 <p className="text-sm text-muted-foreground">
-                  Payment will be processed after the performance according to the
-                  venue's payment schedule.
+                  Payment will be processed after the performance according to the venue's payment
+                  schedule.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-medium flex items-center gap-2">
+                <h4 className="flex items-center gap-2 font-medium">
                   <CheckCircle2 className="h-4 w-4 text-green-600" />
                   Communication
                 </h4>
                 <p className="text-sm text-muted-foreground">
-                  All coordination will happen through Umbrella's messaging system for
-                  your safety and convenience.
+                  All coordination will happen through Umbrella's messaging system for your safety
+                  and convenience.
                 </p>
               </div>
             </div>

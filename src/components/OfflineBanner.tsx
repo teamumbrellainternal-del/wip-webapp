@@ -44,19 +44,19 @@ export function OfflineBanner() {
   }
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 animate-in slide-in-from-top duration-300">
-      <Alert className="rounded-none border-x-0 border-t-0 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+    <div className="fixed left-0 right-0 top-0 z-50 duration-300 animate-in slide-in-from-top">
+      <Alert className="rounded-none border-x-0 border-t-0 border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20">
         <div className="container mx-auto flex items-center justify-between gap-4 py-2">
           <div className="flex items-center gap-3">
-            <WifiOff className="h-5 w-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
-            <AlertDescription className="text-yellow-900 dark:text-yellow-100 font-medium m-0">
+            <WifiOff className="h-5 w-5 flex-shrink-0 text-yellow-600 dark:text-yellow-500" />
+            <AlertDescription className="m-0 font-medium text-yellow-900 dark:text-yellow-100">
               You're offline. Some features may not work.
             </AlertDescription>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0 text-yellow-900 dark:text-yellow-100 hover:bg-yellow-100 dark:hover:bg-yellow-900/40"
+            className="h-8 w-8 p-0 text-yellow-900 hover:bg-yellow-100 dark:text-yellow-100 dark:hover:bg-yellow-900/40"
             onClick={() => setIsDismissed(true)}
             aria-label="Dismiss offline banner"
           >

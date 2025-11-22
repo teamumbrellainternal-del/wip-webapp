@@ -63,7 +63,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     // Prevent double-fetch if we already have the correct user loaded
-    if (user && user.email === clerkUser.primaryEmailAddress?.emailAddress && user.name === (clerkUser.fullName || clerkUser.primaryEmailAddress?.emailAddress)) {
+    if (
+      user &&
+      user.email === clerkUser.primaryEmailAddress?.emailAddress &&
+      user.name === (clerkUser.fullName || clerkUser.primaryEmailAddress?.emailAddress)
+    ) {
       setIsLoading(false)
       return
     }
@@ -76,10 +80,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchUserProfile = async () => {
     // Generate ID for this sync attempt
     const requestId = crypto.randomUUID()
-    
+
     try {
       logger.info('Starting user profile fetch', { requestId, clerkId: clerkUser?.id })
-      
+
       const token = await session?.getToken()
       if (!token) {
         logger.warn('No session token available', { requestId })
@@ -91,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logger.debug('Sending session check request', { requestId })
       const response = await fetch('/v1/auth/session', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'X-Request-ID': requestId,
         },
       })
@@ -100,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const json = await response.json()
         const data = json.data
         logger.info('User profile fetched successfully', { requestId, userId: data?.user?.id })
-        
+
         if (data?.user) {
           setUser({
             id: data.user.id,
@@ -114,17 +118,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } else {
         // User exists in Clerk but not in our DB yet - webhook might be processing
-        logger.warn('User not found in database', { 
-          requestId, 
+        logger.warn('User not found in database', {
+          requestId,
           status: response.status,
-          statusText: response.statusText 
+          statusText: response.statusText,
         })
         setUser(null)
       }
     } catch (error) {
-      logger.error('Failed to fetch user profile', { 
-        requestId, 
-        error: error instanceof Error ? error.message : String(error) 
+      logger.error('Failed to fetch user profile', {
+        requestId,
+        error: error instanceof Error ? error.message : String(error),
       })
       setUser(null)
     } finally {
@@ -160,7 +164,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signInWithApple, signInWithGoogle, signOut, clerkUser }}>
+    <AuthContext.Provider
+      value={{ user, isLoading, signInWithApple, signInWithGoogle, signOut, clerkUser }}
+    >
       {children}
     </AuthContext.Provider>
   )

@@ -45,7 +45,10 @@ export function getRecentConfigurations(): ConfigData[] {
   return []
 }
 
-export function restoreFromHistory(_timestamp: number): { configData?: ConfigData; rawContent?: string } {
+export function restoreFromHistory(_timestamp: number): {
+  configData?: ConfigData
+  rawContent?: string
+} {
   return {}
 }
 

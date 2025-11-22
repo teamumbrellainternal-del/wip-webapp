@@ -46,23 +46,23 @@ export default function AppLayout({ children }: AppLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-background">
       {/* Top Navigation Bar */}
-      <header className="border-b bg-background sticky top-0 z-50">
+      <header className="sticky top-0 z-50 border-b bg-background">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex h-16 items-center justify-between">
             {/* Left Side: Logo + Navigation Tabs */}
             <div className="flex items-center gap-8">
               {/* Logo */}
-              <Link to="/dashboard" className="flex items-center gap-2 flex-shrink-0">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary">
+              <Link to="/dashboard" className="flex flex-shrink-0 items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
                   <span className="text-lg">☂</span>
                 </div>
-                <span className="font-bold text-lg hidden sm:inline">Umbrella</span>
+                <span className="hidden text-lg font-bold sm:inline">Umbrella</span>
               </Link>
 
               {/* Main Navigation Tabs - Hidden on mobile */}
-              <nav className="hidden md:flex items-center gap-6">
+              <nav className="hidden items-center gap-6 md:flex">
                 {navigationTabs.map((tab) => {
                   const active = isActiveTab(tab.path)
                   return (
@@ -70,10 +70,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
                       key={tab.path}
                       to={tab.path}
                       className={cn(
-                        'text-sm font-medium transition-colors hover:text-primary relative py-4',
-                        active
-                          ? 'text-foreground'
-                          : 'text-muted-foreground'
+                        'relative py-4 text-sm font-medium transition-colors hover:text-primary',
+                        active ? 'text-foreground' : 'text-muted-foreground'
                       )}
                     >
                       {tab.label}
@@ -110,7 +108,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 {unreadCount > 0 && (
                   <Badge
                     variant="destructive"
-                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                    className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center p-0 text-xs"
                   >
                     {unreadCount}
                   </Badge>
@@ -122,18 +120,14 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <ProfileDropdown />
 
               {/* View My Profile Button - Hidden on mobile */}
-              <Button
-                asChild
-                size="sm"
-                className="hidden lg:inline-flex"
-              >
+              <Button asChild size="sm" className="hidden lg:inline-flex">
                 <Link to="/profile/edit">View My Profile</Link>
               </Button>
             </div>
           </div>
 
           {/* Mobile Navigation - Shown on small screens */}
-          <nav className="md:hidden border-t">
+          <nav className="border-t md:hidden">
             <div className="flex items-center justify-around py-2">
               {navigationTabs.slice(0, 5).map((tab) => {
                 const active = isActiveTab(tab.path)
@@ -142,10 +136,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
                     key={tab.path}
                     to={tab.path}
                     className={cn(
-                      'text-xs font-medium transition-colors px-3 py-2 rounded-md',
-                      active
-                        ? 'text-foreground bg-accent'
-                        : 'text-muted-foreground'
+                      'rounded-md px-3 py-2 text-xs font-medium transition-colors',
+                      active ? 'bg-accent text-foreground' : 'text-muted-foreground'
                     )}
                   >
                     {tab.label}
@@ -158,9 +150,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1">
-        {children}
-      </main>
+      <main className="flex-1">{children}</main>
 
       {/* Footer */}
       <Footer />

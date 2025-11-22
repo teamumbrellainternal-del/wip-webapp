@@ -5,7 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -25,7 +31,7 @@ import {
   Send,
   Lightbulb,
   Target,
-  MessageCircle
+  MessageCircle,
 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import LoadingState from '@/components/common/LoadingState'
@@ -55,8 +61,8 @@ const TOOLKIT_CATEGORIES: ToolkitCategory[] = [
     subTools: [
       { id: 'find-venues', name: 'Find Perfect Venues', popular: true },
       { id: 'negotiate', name: 'Negotiate Like a Pro' },
-      { id: 'brand-partnerships', name: 'Brand Partnerships' }
-    ]
+      { id: 'brand-partnerships', name: 'Brand Partnerships' },
+    ],
   },
   {
     id: 'creative-growth',
@@ -66,34 +72,34 @@ const TOOLKIT_CATEGORIES: ToolkitCategory[] = [
     subTools: [
       { id: 'songwriting', name: 'Songwriting', popular: true },
       { id: 'ticket-sales', name: 'Ticket Sales & Promos' },
-      { id: 'brand-partnerships-2', name: 'Brand Partnerships' }
-    ]
+      { id: 'brand-partnerships-2', name: 'Brand Partnerships' },
+    ],
   },
   {
     id: 'songwriting-journal',
     name: 'Songwriting Journal',
-    icon: <Music className="h-5 w-5" />
+    icon: <Music className="h-5 w-5" />,
   },
   {
     id: 'vinyl-content',
     name: 'Vinyl Content Strategy',
     icon: <Disc3 className="h-5 w-5" />,
-    popular: true
+    popular: true,
   },
   {
     id: 'fan-engagement',
     name: 'Fan Engagement',
-    icon: <Heart className="h-5 w-5" />
+    icon: <Heart className="h-5 w-5" />,
   },
   {
     id: 'visual-branding',
     name: 'Visual Branding',
-    icon: <Sparkles className="h-5 w-5" />
+    icon: <Sparkles className="h-5 w-5" />,
   },
   {
     id: 'creative-challenges',
     name: 'Creative Challenges',
-    icon: <Target className="h-5 w-5" />
+    icon: <Target className="h-5 w-5" />,
   },
   {
     id: 'music-production',
@@ -106,8 +112,8 @@ const TOOLKIT_CATEGORIES: ToolkitCategory[] = [
       { id: 'music-theory', name: 'Musical Theory' },
       { id: 'samples-loops', name: 'Samples & Loops Library' },
       { id: 'bpm-rhythm', name: 'BPM & Rhythm' },
-      { id: 'finish-tracks', name: 'Finish Your Tracks' }
-    ]
+      { id: 'finish-tracks', name: 'Finish Your Tracks' },
+    ],
   },
   {
     id: 'networking',
@@ -119,8 +125,8 @@ const TOOLKIT_CATEGORIES: ToolkitCategory[] = [
       { id: 'find-partners', name: 'Find Partners' },
       { id: 'find-mentors', name: 'Find Mentors' },
       { id: 'collab-groups', name: 'Collaboration Groups' },
-      { id: 'industry-events', name: 'Industry Events' }
-    ]
+      { id: 'industry-events', name: 'Industry Events' },
+    ],
   },
   {
     id: 'career-management',
@@ -131,9 +137,9 @@ const TOOLKIT_CATEGORIES: ToolkitCategory[] = [
       { id: 'goal-achievement', name: 'Goal Achievement' },
       { id: 'email-marketing', name: 'Email Marketing' },
       { id: 'travel-opportunities', name: 'Travel Opportunities' },
-      { id: 'long-term-strategy', name: 'Long-term Strategy' }
-    ]
-  }
+      { id: 'long-term-strategy', name: 'Long-term Strategy' },
+    ],
+  },
 ]
 
 const INTENT_OPTIONS = [
@@ -142,22 +148,22 @@ const INTENT_OPTIONS = [
   { id: 'grow-fanbase', label: 'Grow fanbase', icon: <Megaphone className="h-5 w-5" /> },
   { id: 'connect-artists', label: 'Connect with artists', icon: <Users className="h-5 w-5" /> },
   { id: 'plan-content', label: 'Plan content', icon: <Video className="h-5 w-5" /> },
-  { id: 'get-advice', label: 'Get advice', icon: <MessageCircle className="h-5 w-5" /> }
+  { id: 'get-advice', label: 'Get advice', icon: <MessageCircle className="h-5 w-5" /> },
 ]
 
 const SAMPLE_CONVERSATIONS = [
   {
     prompt: "I'm feeling stuck on this bridge section...",
-    preview: "Let's explore some creative approaches to your bridge..."
+    preview: "Let's explore some creative approaches to your bridge...",
   },
   {
-    prompt: "Find me a gig this weekend!",
-    preview: "I'll help you search for local gigs happening this weekend..."
+    prompt: 'Find me a gig this weekend!',
+    preview: "I'll help you search for local gigs happening this weekend...",
   },
   {
-    prompt: "Help me roll out on TikTok",
-    preview: "Great! Let's create a content strategy for your TikTok launch..."
-  }
+    prompt: 'Help me roll out on TikTok',
+    preview: "Great! Let's create a content strategy for your TikTok launch...",
+  },
 ]
 
 export default function VioletPage() {
@@ -199,7 +205,7 @@ export default function VioletPage() {
   }
 
   const toggleCategory = (categoryId: string) => {
-    setExpandedCategories(prev => {
+    setExpandedCategories((prev) => {
       const newSet = new Set(prev)
       if (newSet.has(categoryId)) {
         newSet.delete(categoryId)
@@ -238,7 +244,7 @@ export default function VioletPage() {
 
   const handleIntentSelect = (intentId: string) => {
     setSelectedIntent(intentId)
-    const intent = INTENT_OPTIONS.find(i => i.id === intentId)
+    const intent = INTENT_OPTIONS.find((i) => i.id === intentId)
     if (intent) {
       setFreeFormPrompt(intent.label)
     }
@@ -262,11 +268,7 @@ export default function VioletPage() {
   if (error) {
     return (
       <AppLayout>
-        <ErrorState
-          error={error}
-          title="Failed to load Violet"
-          retry={fetchUsageData}
-        />
+        <ErrorState error={error} title="Failed to load Violet" retry={fetchUsageData} />
       </AppLayout>
     )
   }
@@ -275,8 +277,8 @@ export default function VioletPage() {
     <AppLayout>
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
         {/* Header */}
-        <div className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur-sm">
+          <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Button
@@ -290,14 +292,16 @@ export default function VioletPage() {
                 </Button>
                 <div>
                   <h1 className="text-2xl font-bold">Violet's Toolkit</h1>
-                  <p className="text-sm text-muted-foreground">Your AI copilot for everything music</p>
+                  <p className="text-sm text-muted-foreground">
+                    Your AI copilot for everything music
+                  </p>
                 </div>
               </div>
 
               {/* Usage Counter */}
               {usage && (
                 <Badge variant="secondary" className="px-4 py-2">
-                  <Sparkles className="h-4 w-4 mr-2" />
+                  <Sparkles className="mr-2 h-4 w-4" />
                   {usage.prompts_used_today}/{usage.prompts_limit} prompts used today
                 </Badge>
               )}
@@ -305,8 +309,8 @@ export default function VioletPage() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
             {/* Left Sidebar - Toolkit Categories */}
             <div className="lg:col-span-1">
               <Card>
@@ -324,20 +328,21 @@ export default function VioletPage() {
                         <div key={category.id} className="space-y-1">
                           <button
                             onClick={() => category.subTools && toggleCategory(category.id)}
-                            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-left"
+                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-accent"
                           >
-                            {category.subTools && (
-                              expandedCategories.has(category.id) ? (
+                            {category.subTools &&
+                              (expandedCategories.has(category.id) ? (
                                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
                               ) : (
                                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                              )
-                            )}
+                              ))}
                             {!category.subTools && <div className="w-4" />}
                             <div className="text-purple-600">{category.icon}</div>
-                            <span className="flex-1 font-medium text-sm">{category.name}</span>
+                            <span className="flex-1 text-sm font-medium">{category.name}</span>
                             {category.popular && (
-                              <Badge variant="secondary" className="text-xs">Popular</Badge>
+                              <Badge variant="secondary" className="text-xs">
+                                Popular
+                              </Badge>
                             )}
                           </button>
 
@@ -347,11 +352,13 @@ export default function VioletPage() {
                               {category.subTools.map((subTool) => (
                                 <button
                                   key={subTool.id}
-                                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-left text-sm text-muted-foreground"
+                                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-accent"
                                 >
                                   <span className="flex-1">{subTool.name}</span>
                                   {subTool.popular && (
-                                    <Badge variant="outline" className="text-xs">Popular</Badge>
+                                    <Badge variant="outline" className="text-xs">
+                                      Popular
+                                    </Badge>
                                   )}
                                 </button>
                               ))}
@@ -366,19 +373,19 @@ export default function VioletPage() {
             </div>
 
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className="space-y-8 lg:col-span-2">
               {/* Hero Section */}
-              <Card className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0">
+              <Card className="border-0 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
                 <CardContent className="p-8">
                   <div className="flex items-start gap-6">
                     <div className="flex-shrink-0">
-                      <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center">
+                      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/20">
                         <Sparkles className="h-12 w-12" />
                       </div>
                     </div>
                     <div className="flex-1 space-y-4">
                       <div>
-                        <h2 className="text-3xl font-bold mb-2">Meet Violet — Your AI Copilot</h2>
+                        <h2 className="mb-2 text-3xl font-bold">Meet Violet — Your AI Copilot</h2>
                         <p className="text-lg text-purple-100">
                           From your next gig to your next song, I've got you covered.
                         </p>
@@ -398,14 +405,14 @@ export default function VioletPage() {
                           size="lg"
                           variant="outline"
                           onClick={handleScrollToToolkit}
-                          className="gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                          className="gap-2 border-white/20 bg-white/10 text-white hover:bg-white/20"
                         >
                           Explore My Toolkit
                         </Button>
                       </div>
 
                       {/* Feature Grid */}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-4">
+                      <div className="grid grid-cols-2 gap-3 pt-4 sm:grid-cols-3">
                         <div className="flex items-center gap-2 text-sm">
                           <Calendar className="h-4 w-4" />
                           <span>Book my next gig</span>
@@ -438,11 +445,11 @@ export default function VioletPage() {
 
               {/* What Makes Violet Special */}
               <div ref={toolkitRef}>
-                <h3 className="text-2xl font-bold mb-4">What Makes Violet Special</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <h3 className="mb-4 text-2xl font-bold">What Makes Violet Special</h3>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Card>
                     <CardHeader>
-                      <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-2">
+                      <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100">
                         <Brain className="h-6 w-6 text-purple-600" />
                       </div>
                       <CardTitle className="text-lg">Your Strategic Manager</CardTitle>
@@ -456,7 +463,7 @@ export default function VioletPage() {
 
                   <Card>
                     <CardHeader>
-                      <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-2">
+                      <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-teal-100">
                         <Heart className="h-6 w-6 text-teal-600" />
                       </div>
                       <CardTitle className="text-lg">Emotional Co-Pilot</CardTitle>
@@ -470,7 +477,7 @@ export default function VioletPage() {
 
                   <Card>
                     <CardHeader>
-                      <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-2">
+                      <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-pink-100">
                         <Heart className="h-6 w-6 text-pink-600" />
                       </div>
                       <CardTitle className="text-lg">Caring Mentor & Friend</CardTitle>
@@ -484,7 +491,7 @@ export default function VioletPage() {
 
                   <Card>
                     <CardHeader>
-                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-2">
+                      <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
                         <Music className="h-6 w-6 text-blue-600" />
                       </div>
                       <CardTitle className="text-lg">Production Partner</CardTitle>
@@ -500,23 +507,23 @@ export default function VioletPage() {
 
               {/* See Violet in Action */}
               <div>
-                <h3 className="text-2xl font-bold mb-4">See Violet in Action</h3>
+                <h3 className="mb-4 text-2xl font-bold">See Violet in Action</h3>
                 <div className="space-y-3">
                   {SAMPLE_CONVERSATIONS.map((convo, index) => (
-                    <Card key={index} className="hover:shadow-md transition-shadow">
+                    <Card key={index} className="transition-shadow hover:shadow-md">
                       <CardContent className="p-4">
                         <Button
                           variant="ghost"
                           onClick={() => handleSamplePrompt(convo.prompt)}
-                          className="w-full text-left justify-start h-auto p-0 hover:bg-transparent"
+                          className="h-auto w-full justify-start p-0 text-left hover:bg-transparent"
                         >
                           <div className="space-y-2">
                             <div className="flex items-start gap-3">
-                              <MessageCircle className="h-5 w-5 text-purple-600 mt-0.5" />
+                              <MessageCircle className="mt-0.5 h-5 w-5 text-purple-600" />
                               <p className="font-medium">{convo.prompt}</p>
                             </div>
-                            <div className="flex items-start gap-3 ml-8">
-                              <Sparkles className="h-4 w-4 text-pink-600 mt-0.5" />
+                            <div className="ml-8 flex items-start gap-3">
+                              <Sparkles className="mt-0.5 h-4 w-4 text-pink-600" />
                               <p className="text-sm text-muted-foreground">{convo.preview}</p>
                             </div>
                           </div>
@@ -540,10 +547,12 @@ export default function VioletPage() {
                     <p className="whitespace-pre-wrap">{violetResponse.response}</p>
                     {violetResponse.suggestions && violetResponse.suggestions.length > 0 && (
                       <div className="mt-4">
-                        <p className="font-medium mb-2">Suggestions:</p>
-                        <ul className="list-disc list-inside space-y-1">
+                        <p className="mb-2 font-medium">Suggestions:</p>
+                        <ul className="list-inside list-disc space-y-1">
                           {violetResponse.suggestions.map((suggestion, i) => (
-                            <li key={i} className="text-sm text-muted-foreground">{suggestion}</li>
+                            <li key={i} className="text-sm text-muted-foreground">
+                              {suggestion}
+                            </li>
                           ))}
                         </ul>
                       </div>
@@ -571,14 +580,14 @@ export default function VioletPage() {
             <div className="space-y-6 py-4">
               {/* Intent Category Buttons */}
               <div>
-                <p className="text-sm font-medium mb-3">What do you need help with?</p>
+                <p className="mb-3 text-sm font-medium">What do you need help with?</p>
                 <div className="grid grid-cols-2 gap-3">
                   {INTENT_OPTIONS.map((intent) => (
                     <Button
                       key={intent.id}
                       variant={selectedIntent === intent.id ? 'default' : 'outline'}
                       onClick={() => handleIntentSelect(intent.id)}
-                      className="justify-start gap-2 h-auto py-3"
+                      className="h-auto justify-start gap-2 py-3"
                     >
                       {intent.icon}
                       <span>{intent.label}</span>
@@ -591,7 +600,7 @@ export default function VioletPage() {
 
               {/* Free-form Input */}
               <div>
-                <p className="text-sm font-medium mb-3">Or describe in your own words</p>
+                <p className="mb-3 text-sm font-medium">Or describe in your own words</p>
                 <Textarea
                   placeholder="Describe what you need help with..."
                   value={freeFormPrompt}

@@ -73,7 +73,7 @@ export default function OnboardingStep4() {
       navigate('/onboarding/artists/step5')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to submit step 4'
-      
+
       // Handle "Step 3 must be completed first" error
       if (errorMessage.includes('Step 3 must be completed first')) {
         setError('Please complete Step 3 first. Redirecting...')
@@ -91,21 +91,23 @@ export default function OnboardingStep4() {
     const currentDates = form.getValues('available_dates') || []
     form.setValue(
       'available_dates',
-      currentDates.filter((d: Date) => format(d, 'yyyy-MM-dd') !== format(dateToRemove, 'yyyy-MM-dd'))
+      currentDates.filter(
+        (d: Date) => format(d, 'yyyy-MM-dd') !== format(dateToRemove, 'yyyy-MM-dd')
+      )
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950 p-4">
-      <div className="max-w-3xl mx-auto py-8">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-slate-50 p-4 dark:from-slate-950 dark:to-purple-950">
+      <div className="mx-auto max-w-3xl py-8">
         {/* Progress Indicator */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-2 flex items-center justify-between">
             <span className="text-sm font-medium text-muted-foreground">Step 4 of 5</span>
             <span className="text-sm font-medium text-muted-foreground">80% Complete</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-            <div className="bg-purple-600 h-2.5 rounded-full" style={{ width: '80%' }}></div>
+          <div className="h-2.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+            <div className="h-2.5 rounded-full bg-purple-600" style={{ width: '80%' }}></div>
           </div>
         </div>
 
@@ -191,7 +193,9 @@ export default function OnboardingStep4() {
                           <div className="flex justify-between text-sm text-muted-foreground">
                             <span>$0</span>
                             <span className="font-semibold text-foreground">
-                              {field.value === 5000 ? '$5,000+' : `$${field.value.toLocaleString()}`}
+                              {field.value === 5000
+                                ? '$5,000+'
+                                : `$${field.value.toLocaleString()}`}
                             </span>
                             <span>$5,000+</span>
                           </div>
@@ -258,12 +262,16 @@ export default function OnboardingStep4() {
                           />
                           <div className="flex justify-between text-sm">
                             <div className="text-left">
-                              <div className="font-semibold text-purple-600">Creative: {creativeSplit}%</div>
-                              <div className="text-muted-foreground text-xs">More Creative</div>
+                              <div className="font-semibold text-purple-600">
+                                Creative: {creativeSplit}%
+                              </div>
+                              <div className="text-xs text-muted-foreground">More Creative</div>
                             </div>
                             <div className="text-right">
-                              <div className="font-semibold text-blue-600">Logistics: {logisticsSplit}%</div>
-                              <div className="text-muted-foreground text-xs">More Logistics</div>
+                              <div className="font-semibold text-blue-600">
+                                Logistics: {logisticsSplit}%
+                              </div>
+                              <div className="text-xs text-muted-foreground">More Logistics</div>
                             </div>
                           </div>
                         </div>
@@ -281,7 +289,8 @@ export default function OnboardingStep4() {
                     <FormItem>
                       <FormLabel>Upcoming availability</FormLabel>
                       <FormDescription>
-                        Pick up to 3 future dates you're available for gigs ({selectedDates.length}/3 selected)
+                        Pick up to 3 future dates you're available for gigs ({selectedDates.length}
+                        /3 selected)
                       </FormDescription>
                       <FormControl>
                         <div className="space-y-4">
@@ -309,7 +318,9 @@ export default function OnboardingStep4() {
                                     form.setValue('available_dates', dates as Date[])
                                   }
                                 }}
-                                disabled={(date: Date) => date < new Date() || selectedDates.length >= 3}
+                                disabled={(date: Date) =>
+                                  date < new Date() || selectedDates.length >= 3
+                                }
                                 initialFocus
                               />
                             </PopoverContent>
@@ -321,13 +332,13 @@ export default function OnboardingStep4() {
                               {selectedDates.map((date: Date, index: number) => (
                                 <div
                                   key={index}
-                                  className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 dark:bg-purple-900 text-purple-900 dark:text-purple-100 rounded-full text-sm"
+                                  className="flex items-center gap-2 rounded-full bg-purple-100 px-3 py-1.5 text-sm text-purple-900 dark:bg-purple-900 dark:text-purple-100"
                                 >
                                   <span>{format(date, 'MMM d, yyyy')}</span>
                                   <button
                                     type="button"
                                     onClick={() => removeDate(date)}
-                                    className="hover:bg-purple-200 dark:hover:bg-purple-800 rounded-full p-0.5"
+                                    className="rounded-full p-0.5 hover:bg-purple-200 dark:hover:bg-purple-800"
                                   >
                                     <X className="h-3 w-3" />
                                   </button>
@@ -352,7 +363,11 @@ export default function OnboardingStep4() {
                   >
                     Back
                   </Button>
-                  <Button type="submit" disabled={isLoading} className="bg-purple-600 hover:bg-purple-700">
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

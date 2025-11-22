@@ -1,11 +1,11 @@
-import React from "react"
-import { Calendar as CalendarIcon } from "lucide-react"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { FormDescription } from "@/components/ui/form"
-import { cn } from "@/lib/utils"
+import React from 'react'
+import { Calendar as CalendarIcon } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { FormDescription } from '@/components/ui/form'
+import { cn } from '@/lib/utils'
 
 interface DateFieldProps {
   label: string
@@ -16,7 +16,7 @@ interface DateFieldProps {
   placeholder?: string
   disabled?: boolean
   id?: string
-  dateFormat?: "short" | "medium" | "long" | "full"
+  dateFormat?: 'short' | 'medium' | 'long' | 'full'
   minDate?: Date
   maxDate?: Date
 }
@@ -27,16 +27,16 @@ export function DateField({
   error,
   value,
   onChange,
-  placeholder = "Pick a date",
+  placeholder = 'Pick a date',
   disabled = false,
   id,
-  dateFormat = "medium",
+  dateFormat = 'medium',
   minDate,
   maxDate,
 }: DateFieldProps) {
-  const fieldId = id || label.toLowerCase().replace(/\s+/g, "-")
+  const fieldId = id || label.toLowerCase().replace(/\s+/g, '-')
   const [open, setOpen] = React.useState(false)
-  
+
   const selectedDate = React.useMemo(() => {
     if (!value) return undefined
     if (value instanceof Date) return value
@@ -51,31 +51,31 @@ export function DateField({
 
   const formatDisplayDate = (date: Date | undefined) => {
     if (!date) return placeholder
-    
+
     const options: Intl.DateTimeFormatOptions = {}
     switch (dateFormat) {
-      case "short":
-        options.dateStyle = "short"
+      case 'short':
+        options.dateStyle = 'short'
         break
-      case "medium":
-        options.dateStyle = "medium"
+      case 'medium':
+        options.dateStyle = 'medium'
         break
-      case "long":
-        options.dateStyle = "long"
+      case 'long':
+        options.dateStyle = 'long'
         break
-      case "full":
-        options.dateStyle = "full"
+      case 'full':
+        options.dateStyle = 'full'
         break
       default:
-        options.dateStyle = "medium"
+        options.dateStyle = 'medium'
     }
-    
+
     return date.toLocaleDateString(undefined, options)
   }
 
   return (
     <div className="space-y-2">
-      <Label htmlFor={fieldId} className={error ? "text-destructive" : ""}>
+      <Label htmlFor={fieldId} className={error ? 'text-destructive' : ''}>
         {label}
       </Label>
       <Popover open={open} onOpenChange={setOpen}>
@@ -84,9 +84,9 @@ export function DateField({
             id={fieldId}
             variant="outline"
             className={cn(
-              "w-full justify-start text-left font-normal",
-              !selectedDate && "text-muted-foreground",
-              error && "border-destructive"
+              'w-full justify-start text-left font-normal',
+              !selectedDate && 'text-muted-foreground',
+              error && 'border-destructive'
             )}
             disabled={disabled}
           >

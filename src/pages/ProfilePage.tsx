@@ -193,29 +193,29 @@ export default function ProfilePage() {
     )
   }
 
-  const truncatedBio = artist.bio && artist.bio.length > 200
-    ? `${artist.bio.substring(0, 200)}...`
-    : artist.bio
+  const truncatedBio =
+    artist.bio && artist.bio.length > 200 ? `${artist.bio.substring(0, 200)}...` : artist.bio
 
   return (
     <AppLayout>
       <MetaTags
         title={artist.artist_name}
-        description={artist.bio || `${artist.artist_name} - Independent artist on Umbrella. ${artist.genres.join(', ')}. ${artist.gigs_completed} gigs completed.`}
+        description={
+          artist.bio ||
+          `${artist.artist_name} - Independent artist on Umbrella. ${artist.genres.join(', ')}. ${artist.gigs_completed} gigs completed.`
+        }
         keywords={artist.genres}
         url={`/artist/${id}`}
         type="profile"
       />
-      <div className="container mx-auto px-4 py-6 max-w-6xl">
+      <div className="container mx-auto max-w-6xl px-4 py-6">
         {/* Header Actions */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <Button variant="ghost" onClick={() => navigate('/dashboard')}>
             ← Back to Dashboard
           </Button>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              Profile 85% complete
-            </span>
+            <span className="text-sm text-muted-foreground">Profile 85% complete</span>
             {/* D-023: Profile actions menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -255,7 +255,7 @@ export default function ProfilePage() {
         {/* Hero Section */}
         <Card className="mb-6">
           <CardContent className="pt-6">
-            <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex flex-col gap-6 md:flex-row">
               {/* Avatar */}
               <Avatar className="h-32 w-32 shrink-0">
                 <AvatarImage src={artist.avatar_url} alt={artist.artist_name} />
@@ -266,9 +266,9 @@ export default function ProfilePage() {
 
               {/* Profile Info */}
               <div className="flex-1">
-                <div className="flex items-start justify-between mb-2">
+                <div className="mb-2 flex items-start justify-between">
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="mb-1 flex items-center gap-2">
                       <h1 className="text-3xl font-bold">{artist.artist_name}</h1>
                       {artist.verified && (
                         <Badge variant="default" className="gap-1 bg-green-600">
@@ -277,15 +277,15 @@ export default function ProfilePage() {
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center text-muted-foreground mb-2">
-                      <MapPin className="h-4 w-4 mr-1" />
+                    <div className="mb-2 flex items-center text-muted-foreground">
+                      <MapPin className="mr-1 h-4 w-4" />
                       {artist.location}
                     </div>
                   </div>
                 </div>
 
                 {/* Metrics */}
-                <div className="flex flex-wrap gap-4 mb-4">
+                <div className="mb-4 flex flex-wrap gap-4">
                   <div className="flex items-center gap-1">
                     <Users className="h-4 w-4 text-muted-foreground" />
                     <span className="font-semibold">{artist.follower_count.toLocaleString()}</span>
@@ -312,32 +312,48 @@ export default function ProfilePage() {
 
                 {/* Social Links */}
                 {Object.keys(artist.social_links).length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="mb-4 flex flex-wrap gap-2">
                     {artist.social_links.website && (
                       <Button variant="outline" size="sm" asChild>
-                        <a href={artist.social_links.website} target="_blank" rel="noopener noreferrer">
-                          <Globe className="h-4 w-4 mr-1" />
+                        <a
+                          href={artist.social_links.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Globe className="mr-1 h-4 w-4" />
                           Website
                         </a>
                       </Button>
                     )}
                     {artist.social_links.instagram && (
                       <Button variant="outline" size="sm" asChild>
-                        <a href={artist.social_links.instagram} target="_blank" rel="noopener noreferrer">
+                        <a
+                          href={artist.social_links.instagram}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           Instagram
                         </a>
                       </Button>
                     )}
                     {artist.social_links.tiktok && (
                       <Button variant="outline" size="sm" asChild>
-                        <a href={artist.social_links.tiktok} target="_blank" rel="noopener noreferrer">
+                        <a
+                          href={artist.social_links.tiktok}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           TikTok
                         </a>
                       </Button>
                     )}
                     {artist.social_links.spotify && (
                       <Button variant="outline" size="sm" asChild>
-                        <a href={artist.social_links.spotify} target="_blank" rel="noopener noreferrer">
+                        <a
+                          href={artist.social_links.spotify}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           Spotify
                         </a>
                       </Button>
@@ -352,7 +368,7 @@ export default function ProfilePage() {
                       {isFollowing ? 'Unfollow' : 'Follow'}
                     </Button>
                     <Button onClick={handleBookArtist}>
-                      <MessageCircle className="h-4 w-4 mr-2" />
+                      <MessageCircle className="mr-2 h-4 w-4" />
                       Book Artist
                     </Button>
                   </div>
@@ -364,7 +380,7 @@ export default function ProfilePage() {
 
         {/* 6-Tab Navigation System */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full justify-start mb-6">
+          <TabsList className="mb-6 w-full justify-start">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
             <TabsTrigger value="explore">Explore</TabsTrigger>
@@ -379,14 +395,14 @@ export default function ProfilePage() {
             {artist.bio && (
               <Card>
                 <CardContent className="pt-6">
-                  <h2 className="text-xl font-semibold mb-3">About</h2>
-                  <p className="text-muted-foreground whitespace-pre-wrap">
+                  <h2 className="mb-3 text-xl font-semibold">About</h2>
+                  <p className="whitespace-pre-wrap text-muted-foreground">
                     {bioExpanded ? artist.bio : truncatedBio}
                   </p>
                   {artist.bio.length > 200 && (
                     <Button
                       variant="link"
-                      className="px-0 mt-2"
+                      className="mt-2 px-0"
                       onClick={() => setBioExpanded(!bioExpanded)}
                     >
                       {bioExpanded ? 'Show less' : 'Expand bio →'}
@@ -400,7 +416,7 @@ export default function ProfilePage() {
             {tracks.length > 0 && (
               <Card>
                 <CardContent className="pt-6">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="mb-4 flex items-center justify-between">
                     <h2 className="text-xl font-semibold">Portfolio</h2>
                     <Button variant="link" onClick={() => setActiveTab('portfolio')}>
                       View Full Portfolio →
@@ -423,7 +439,7 @@ export default function ProfilePage() {
             {/* Endorsements Preview */}
             <Card>
               <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-xl font-semibold">Endorsements</h2>
                   <Button variant="link">View All →</Button>
                 </div>
@@ -439,11 +455,11 @@ export default function ProfilePage() {
 
           {/* Tab 2: Portfolio */}
           <TabsContent value="portfolio" className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-4 flex items-center justify-between">
               <h2 className="text-2xl font-semibold">Music Portfolio</h2>
               {isOwnProfile && (
                 <Button>
-                  <Music className="h-4 w-4 mr-2" />
+                  <Music className="mr-2 h-4 w-4" />
                   Add Track
                 </Button>
               )}
@@ -473,10 +489,8 @@ export default function ProfilePage() {
           <TabsContent value="explore">
             <Card>
               <CardContent className="pt-6">
-                <h2 className="text-2xl font-semibold mb-4">Media Gallery</h2>
-                <p className="text-muted-foreground text-center py-8">
-                  No media posts yet
-                </p>
+                <h2 className="mb-4 text-2xl font-semibold">Media Gallery</h2>
+                <p className="py-8 text-center text-muted-foreground">No media posts yet</p>
               </CardContent>
             </Card>
           </TabsContent>
@@ -485,21 +499,17 @@ export default function ProfilePage() {
           <TabsContent value="journey">
             <Card>
               <CardContent className="pt-6">
-                <h2 className="text-2xl font-semibold mb-4">Career Journey</h2>
-                <p className="text-muted-foreground text-center py-8">
-                  Timeline coming soon
-                </p>
+                <h2 className="mb-4 text-2xl font-semibold">Career Journey</h2>
+                <p className="py-8 text-center text-muted-foreground">Timeline coming soon</p>
               </CardContent>
             </Card>
           </TabsContent>
 
           {/* Tab 5: Reviews */}
           <TabsContent value="reviews" className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-4 flex items-center justify-between">
               <h2 className="text-2xl font-semibold">Reviews ({reviews.length})</h2>
-              {isOwnProfile && (
-                <Button variant="outline">Invite Review</Button>
-              )}
+              {isOwnProfile && <Button variant="outline">Invite Review</Button>}
             </div>
             {reviews.length === 0 ? (
               <Card>
@@ -520,10 +530,8 @@ export default function ProfilePage() {
           <TabsContent value="opportunities">
             <Card>
               <CardContent className="pt-6">
-                <h2 className="text-2xl font-semibold mb-4">Latest Opportunities</h2>
-                <p className="text-muted-foreground text-center py-8">
-                  No opportunities available
-                </p>
+                <h2 className="mb-4 text-2xl font-semibold">Latest Opportunities</h2>
+                <p className="py-8 text-center text-muted-foreground">No opportunities available</p>
               </CardContent>
             </Card>
           </TabsContent>
@@ -546,31 +554,31 @@ export default function ProfilePage() {
               <RadioGroup value={reportReason} onValueChange={setReportReason}>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="spam" id="spam" />
-                  <Label htmlFor="spam" className="font-normal cursor-pointer">
+                  <Label htmlFor="spam" className="cursor-pointer font-normal">
                     Spam or fake profile
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="inappropriate" id="inappropriate" />
-                  <Label htmlFor="inappropriate" className="font-normal cursor-pointer">
+                  <Label htmlFor="inappropriate" className="cursor-pointer font-normal">
                     Inappropriate content
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="harassment" id="harassment" />
-                  <Label htmlFor="harassment" className="font-normal cursor-pointer">
+                  <Label htmlFor="harassment" className="cursor-pointer font-normal">
                     Harassment or abuse
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="impersonation" id="impersonation" />
-                  <Label htmlFor="impersonation" className="font-normal cursor-pointer">
+                  <Label htmlFor="impersonation" className="cursor-pointer font-normal">
                     Impersonation
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="other" id="other" />
-                  <Label htmlFor="other" className="font-normal cursor-pointer">
+                  <Label htmlFor="other" className="cursor-pointer font-normal">
                     Other
                   </Label>
                 </div>
@@ -591,9 +599,7 @@ export default function ProfilePage() {
 
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleReportSubmit}>
-              Submit Report
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleReportSubmit}>Submit Report</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -621,22 +627,22 @@ function TrackCard({ track, isPlaying, onPlay, showActions }: TrackCardProps) {
       <CardContent className="pt-4">
         <div className="flex items-center gap-4">
           {/* Album Art */}
-          <div className="relative h-16 w-16 rounded bg-muted flex-shrink-0">
+          <div className="relative h-16 w-16 flex-shrink-0 rounded bg-muted">
             {track.cover_art_url ? (
               <img
                 src={track.cover_art_url}
                 alt={track.title}
-                className="h-full w-full object-cover rounded"
+                className="h-full w-full rounded object-cover"
               />
             ) : (
-              <div className="h-full w-full flex items-center justify-center">
+              <div className="flex h-full w-full items-center justify-center">
                 <Music className="h-6 w-6 text-muted-foreground" />
               </div>
             )}
             {/* Play/Pause Overlay */}
             <button
               onClick={onPlay}
-              className="absolute inset-0 bg-black/50 flex items-center justify-center rounded opacity-0 hover:opacity-100 transition-opacity"
+              className="absolute inset-0 flex items-center justify-center rounded bg-black/50 opacity-0 transition-opacity hover:opacity-100"
             >
               {isPlaying ? (
                 <Pause className="h-6 w-6 text-white" />
@@ -647,10 +653,10 @@ function TrackCard({ track, isPlaying, onPlay, showActions }: TrackCardProps) {
           </div>
 
           {/* Track Info */}
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between">
               <div className="min-w-0">
-                <h3 className="font-semibold truncate">{track.title}</h3>
+                <h3 className="truncate font-semibold">{track.title}</h3>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span>{track.genre}</span>
                   <span>•</span>
@@ -660,7 +666,7 @@ function TrackCard({ track, isPlaying, onPlay, showActions }: TrackCardProps) {
                 </div>
               </div>
               {showActions && (
-                <div className="flex gap-2 ml-2">
+                <div className="ml-2 flex gap-2">
                   <Button variant="ghost" size="icon">
                     <Heart className="h-4 w-4" />
                   </Button>
@@ -689,12 +695,10 @@ function ReviewCard({ review }: ReviewCardProps) {
         <div className="flex gap-4">
           <Avatar className="h-10 w-10">
             <AvatarImage src={review.reviewer_avatar_url} alt={review.reviewer_name} />
-            <AvatarFallback>
-              {review.reviewer_name.charAt(0).toUpperCase()}
-            </AvatarFallback>
+            <AvatarFallback>{review.reviewer_name.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2 flex items-center justify-between">
               <div>
                 <h4 className="font-semibold">{review.reviewer_name}</h4>
                 <div className="flex items-center gap-1">
@@ -716,9 +720,7 @@ function ReviewCard({ review }: ReviewCardProps) {
             </div>
             <p className="text-muted-foreground">{review.comment}</p>
             {review.gig_title && (
-              <p className="text-sm text-muted-foreground mt-2">
-                Gig: {review.gig_title}
-              </p>
+              <p className="mt-2 text-sm text-muted-foreground">Gig: {review.gig_title}</p>
             )}
           </div>
         </div>

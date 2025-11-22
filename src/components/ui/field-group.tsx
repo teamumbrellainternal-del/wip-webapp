@@ -1,5 +1,5 @@
-import type React from "react"
-import { cn } from "@/lib/utils"
+import type React from 'react'
+import { cn } from '@/lib/utils'
 
 interface FieldGroupProps {
   children: React.ReactNode
@@ -7,5 +7,5 @@ interface FieldGroupProps {
 }
 
 export function FieldGroup({ children, className }: FieldGroupProps) {
-  return <div className={cn("space-y-4", className)}>{children}</div>
+  return <div className={cn('space-y-4', className)}>{children}</div>
 }
