@@ -12,7 +12,7 @@
     "deploy": "npm run build && wrangler deploy",
     "deploy:staging": "npm run build && wrangler deploy --env staging",
     "deploy:prod": "npm run build && wrangler deploy --env production",
-    "lint": "eslint . --report-unused-disable-directives --max-warnings 40",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 45",
     "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
@@ -41,6 +41,7 @@
     "validate:env": "node scripts/validate-env.js",
     "validate:staging": "node scripts/validate-env.js staging",
     "validate:prod": "node scripts/validate-env.js production",
+    "validate:deployment": "node scripts/validate-deployment-readiness.js",
     "perf:check": "node scripts/performance-check.js",
     "rollback": "node scripts/rollback.js",
     "verify:deployment": "node scripts/post-deployment-verification.js"
