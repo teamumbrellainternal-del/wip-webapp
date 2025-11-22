@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:worker": "wrangler dev api/index.ts",
+    "dev:worker": "wrangler dev api/index.ts --env dev",
     "build": "tsc && vite build",
     "build:worker": "node scripts/build-worker.js",
     "preview": "vite preview",

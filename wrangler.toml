@@ -65,6 +65,18 @@ ENVIRONMENT = "development"  # Environment name (development, staging, productio
 # Secret (optional):
 #   - SENTRY_DSN: Data Source Name from Sentry project settings
 
+# D1 Database Configuration (default/local)
+[[d1_databases]]
+binding = "DB"
+database_name = "umbrella-dev-db"
+database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
+migrations_dir = "db/migrations"
+
+# KV Namespace Configuration (default/local)
+[[kv_namespaces]]
+binding = "KV"
+id = "04fceb9a09054bbd991d5252a9a169cf"
+
 # Assets configuration for serving frontend as SPA from Workers
 [assets]
 directory = "./dist"
@@ -83,6 +95,7 @@ ENVIRONMENT = "preview"
 binding = "DB"
 database_name = "umbrella-dev-db"
 database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
+migrations_dir = "db/migrations"
 
 [[env.preview.kv_namespaces]]
 binding = "KV"
@@ -108,6 +121,7 @@ ENVIRONMENT = "development"
 binding = "DB"
 database_name = "umbrella-dev-db"
 database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
+migrations_dir = "db/migrations"
 
 [[env.dev.kv_namespaces]]
 binding = "KV"
@@ -116,9 +130,9 @@ id = "04fceb9a09054bbd991d5252a9a169cf"
 # R2 Storage Configuration (Task 10.7 - D-028: 24-hour download links)
 # Create bucket via: wrangler r2 bucket create umbrella-dev-media
 # Uncomment when R2 is available (requires billing)
-# [[env.dev.r2_buckets]]
-# binding = "BUCKET"
-# bucket_name = "umbrella-dev-media"
+[[env.dev.r2_buckets]]
+binding = "BUCKET"
+bucket_name = "umbrella-dev-media"
 
 # Staging environment (for future use)
 [env.staging]
@@ -132,6 +146,7 @@ ENVIRONMENT = "staging"
 binding = "DB"
 database_name = "umbrella-dev-db"
 database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
+migrations_dir = "db/migrations"
 
 [[env.staging.kv_namespaces]]
 binding = "KV"
@@ -156,6 +171,7 @@ database_name = "umbrella-prod-db"
 # wrangler d1 create umbrella-prod-db --env production
 # Using dev database temporarily for initial deployment
 database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
+migrations_dir = "db/migrations"
 
 # Production KV namespace binding
 [[env.production.kv_namespaces]]
