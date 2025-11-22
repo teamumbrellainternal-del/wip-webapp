@@ -3,7 +3,29 @@
  * Handles authentication, error handling, and API communication
  */
 
-// ... existing interfaces ...
+import type {
+  UserProfile,
+  Artist,
+  Gig,
+  Conversation,
+  Message,
+} from '@/types'
+import { getSession, clearSession } from '@/lib/session'
+import { triggerSessionTimeout } from '@/contexts/SessionTimeoutContext'
+
+// API Response wrapper type
+interface APIResponse<T> {
+  success: boolean
+  data: T
+  error?: {
+    message: string
+    code?: string
+  }
+}
+
+// Type aliases for clarity
+type ArtistPublicProfile = Artist
+type UpdateArtistInput = Partial<Artist>
 
 class APIClient {
   private baseURL = '/v1';
@@ -43,7 +65,7 @@ class APIClient {
   /**
    * Make an authenticated API request
    */
-  private async request<T>(
+  async request<T>(
     endpoint: string,
     options?: RequestInit
   ): Promise<T> {
