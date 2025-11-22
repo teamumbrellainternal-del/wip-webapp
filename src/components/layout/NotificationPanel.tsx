@@ -8,6 +8,7 @@
  * - For now, just UI structure (actual notifications can be wired later)
  */
 
+import { useNavigate } from 'react-router-dom'
 import { Bell, Calendar, MessageSquare, CheckCircle } from 'lucide-react'
 import {
   DropdownMenu,
@@ -55,8 +56,35 @@ const mockNotifications = [
 ]
 
 export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps) {
+  const navigate = useNavigate()
   const hasNotifications = mockNotifications.length > 0
   const unreadCount = mockNotifications.filter((n) => n.unread).length
+
+  const handleNotificationClick = (notification: typeof mockNotifications[0]) => {
+    // Navigate based on notification type
+    switch (notification.type) {
+      case 'booking':
+        // Extract gig ID from message (in real implementation, this would come from notification data)
+        navigate('/gigs')
+        break
+      case 'message':
+        navigate('/messages')
+        break
+      case 'profile':
+        navigate('/profile/edit')
+        break
+      default:
+        console.log('Unknown notification type:', notification.type)
+    }
+    onOpenChange(false)
+  }
+
+  const handleMarkAllAsRead = () => {
+    // TODO: Call API endpoint when available
+    // await apiClient.markAllNotificationsAsRead()
+    console.log('Mark all notifications as read')
+    // In real implementation, this would update the notifications state
+  }
 
   // This component is rendered as a child of AppLayout, so we need to
   // create a portal-like behavior using the dropdown menu pattern
@@ -97,11 +125,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
                     className={`cursor-pointer p-3 ${
                       notification.unread ? 'bg-accent' : ''
                     }`}
-                    onClick={() => {
-                      // TODO: Handle notification click
-                      console.log('Notification clicked:', notification.id)
-                      onOpenChange(false)
-                    }}
+                    onClick={() => handleNotificationClick(notification)}
                   >
                     <div className="flex items-start gap-3 w-full">
                       <div
@@ -146,10 +170,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
                 variant="ghost"
                 size="sm"
                 className="w-full"
-                onClick={() => {
-                  // TODO: Mark all as read
-                  console.log('Mark all as read')
-                }}
+                onClick={handleMarkAllAsRead}
               >
                 Mark all as read
               </Button>

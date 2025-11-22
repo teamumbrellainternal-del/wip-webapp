@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/hooks/use-toast'
 import { apiClient } from '@/lib/api-client'
 import type { Artist } from '../../api/models/artist'
 import type { Track, Review } from '@/types'
@@ -40,6 +41,7 @@ import { calculateProfileCompletion } from '../../api/models/artist'
 export default function ProfileViewPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { toast } = useToast()
   const [artist, setArtist] = useState<Artist | null>(null)
   const [tracks, setTracks] = useState<Track[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
@@ -92,7 +94,10 @@ export default function ProfileViewPage() {
     if (user?.id) {
       const profileUrl = `${window.location.origin}/artist/${user.id}`
       navigator.clipboard.writeText(profileUrl)
-      // TODO: Show toast notification
+      toast({
+        title: 'Profile link copied',
+        description: 'Share your profile with others!',
+      })
     }
   }
 

@@ -9,7 +9,9 @@
  */
 
 import { Link, useNavigate } from 'react-router-dom'
+import { useClerk } from '@clerk/clerk-react'
 import { User, Settings, LogOut } from 'lucide-react'
+import { apiClient } from '@/lib/api-client'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,6 +22,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+
+// Check if demo mode is enabled
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
 // Mock user data (replace with real data from auth context)
 const mockUser = {
@@ -33,11 +38,29 @@ const mockUser = {
 
 export function ProfileDropdown() {
   const navigate = useNavigate()
+  
+  // Only use Clerk hook if NOT in demo mode
+  const clerk = DEMO_MODE ? null : useClerk()
 
-  const handleLogout = () => {
-    // TODO: Implement logout logic when auth flow is complete
-    console.log('Logout clicked')
-    navigate('/auth')
+  const handleLogout = async () => {
+    try {
+      // Call backend logout endpoint
+      await apiClient.logout()
+    } catch (error) {
+      console.error('Error during logout:', error)
+      // Continue with logout even if backend call fails
+    } finally {
+      // Clear local session
+      localStorage.removeItem('umbrella_session')
+
+      // Sign out from Clerk if available
+      if (clerk) {
+        await clerk.signOut()
+      }
+
+      // Navigate to auth page
+      navigate('/auth')
+    }
   }
 
   const getInitials = (name: string) => {

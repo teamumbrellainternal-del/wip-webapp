@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/hooks/use-toast'
 import { artistsService, tracksService } from '@/services/api'
 import type { Artist, Track, Review } from '@/types'
 import AppLayout from '@/components/layout/AppLayout'
@@ -15,6 +16,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   MapPin,
   Star,
@@ -40,6 +54,7 @@ export default function ProfilePage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { toast } = useToast()
   const [artist, setArtist] = useState<Artist | null>(null)
   const [tracks, setTracks] = useState<Track[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
@@ -49,6 +64,9 @@ export default function ProfilePage() {
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null)
   const [isFollowing, setIsFollowing] = useState(false)
   const [bioExpanded, setBioExpanded] = useState(false)
+  const [reportDialogOpen, setReportDialogOpen] = useState(false)
+  const [reportReason, setReportReason] = useState('spam')
+  const [reportDetails, setReportDetails] = useState('')
 
   const isOwnProfile = user?.id === id
 
@@ -112,12 +130,37 @@ export default function ProfilePage() {
     // Copy profile URL to clipboard
     const profileUrl = `${window.location.origin}/artist/${id}`
     navigator.clipboard.writeText(profileUrl)
-    // TODO: Show toast notification
+    toast({
+      title: 'Profile link copied',
+      description: 'Share this artist with others!',
+    })
   }
 
   const handleReport = () => {
-    // TODO: Implement report functionality
-    console.log('Report profile')
+    setReportDialogOpen(true)
+  }
+
+  const handleReportSubmit = async () => {
+    try {
+      // TODO: Call API endpoint when available
+      // await apiClient.reportProfile(id, reportReason, reportDetails)
+      console.log('Report submitted:', { id, reason: reportReason, details: reportDetails })
+
+      toast({
+        title: 'Report submitted',
+        description: 'Thank you for helping keep Umbrella safe.',
+      })
+
+      setReportDialogOpen(false)
+      setReportReason('spam')
+      setReportDetails('')
+    } catch (error) {
+      toast({
+        title: 'Failed to submit report',
+        description: 'Please try again later.',
+        variant: 'destructive',
+      })
+    }
   }
 
   const handleTrackPlay = async (trackId: string) => {
@@ -486,6 +529,74 @@ export default function ProfilePage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Report Dialog */}
+      <AlertDialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Report Profile</AlertDialogTitle>
+            <AlertDialogDescription>
+              Help us keep Umbrella safe by reporting inappropriate content or behavior.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Reason for reporting</Label>
+              <RadioGroup value={reportReason} onValueChange={setReportReason}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="spam" id="spam" />
+                  <Label htmlFor="spam" className="font-normal cursor-pointer">
+                    Spam or fake profile
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="inappropriate" id="inappropriate" />
+                  <Label htmlFor="inappropriate" className="font-normal cursor-pointer">
+                    Inappropriate content
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="harassment" id="harassment" />
+                  <Label htmlFor="harassment" className="font-normal cursor-pointer">
+                    Harassment or abuse
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="impersonation" id="impersonation" />
+                  <Label htmlFor="impersonation" className="font-normal cursor-pointer">
+                    Impersonation
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="other" id="other" />
+                  <Label htmlFor="other" className="font-normal cursor-pointer">
+                    Other
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="details">Additional details (optional)</Label>
+              <Textarea
+                id="details"
+                placeholder="Provide any additional context..."
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleReportSubmit}>
+              Submit Report
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   )
 }

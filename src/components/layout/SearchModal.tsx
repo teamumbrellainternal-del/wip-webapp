@@ -9,8 +9,12 @@
  * - For now, just UI structure (actual search can be wired later)
  */
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Search, User, Calendar, X } from 'lucide-react'
+import { apiClient } from '@/lib/api-client'
+import type { ArtistPublicProfile } from '../../../api/models/artist'
+import type { Gig } from '../../../api/models/gig'
 import {
   Dialog,
   DialogContent,
@@ -27,30 +31,50 @@ interface SearchModalProps {
   onOpenChange: (open: boolean) => void
 }
 
-// Mock search results (replace with real API calls later)
-const mockResults = {
-  artists: [
-    { id: '1', name: 'DJ AlexJ', genre: 'Electronic', verified: true },
-    { id: '2', name: 'Sarah Blues', genre: 'Blues', verified: false },
-  ],
-  gigs: [
-    { id: '1', title: 'Friday Night Live', venue: 'The Blue Note SF', date: 'Oct 25, 2025', pay: '$800' },
-    { id: '2', title: 'Jazz Evening', venue: 'Velvet Room', date: 'Oct 28, 2025', pay: '$600' },
-  ],
-}
-
 export function SearchModal({ open, onOpenChange }: SearchModalProps) {
+  const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
+  const [artists, setArtists] = useState<ArtistPublicProfile[]>([])
+  const [gigs, setGigs] = useState<Gig[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  // Debounced search function
+  const performSearch = useCallback(async (searchQuery: string) => {
+    if (!searchQuery || searchQuery.length < 2) {
+      setArtists([])
+      setGigs([])
+      return
+    }
+
+    setIsSearching(true)
+    setError(null)
+
+    try {
+      const results = await apiClient.search(searchQuery, 'all', 10)
+      setArtists(results.artists || [])
+      setGigs(results.gigs || [])
+    } catch (err) {
+      console.error('Search error:', err)
+      setError(err instanceof Error ? err.message : 'Search failed')
+      setArtists([])
+      setGigs([])
+    } finally {
+      setIsSearching(false)
+    }
+  }, [])
+
+  // Debounce search with useEffect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      performSearch(query)
+    }, 300) // 300ms debounce
+
+    return () => clearTimeout(timer)
+  }, [query, performSearch])
 
   const handleSearch = (value: string) => {
     setQuery(value)
-    // TODO: Implement actual search logic
-    if (value.length > 0) {
-      setIsSearching(true)
-      // Simulate search delay
-      setTimeout(() => setIsSearching(false), 500)
-    }
   }
 
   const hasResults = query.length > 0
@@ -104,41 +128,48 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
             </div>
           )}
 
-          {showEmptyState && (
+          {error && (
+            <div className="text-center py-12 text-muted-foreground">
+              <p className="text-sm text-destructive">Error: {error}</p>
+            </div>
+          )}
+
+          {showEmptyState && !error && (
             <>
               {/* Artists Section */}
-              {mockResults.artists.length > 0 && (
+              {artists.length > 0 && (
                 <div>
                   <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                     <User className="h-4 w-4" />
-                    Artists
+                    Artists ({artists.length})
                   </h3>
                   <div className="space-y-2">
-                    {mockResults.artists.map((artist) => (
+                    {artists.map((artist) => (
                       <button
                         key={artist.id}
                         className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors text-left"
                         onClick={() => {
-                          // TODO: Navigate to artist profile
-                          console.log('Navigate to artist:', artist.id)
+                          navigate(`/artists/${artist.id}`)
                           onOpenChange(false)
                         }}
                       >
                         <Avatar className="h-10 w-10">
                           <AvatarFallback>
-                            {artist.name.split(' ').map(n => n[0]).join('')}
+                            {artist.stage_name.split(' ').map((n: string) => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium">{artist.name}</p>
+                            <p className="text-sm font-medium">{artist.stage_name}</p>
                             {artist.verified && (
                               <Badge variant="secondary" className="text-xs">
                                 Verified
                               </Badge>
                             )}
                           </div>
-                          <p className="text-xs text-muted-foreground">{artist.genre}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {artist.location_city}, {artist.location_state}
+                          </p>
                         </div>
                       </button>
                     ))}
@@ -147,33 +178,46 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
               )}
 
               {/* Gigs Section */}
-              {mockResults.gigs.length > 0 && (
+              {gigs.length > 0 && (
                 <div>
                   <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    Gigs
+                    Gigs ({gigs.length})
                   </h3>
                   <div className="space-y-2">
-                    {mockResults.gigs.map((gig) => (
+                    {gigs.map((gig) => (
                       <button
                         key={gig.id}
                         className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors text-left"
                         onClick={() => {
-                          // TODO: Navigate to gig details
-                          console.log('Navigate to gig:', gig.id)
+                          navigate(`/gigs/${gig.id}`)
                           onOpenChange(false)
                         }}
                       >
                         <div className="flex-1">
                           <p className="text-sm font-medium">{gig.title}</p>
                           <p className="text-xs text-muted-foreground">
-                            {gig.venue} • {gig.date}
+                            {gig.venue_name} • {new Date(gig.date).toLocaleDateString()}
                           </p>
                         </div>
-                        <Badge variant="outline">{gig.pay}</Badge>
+                        {gig.payment_amount && (
+                          <Badge variant="outline">
+                            ${gig.payment_amount}
+                            {gig.payment_type === 'hourly' ? '/hr' : ''}
+                          </Badge>
+                        )}
                       </button>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* No Results */}
+              {artists.length === 0 && gigs.length === 0 && query.length >= 2 && (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-sm">No results found for "{query}"</p>
+                  <p className="text-xs mt-2">Try different keywords or check your spelling</p>
                 </div>
               )}
             </>
