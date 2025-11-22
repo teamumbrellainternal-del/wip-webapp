@@ -18,11 +18,17 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import OnboardingGuard from '@/components/auth/OnboardingGuard'
 import Step2 from '@/pages/onboarding/Step2'
 import Step3 from '@/pages/onboarding/Step3'
+import Step4 from '@/pages/onboarding/Step4'
+import Step5 from '@/pages/onboarding/Step5'
 import OnboardingStep1 from '@/pages/onboarding/Step1'
 import TermsPage from '@/pages/legal/TermsPage'
 import PrivacyPage from '@/pages/legal/PrivacyPage'
 import CookiesPage from '@/pages/legal/CookiesPage'
 import SettingsPage from '@/pages/SettingsPage'
+import RoleSelectionPage from '@/pages/onboarding/RoleSelectionPage'
+import GigDetailsPage from '@/pages/GigDetailsPage'
+import GrowthPage from '@/pages/GrowthPage'
+import ToolboxPage from '@/pages/ToolboxPage'
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
@@ -56,6 +62,10 @@ export const router = createBrowserRouter([
     path: '/sso-callback',
     element: DEMO_MODE ? <Navigate to="/dashboard" replace /> : <SSOCallbackPage />,
   },
+  {
+    path: '/auth/sso-callback',
+    element: DEMO_MODE ? <Navigate to="/dashboard" replace /> : <SSOCallbackPage />,
+  },
 
   // Public: Legal pages
   {
@@ -84,7 +94,7 @@ export const router = createBrowserRouter([
     path: '/onboarding/role-selection',
     element: (
       <ProtectedRoute>
-        <PlaceholderPage title="Select Your Role" />
+        <RoleSelectionPage />
       </ProtectedRoute>
     ),
   },
@@ -116,7 +126,7 @@ export const router = createBrowserRouter([
     path: '/onboarding/artists/step4',
     element: (
       <ProtectedRoute>
-        <PlaceholderPage title="Step 4: Your Numbers" />
+        <Step4 />
       </ProtectedRoute>
     ),
   },
@@ -124,7 +134,7 @@ export const router = createBrowserRouter([
     path: '/onboarding/artists/step5',
     element: (
       <ProtectedRoute>
-        <PlaceholderPage title="Step 5: Quick Questions" />
+        <Step5 />
       </ProtectedRoute>
     ),
   },
@@ -183,7 +193,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <OnboardingGuard>
-          <PlaceholderPage title="Gig Details" />
+          <GigDetailsPage />
         </OnboardingGuard>
       </ProtectedRoute>
     ),
@@ -251,7 +261,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <OnboardingGuard>
-          <PlaceholderPage title="Growth & Analytics" />
+          <GrowthPage />
         </OnboardingGuard>
       </ProtectedRoute>
     ),
@@ -263,7 +273,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <OnboardingGuard>
-          <PlaceholderPage title="Artist Toolbox" />
+          <ToolboxPage />
         </OnboardingGuard>
       </ProtectedRoute>
     ),

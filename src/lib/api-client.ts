@@ -3,55 +3,43 @@
  * Handles authentication, error handling, and API communication
  */
 
-// Import types from Session 3 models
-import type { UserProfile } from '../../api/models/user'
-import type { Artist, ArtistPublicProfile, UpdateArtistInput } from '../../api/models/artist'
-import type { Gig } from '../../api/models/gig'
-import type { Conversation } from '../../api/models/conversation'
-import type { Message } from '../../api/models/message'
-import { triggerSessionTimeout } from '@/contexts/SessionTimeoutContext'
+import { useAuth } from '@clerk/clerk-react'
 
-interface APIResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    field?: string;
-  };
-}
-
-interface SessionData {
-  token: string;
-  user: UserProfile;
-}
-
-function getSession(): SessionData | null {
-  try {
-    const sessionData = localStorage.getItem('umbrella_session');
-    if (!sessionData) return null;
-    return JSON.parse(sessionData) as SessionData;
-  } catch {
-    return null;
-  }
-}
-
-function clearSession() {
-  localStorage.removeItem('umbrella_session');
-}
+// ... existing interfaces ...
 
 class APIClient {
   private baseURL = '/v1';
+  private getToken: (() => Promise<string | null>) | null = null;
+
+  /**
+   * Set the token getter function from Clerk
+   */
+  setTokenGetter(getToken: () => Promise<string | null>) {
+    this.getToken = getToken;
+  }
 
   /**
    * Get request headers with JWT authentication
    */
-  private getHeaders(): HeadersInit {
-    const session = getSession();
-    return {
+  private async getHeaders(): Promise<HeadersInit> {
+    const headers: HeadersInit = {
       'Content-Type': 'application/json',
-      ...(session && { Authorization: `Bearer ${session.token}` }),
     };
+
+    if (this.getToken) {
+      const token = await this.getToken();
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+    } else {
+        // Fallback to local storage for legacy/dev mode if needed
+        const session = getSession();
+        if (session?.token) {
+            headers['Authorization'] = `Bearer ${session.token}`;
+        }
+    }
+    
+    return headers;
   }
 
   /**
@@ -67,13 +55,14 @@ class APIClient {
     }
 
     const url = `${this.baseURL}${endpoint}`;
+    const authHeaders = await this.getHeaders();
 
     let response: Response;
     try {
       response = await fetch(url, {
         ...options,
         headers: {
-          ...this.getHeaders(),
+          ...authHeaders,
           ...options?.headers,
         },
       });
@@ -87,6 +76,7 @@ class APIClient {
 
     // Handle 401 specially - trigger session timeout modal
     if (response.status === 401) {
+      // Only clear legacy session, Clerk handles its own state
       clearSession();
       triggerSessionTimeout();
       throw new Error('Session expired. Please log in again.');
@@ -107,6 +97,7 @@ class APIClient {
 
     return data.data as T;
   }
+// ... rest of class ...
 
   // Auth endpoints
   async checkSession(): Promise<{ user: UserProfile; valid: boolean }> {
@@ -164,6 +155,28 @@ class APIClient {
     });
   }
 
+  // Search endpoints
+  async search(query: string, type: 'artists' | 'gigs' | 'all' = 'all', limit: number = 20): Promise<{
+    artists: ArtistPublicProfile[];
+    gigs: Gig[];
+    artistCount: number;
+    gigCount: number;
+    totalCount: number;
+  }> {
+    const params = new URLSearchParams({
+      q: query,
+      type,
+      limit: limit.toString(),
+    });
+    return this.request<{
+      artists: ArtistPublicProfile[];
+      gigs: Gig[];
+      artistCount: number;
+      gigCount: number;
+      totalCount: number;
+    }>(`/search?${params.toString()}`);
+  }
+
   // Onboarding endpoints
   async submitOnboardingStep1(data: {
     stage_name: string;
@@ -184,13 +197,27 @@ class APIClient {
 
   async submitOnboardingStep4(data: {
     largest_show_capacity: number;
-    flat_rate: number;
-    hourly_rate: number;
+    base_rate_flat: number;
+    base_rate_hourly: number;
     time_split_creative: number;
     time_split_logistics: number;
     available_dates: string[];
   }): Promise<{ message: string; artist: any }> {
     return this.request<{ message: string; artist: any }>('/onboarding/artists/step4', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async submitOnboardingStep5(data: {
+    currently_making_music: boolean;
+    confident_online_presence: boolean;
+    struggles_creative_niche: boolean;
+    knows_where_find_gigs: boolean;
+    paid_fairly_performing: boolean;
+    understands_royalties: boolean;
+  }): Promise<{ message: string; artist: any }> {
+    return this.request<{ message: string; artist: any }>('/onboarding/artists/step5', {
       method: 'POST',
       body: JSON.stringify(data),
     });
