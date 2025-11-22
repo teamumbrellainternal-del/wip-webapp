@@ -10,6 +10,7 @@
 
 import { generateUUIDv4 } from './uuid'
 import type { User } from '../models/user'
+import { logger } from '../utils/logger'
 
 /**
  * Environment interface
@@ -60,8 +61,11 @@ interface ClerkUserResponse {
  */
 export async function syncClerkUser(
   clerkUserId: string,
-  env: Env
+  env: Env,
+  requestId?: string
 ): Promise<User> {
+  logger.info('Starting manual sync for Clerk user', { requestId, clerkUserId })
+
   // 1. Check if user already exists in D1 (prevent race condition)
   const existingUser = await env.DB.prepare(
     'SELECT * FROM users WHERE clerk_id = ?'
@@ -70,13 +74,14 @@ export async function syncClerkUser(
     .first<User>()
 
   if (existingUser) {
-    console.log(`[MANUAL SYNC] User ${clerkUserId} already exists in D1`)
+    logger.info(`[MANUAL SYNC] User ${clerkUserId} already exists in D1`, { requestId })
     return existingUser
   }
 
   // 2. Fetch user from Clerk API
-  console.warn(
-    `[WEBHOOK FAILURE RECOVERY] User ${clerkUserId} not in D1, fetching from Clerk API`
+  logger.warn(
+    `[WEBHOOK FAILURE RECOVERY] User not in D1, fetching from Clerk API`,
+    { requestId, clerkUserId }
   )
 
   const clerkApiUrl = `https://api.clerk.com/v1/users/${clerkUserId}`
@@ -89,6 +94,11 @@ export async function syncClerkUser(
 
   if (!clerkResponse.ok) {
     const errorText = await clerkResponse.text()
+    logger.error('Failed to fetch user from Clerk API', { 
+      requestId, 
+      status: clerkResponse.status, 
+      error: errorText 
+    })
     throw new Error(
       `Failed to fetch user from Clerk API: ${clerkResponse.status} ${errorText}`
     )
@@ -102,6 +112,7 @@ export async function syncClerkUser(
   )
 
   if (!primaryEmail) {
+    logger.error('No primary email found for Clerk user', { requestId, clerkUserId })
     throw new Error(
       `No primary email found for Clerk user ${clerkUserId}`
     )
@@ -116,6 +127,7 @@ export async function syncClerkUser(
   if (clerkUser.external_accounts && clerkUser.external_accounts.length > 0) {
     const externalAccount = clerkUser.external_accounts[0]
     const provider = externalAccount.provider
+    const externalId = externalAccount.id || clerkUserId
 
     // Map Clerk provider names to our schema
     if (provider === 'oauth_google') {
@@ -127,7 +139,7 @@ export async function syncClerkUser(
       oauthProvider = provider.replace('oauth_', '')
     }
 
-    oauthId = externalAccount.id || clerkUserId
+    oauthId = externalId
   }
 
   // 5. Create user in D1 (same logic as webhook)
@@ -142,8 +154,9 @@ export async function syncClerkUser(
       .bind(userId, clerkUserId, oauthProvider, oauthId, email, 0, now, now)
       .run()
 
-    console.warn(
-      `[WEBHOOK FAILURE RECOVERY] Successfully created user ${userId} for Clerk ID ${clerkUserId}`
+    logger.warn(
+      `[WEBHOOK FAILURE RECOVERY] Successfully created user`,
+      { requestId, userId, clerkUserId }
     )
   } catch (dbError) {
     // Handle potential duplicate insert (race condition)
@@ -151,8 +164,9 @@ export async function syncClerkUser(
       dbError instanceof Error &&
       dbError.message.includes('UNIQUE constraint failed')
     ) {
-      console.log(
-        `[MANUAL SYNC] User ${clerkUserId} was created concurrently, fetching existing user`
+      logger.info(
+        `[MANUAL SYNC] User ${clerkUserId} was created concurrently, fetching existing user`,
+        { requestId }
       )
       const user = await env.DB.prepare(
         'SELECT * FROM users WHERE clerk_id = ?'
@@ -181,13 +195,14 @@ export async function syncClerkUser(
 
     // Alert if manual syncs exceed threshold (>5 per day indicates webhook issues)
     if (newCount > 5) {
-      console.error(
-        `[ALERT] High manual sync count detected: ${newCount} syncs today. Webhook endpoint may be unreliable.`
+      logger.error(
+        `[ALERT] High manual sync count detected: ${newCount} syncs today. Webhook endpoint may be unreliable.`,
+        { requestId }
       )
       // TODO: Send alert email/notification to ops team
     }
   } catch (kvError) {
-    console.error('[KV ERROR] Failed to increment manual sync counter:', kvError)
+    logger.error('[KV ERROR] Failed to increment manual sync counter', { requestId, error: kvError })
   }
 
   // 7. Return the newly created user

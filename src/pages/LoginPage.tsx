@@ -100,8 +100,9 @@ export default function LoginPage() {
               socialButtonsVariant: 'blockButton',
             },
           }}
-          signUpUrl="/auth"
-          redirectUrl="/onboarding/role-selection"
+          // Updated to use forceRedirectUrl per Clerk deprecation warning
+          // And ensure signup is not circularly routed
+          forceRedirectUrl="/auth/sso-callback"
           routing="path"
           path="/auth"
         />
