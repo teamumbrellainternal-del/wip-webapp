@@ -39,8 +39,11 @@ const mockUser = {
 export function ProfileDropdown() {
   const navigate = useNavigate()
   
-  // Only use Clerk hook if NOT in demo mode
-  const clerk = DEMO_MODE ? null : useClerk()
+  // Always call the hook - hooks must be called unconditionally
+  const clerk = useClerk()
+  
+  // Determine if we should use Clerk based on demo mode
+  const shouldUseClerk = !DEMO_MODE
 
   const handleLogout = async () => {
     try {
@@ -53,8 +56,8 @@ export function ProfileDropdown() {
       // Clear local session
       localStorage.removeItem('umbrella_session')
 
-      // Sign out from Clerk if available
-      if (clerk) {
+      // Sign out from Clerk if available and not in demo mode
+      if (shouldUseClerk && clerk) {
         await clerk.signOut()
       }
 

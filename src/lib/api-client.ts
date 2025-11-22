@@ -3,8 +3,6 @@
  * Handles authentication, error handling, and API communication
  */
 
-import { useAuth } from '@clerk/clerk-react'
-
 // ... existing interfaces ...
 
 class APIClient {

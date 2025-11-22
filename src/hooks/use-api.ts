@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { ApiError, handleApiError, isAuthError } from '@/utils/errors'
+import { handleApiError, isAuthError } from '@/utils/errors'
 import { apiClient } from '@/lib/api-client'
 
 // ============================================================================
@@ -41,7 +41,7 @@ async function apiRequest<TResponse, TRequest = unknown>(
   endpoint: string,
   options: UseApiOptions<TRequest> = {}
 ): Promise<TResponse> {
-  const { method = 'GET', params, body, headers } = options
+  const { method = 'GET', body, headers } = options
 
   // Use the centralized apiClient which handles auth token injection automatically
   return apiClient['request']<TResponse>(endpoint, {
