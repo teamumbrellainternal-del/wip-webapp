@@ -154,7 +154,7 @@ export default function ProfilePage() {
       setReportDialogOpen(false)
       setReportReason('spam')
       setReportDetails('')
-    } catch (_error) {
+    } catch {
       toast({
         title: 'Failed to submit report',
         description: 'Please try again later.',
