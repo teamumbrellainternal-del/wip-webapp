@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSession } from '@clerk/clerk-react'
+import { apiClient } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -145,35 +146,29 @@ export default function Step3() {
       if (formData.struggles.length > 0) requestBody.struggles = formData.struggles
       if (influencesArray.length > 0) requestBody.influences = influencesArray
 
-      const response = await fetch('/v1/onboarding/artists/step3', {
+      // Use apiClient with correct D1 endpoint
+      await apiClient.request('/onboarding/artists/step3', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify(requestBody),
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        // Handle validation errors from API
-        if (data.error && data.error.code === 'VALIDATION_ERROR') {
-          const apiErrors = JSON.parse(data.error.message)
-          setErrors(apiErrors)
-        } else {
-          throw new Error(data.error?.message || 'Failed to submit step 3')
-        }
-        return
-      }
 
       // Success - navigate to step 4
       navigate('/onboarding/artists/step4')
     } catch (error) {
       console.error('Error submitting step 3:', error)
-      setErrors({
-        general: error instanceof Error ? error.message : 'An error occurred. Please try again.',
-      })
+      const message = error instanceof Error ? error.message : 'An error occurred. Please try again.'
+      
+      // Handle "Step 2 must be completed first" error
+      if (message.includes('Step 2 must be completed first')) {
+        setErrors({
+          general: 'Please complete Step 2 first. Redirecting...',
+        })
+        setTimeout(() => navigate('/onboarding/artists/step2'), 2000)
+      } else {
+        setErrors({
+          general: message,
+        })
+      }
     } finally {
       setIsSubmitting(false)
     }

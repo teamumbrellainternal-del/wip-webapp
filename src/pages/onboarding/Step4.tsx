@@ -56,21 +56,31 @@ export default function OnboardingStep4() {
       // Prepare API payload
       const payload = {
         largest_show_capacity: data.largest_show_capacity,
-        flat_rate: data.flat_rate,
-        hourly_rate: data.hourly_rate,
+        base_rate_flat: data.flat_rate,
+        base_rate_hourly: data.hourly_rate,
         time_split_creative: data.time_split_creative,
         time_split_logistics: 100 - data.time_split_creative,
         available_dates: data.available_dates.map((date) => format(date, 'yyyy-MM-dd')),
       }
 
-      // Call API
-      await apiClient.submitOnboardingStep4(payload)
+      // Use apiClient with correct D1 endpoint
+      await apiClient.request('/onboarding/artists/step4', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      })
 
       // Navigate to step 5 on success
       navigate('/onboarding/artists/step5')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to submit step 4'
-      setError(errorMessage)
+      
+      // Handle "Step 3 must be completed first" error
+      if (errorMessage.includes('Step 3 must be completed first')) {
+        setError('Please complete Step 3 first. Redirecting...')
+        setTimeout(() => navigate('/onboarding/artists/step3'), 2000)
+      } else {
+        setError(errorMessage)
+      }
       console.error('Error submitting step 4:', err)
     } finally {
       setIsLoading(false)

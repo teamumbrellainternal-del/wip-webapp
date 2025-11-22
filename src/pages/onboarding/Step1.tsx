@@ -283,14 +283,25 @@ export default function OnboardingStep1() {
                                   ? 'border-gray-200 bg-gray-50 dark:bg-gray-900 opacity-50 cursor-not-allowed'
                                   : 'border-gray-200 hover:border-purple-400 dark:border-gray-700'
                               }`}
-                              onClick={() => !isDisabled && handleGenreToggle(genre.id)}
+                              onClick={(e) => {
+                                if (e.target !== e.currentTarget) return;
+                                if (!isDisabled) handleGenreToggle(genre.id)
+                              }}
                             >
-                              <Checkbox
-                                checked={isSelected}
-                                disabled={isDisabled}
-                                onCheckedChange={() => handleGenreToggle(genre.id)}
-                              />
-                              <Label className="cursor-pointer">{genre.label}</Label>
+                              <div
+                                className="flex items-center space-x-2 pointer-events-none"
+                              >
+                                <Checkbox
+                                  checked={isSelected}
+                                  disabled={isDisabled}
+                                  onCheckedChange={() => handleGenreToggle(genre.id)}
+                                  className="pointer-events-auto"
+                                />
+                                <Label className="cursor-pointer pointer-events-auto" onClick={(e) => {
+                                  e.stopPropagation()
+                                  if (!isDisabled) handleGenreToggle(genre.id)
+                                }}>{genre.label}</Label>
+                              </div>
                             </div>
                           )
                         })}

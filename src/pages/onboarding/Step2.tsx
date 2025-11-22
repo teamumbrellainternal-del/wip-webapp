@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSession } from '@clerk/clerk-react'
+import { apiClient } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -174,35 +175,29 @@ export default function Step2() {
         ...answers,
       }
 
-      const response = await fetch('/v1/onboarding/artists/step2', {
+      // Use apiClient for consistent request handling (auth, logging, errors)
+      await apiClient.request('/onboarding/artists/step2', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify(requestBody),
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        // Handle validation errors from API
-        if (data.error && data.error.code === 'VALIDATION_ERROR') {
-          const apiErrors = JSON.parse(data.error.message)
-          setErrors(apiErrors)
-        } else {
-          throw new Error(data.error?.message || 'Failed to submit step 2')
-        }
-        return
-      }
 
       // Success - navigate to step 3
       navigate('/onboarding/artists/step3')
     } catch (error) {
       console.error('Error submitting step 2:', error)
-      setErrors({
-        general: error instanceof Error ? error.message : 'An error occurred. Please try again.',
-      })
+      const message = error instanceof Error ? error.message : 'An error occurred. Please try again.'
+      
+      // Handle "Step 1 must be completed first" error specifically
+      if (message.includes('Step 1 must be completed first')) {
+        setErrors({
+          general: 'Please complete Step 1 first. Redirecting...',
+        })
+        setTimeout(() => navigate('/onboarding/artists/step1'), 2000)
+      } else {
+        setErrors({
+          general: message,
+        })
+      }
     } finally {
       setIsSubmitting(false)
     }
