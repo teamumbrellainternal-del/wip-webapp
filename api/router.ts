@@ -130,12 +130,13 @@ export class Router {
       })
 
       // Create request context
+      const requestId = request.headers.get('X-Request-ID') || this.generateRequestId()
       const ctx: RequestContext = {
         request,
         env,
         url,
         params,
-        requestId: this.generateRequestId(),
+        requestId,
         startTime: Date.now(),
       }
 
