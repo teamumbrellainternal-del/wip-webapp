@@ -41,9 +41,7 @@ export default function PageLayout({
             <div className="flex items-start justify-between">
               <div>
                 <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-                {subtitle && (
-                  <p className="text-muted-foreground mt-2">{subtitle}</p>
-                )}
+                {subtitle && <p className="mt-2 text-muted-foreground">{subtitle}</p>}
               </div>
               {actions && <div className="flex items-center gap-2">{actions}</div>}
             </div>
@@ -52,19 +50,9 @@ export default function PageLayout({
       )}
 
       {/* Content + Optional Sidebar */}
-      <div
-        className={
-          sidebar
-            ? 'grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8'
-            : ''
-        }
-      >
+      <div className={sidebar ? 'grid grid-cols-1 gap-8 lg:grid-cols-[1fr_300px]' : ''}>
         <div className="min-w-0">{children}</div>
-        {sidebar && (
-          <aside className="lg:sticky lg:top-24 lg:self-start h-fit">
-            {sidebar}
-          </aside>
-        )}
+        {sidebar && <aside className="h-fit lg:sticky lg:top-24 lg:self-start">{sidebar}</aside>}
       </div>
     </div>
   )

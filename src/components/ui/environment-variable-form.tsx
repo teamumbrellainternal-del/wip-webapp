@@ -1,16 +1,22 @@
-import type React from "react"
+import type React from 'react'
 
-import { useState } from "react"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Eye, EyeOff, X } from "lucide-react"
-import { FormDescription } from "@/components/ui/form"
-import { ConditionalField } from "../form/wrappers/conditional-field"
+import { useState } from 'react'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Eye, EyeOff, X } from 'lucide-react'
+import { FormDescription } from '@/components/ui/form'
+import { ConditionalField } from '../form/wrappers/conditional-field'
 
 interface EnvironmentVariableFormProps {
   isEditing?: boolean
@@ -34,11 +40,11 @@ interface EnvironmentVariableFormProps {
 export function EnvironmentVariableForm({
   isEditing = false,
   initialData = {
-    key: "",
-    value: "",
+    key: '',
+    value: '',
     isSensitive: false,
-    environment: "all",
-    note: "",
+    environment: 'all',
+    note: '',
   },
   onSubmit,
   onCancel,
@@ -47,14 +53,16 @@ export function EnvironmentVariableForm({
   const [showValue, setShowValue] = useState(!initialData.isSensitive)
   const [showNoteField, setShowNoteField] = useState(!!initialData.note)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleSwitchChange = (name: string, checked: boolean) => {
     setFormData((prev) => ({ ...prev, [name]: checked }))
-    if (name === "isSensitive" && checked) {
+    if (name === 'isSensitive' && checked) {
       setShowValue(false)
     }
   }
@@ -67,7 +75,9 @@ export function EnvironmentVariableForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{isEditing ? "Edit Environment Variable" : "Add Environment Variable"}</CardTitle>
+        <CardTitle>
+          {isEditing ? 'Edit Environment Variable' : 'Add Environment Variable'}
+        </CardTitle>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
@@ -80,11 +90,11 @@ export function EnvironmentVariableForm({
               value={formData.key}
               onChange={handleChange}
               readOnly={isEditing}
-              className={isEditing ? "bg-muted" : ""}
+              className={isEditing ? 'bg-muted' : ''}
             />
             <FormDescription>
-              Environment variable names must start with a letter and can only contain letters, numbers, and
-              underscores.
+              Environment variable names must start with a letter and can only contain letters,
+              numbers, and underscores.
             </FormDescription>
           </div>
 
@@ -94,7 +104,7 @@ export function EnvironmentVariableForm({
               <Input
                 id="value"
                 name="value"
-                type={showValue ? "text" : "password"}
+                type={showValue ? 'text' : 'password'}
                 placeholder="Enter value"
                 value={formData.value}
                 onChange={handleChange}
@@ -121,11 +131,13 @@ export function EnvironmentVariableForm({
             <Switch
               id="isSensitive"
               checked={formData.isSensitive}
-              onCheckedChange={(checked) => handleSwitchChange("isSensitive", checked)}
+              onCheckedChange={(checked) => handleSwitchChange('isSensitive', checked)}
             />
             <Label htmlFor="isSensitive">Sensitive</Label>
           </div>
-          <FormDescription>Sensitive values are encrypted and cannot be viewed after creation.</FormDescription>
+          <FormDescription>
+            Sensitive values are encrypted and cannot be viewed after creation.
+          </FormDescription>
 
           <div className="space-y-2">
             <Label htmlFor="environment">Environment</Label>
@@ -146,7 +158,7 @@ export function EnvironmentVariableForm({
             </Select>
           </div>
 
-          <ConditionalField show={formData.environment === "preview"}>
+          <ConditionalField show={formData.environment === 'preview'}>
             <div className="space-y-2 pt-2">
               <Label htmlFor="branch">Branch</Label>
               <Select
@@ -186,7 +198,7 @@ export function EnvironmentVariableForm({
                   size="icon"
                   onClick={() => {
                     setShowNoteField(false)
-                    setFormData((prev) => ({ ...prev, note: "" }))
+                    setFormData((prev) => ({ ...prev, note: '' }))
                   }}
                   className="h-6 w-6"
                 >
@@ -197,7 +209,7 @@ export function EnvironmentVariableForm({
                 id="note"
                 name="note"
                 placeholder="Add a note about this variable"
-                value={formData.note || ""}
+                value={formData.note || ''}
                 onChange={handleChange}
                 className="min-h-[80px]"
               />
@@ -211,7 +223,7 @@ export function EnvironmentVariableForm({
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button type="submit">{isEditing ? "Update" : "Create"}</Button>
+          <Button type="submit">{isEditing ? 'Update' : 'Create'}</Button>
         </CardFooter>
       </form>
     </Card>

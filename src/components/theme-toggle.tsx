@@ -3,18 +3,18 @@
  * Button to switch between light, dark, and system themes
  */
 
-import { Moon, Sun } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Moon, Sun } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useTheme } from '@/hooks/use-theme';
+} from '@/components/ui/dropdown-menu'
+import { useTheme } from '@/hooks/use-theme'
 
 export function ThemeToggle() {
-  const { setTheme } = useTheme();
+  const { setTheme } = useTheme()
 
   return (
     <DropdownMenu>
@@ -26,16 +26,10 @@ export function ThemeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme('light')}>
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('dark')}>
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('system')}>
-          System
-        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme('light')}>Light</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme('dark')}>Dark</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme('system')}>System</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

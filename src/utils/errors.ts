@@ -42,7 +42,7 @@ export function handleApiError(error: unknown): string {
   if (error instanceof Error) {
     // Network errors
     if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-      return 'You\'re offline. Please check your internet connection and try again'
+      return "You're offline. Please check your internet connection and try again"
     }
 
     // Timeout errors
@@ -83,9 +83,7 @@ export function getErrorMessage(error: unknown): ErrorMessage {
 /**
  * Format validation errors from API responses
  */
-export function formatValidationErrors(
-  errors: Record<string, string[]> | undefined
-): string {
+export function formatValidationErrors(errors: Record<string, string[]> | undefined): string {
   if (!errors) return 'Validation failed'
 
   const messages = Object.entries(errors)
@@ -152,7 +150,7 @@ export async function retryRequest<T>(
 
       // Wait before retrying (exponential backoff)
       if (i < maxRetries - 1) {
-        await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)))
+        await new Promise((resolve) => setTimeout(resolve, delay * Math.pow(2, i)))
       }
     }
   }

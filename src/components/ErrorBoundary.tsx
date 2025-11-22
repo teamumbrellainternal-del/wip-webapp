@@ -13,7 +13,7 @@ interface State {
 
 export class ErrorBoundary extends Component<Props, State> {
   public state: State = {
-    hasError: false
+    hasError: false,
   }
 
   public static getDerivedStateFromError(error: Error): State {
@@ -32,12 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
-      return (
-        <ServerErrorPage
-          error={this.state.error}
-          showDetails={import.meta.env.DEV}
-        />
-      )
+      return <ServerErrorPage error={this.state.error} showDetails={import.meta.env.DEV} />
     }
 
     return this.props.children

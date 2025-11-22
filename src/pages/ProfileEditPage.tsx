@@ -293,30 +293,30 @@ export default function ProfileEditPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950 p-4">
-      <div className="max-w-4xl mx-auto py-8">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-slate-50 p-4 dark:from-slate-950 dark:to-purple-950">
+      <div className="mx-auto max-w-4xl py-8">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Edit Profile</h1>
+          <h1 className="mb-2 text-3xl font-bold">Edit Profile</h1>
           <p className="text-muted-foreground">Update your artist profile information</p>
         </div>
 
         {/* Profile Completion */}
         <Card className="mb-6">
           <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2 flex items-center justify-between">
               <span className="text-sm font-medium">Profile Completion</span>
               <span className="text-sm font-medium text-purple-600">{profileCompletion}%</span>
             </div>
             <Progress value={profileCompletion} className="h-2" />
-            <p className="text-xs text-muted-foreground mt-2">
+            <p className="mt-2 text-xs text-muted-foreground">
               Complete your profile to increase visibility and get more opportunities
             </p>
           </CardContent>
@@ -336,7 +336,9 @@ export default function ProfileEditPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Profile Photo</CardTitle>
-                <CardDescription>Upload a professional photo to represent your brand</CardDescription>
+                <CardDescription>
+                  Upload a professional photo to represent your brand
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-6">
@@ -377,11 +379,11 @@ export default function ProfileEditPage() {
                         </Button>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">
+                    <p className="mt-2 text-xs text-muted-foreground">
                       JPEG, PNG, WebP, or HEIC. Max 10MB.
                     </p>
                     {avatarFile && (
-                      <p className="text-xs text-purple-600 mt-1">
+                      <p className="mt-1 text-xs text-purple-600">
                         New photo selected: {avatarFile.name}
                       </p>
                     )}
@@ -422,7 +424,7 @@ export default function ProfileEditPage() {
                 />
 
                 {/* Location */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <FormField
                     control={form.control}
                     name="location_city"
@@ -486,9 +488,7 @@ export default function ProfileEditPage() {
                       <FormControl>
                         <Input type="tel" placeholder="+1 (555) 123-4567" {...field} />
                       </FormControl>
-                      <FormDescription>
-                        Your contact number for gig inquiries
-                      </FormDescription>
+                      <FormDescription>Your contact number for gig inquiries</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -515,9 +515,7 @@ export default function ProfileEditPage() {
                           {...field}
                         />
                       </FormControl>
-                      <FormDescription>
-                        {field.value?.length || 0}/1000 characters
-                      </FormDescription>
+                      <FormDescription>{field.value?.length || 0}/1000 characters</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -539,9 +537,7 @@ export default function ProfileEditPage() {
                       <FormControl>
                         <Input placeholder="A catchy phrase that describes you" {...field} />
                       </FormControl>
-                      <FormDescription>
-                        A short, memorable phrase about your music
-                      </FormDescription>
+                      <FormDescription>A short, memorable phrase about your music</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -556,7 +552,7 @@ export default function ProfileEditPage() {
                 <CardDescription>Set your performance and session rates</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="base_rate_flat"

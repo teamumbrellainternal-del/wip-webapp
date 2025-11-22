@@ -15,12 +15,12 @@ export function FieldStatusIndicator({
   status,
   className,
   size = 'sm',
-  showLabel = false
+  showLabel = false,
 }: FieldStatusIndicatorProps) {
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-5 w-5',
-    lg: 'h-6 w-6'
+    lg: 'h-6 w-6',
   }
 
   const getStatusIcon = () => {
@@ -32,7 +32,7 @@ export function FieldStatusIndicator({
       case 'warning':
         return <AlertTriangle className={cn(sizeClasses[size], 'text-yellow-600')} />
       case 'validating':
-        return <Loader2 className={cn(sizeClasses[size], 'text-blue-600 animate-spin')} />
+        return <Loader2 className={cn(sizeClasses[size], 'animate-spin text-blue-600')} />
       default:
         return null
     }
@@ -61,13 +61,15 @@ export function FieldStatusIndicator({
     <div className={cn('flex items-center gap-1', className)}>
       {getStatusIcon()}
       {showLabel && (
-        <span className={cn(
-          'text-xs font-medium',
-          status === 'valid' && 'text-green-600',
-          status === 'error' && 'text-red-600',
-          status === 'warning' && 'text-yellow-600',
-          status === 'validating' && 'text-blue-600'
-        )}>
+        <span
+          className={cn(
+            'text-xs font-medium',
+            status === 'valid' && 'text-green-600',
+            status === 'error' && 'text-red-600',
+            status === 'warning' && 'text-yellow-600',
+            status === 'validating' && 'text-blue-600'
+          )}
+        >
           {getStatusLabel()}
         </span>
       )}

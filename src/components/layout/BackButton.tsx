@@ -29,12 +29,7 @@ export function BackButton({ to, children }: BackButtonProps) {
   }
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={handleClick}
-      className="mb-4 -ml-2"
-    >
+    <Button variant="ghost" size="sm" onClick={handleClick} className="-ml-2 mb-4">
       <ArrowLeft className="mr-2 h-4 w-4" />
       {children || 'Back'}
     </Button>

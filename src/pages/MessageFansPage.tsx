@@ -16,15 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Send,
-  Save,
-  Calendar,
-  Users,
-  Search,
-  Sparkles,
-  Loader2,
-} from 'lucide-react'
+import { Send, Save, Calendar, Users, Search, Sparkles, Loader2 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
@@ -86,12 +78,12 @@ export default function MessageFansPage() {
 
   // Calculate total recipient count
   const totalRecipients = Array.from(selectedListIds).reduce((total, listId) => {
-    const list = contactLists.find(l => l.id === listId)
+    const list = contactLists.find((l) => l.id === listId)
     return total + (list?.contact_count || 0)
   }, 0)
 
   // Filter contact lists based on search query
-  const filteredLists = contactLists.filter(list =>
+  const filteredLists = contactLists.filter((list) =>
     list.list_name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
@@ -115,10 +107,12 @@ export default function MessageFansPage() {
       const context = {
         context: 'draft_message',
         recipient_count: totalRecipients,
-        selected_lists: Array.from(selectedListIds).map(id => {
-          const list = contactLists.find(l => l.id === id)
-          return list?.list_name
-        }).join(', '),
+        selected_lists: Array.from(selectedListIds)
+          .map((id) => {
+            const list = contactLists.find((l) => l.id === id)
+            return list?.list_name
+          })
+          .join(', '),
       }
 
       const response = await violetService.sendPrompt(
@@ -270,7 +264,10 @@ export default function MessageFansPage() {
   }
 
   // Word and character counters
-  const wordCount = messageBody.trim().split(/\s+/).filter(w => w.length > 0).length
+  const wordCount = messageBody
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w.length > 0).length
 
   if (!user) return null
 
@@ -292,16 +289,16 @@ export default function MessageFansPage() {
 
   return (
     <AppLayout>
-      <div className="h-[calc(100vh-4rem)] flex flex-col md:flex-row">
+      <div className="flex h-[calc(100vh-4rem)] flex-col md:flex-row">
         {/* Left Sidebar - Contact Lists */}
-        <div className="w-full md:w-80 lg:w-96 border-r bg-muted/30 flex flex-col">
+        <div className="flex w-full flex-col border-r bg-muted/30 md:w-80 lg:w-96">
           {/* Header */}
-          <div className="p-4 border-b bg-background">
-            <h2 className="text-xl font-bold mb-3">Contact Lists</h2>
+          <div className="border-b bg-background p-4">
+            <h2 className="mb-3 text-xl font-bold">Contact Lists</h2>
 
             {/* Search bar */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -322,23 +319,23 @@ export default function MessageFansPage() {
           {/* Contact List Cards */}
           <ScrollArea className="flex-1">
             {filteredLists.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                <Users className="h-16 w-16 text-muted-foreground/50 mb-4" />
-                <p className="text-muted-foreground font-medium">
+              <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+                <Users className="mb-4 h-16 w-16 text-muted-foreground/50" />
+                <p className="font-medium text-muted-foreground">
                   {searchQuery ? 'No lists found' : 'No contact lists yet'}
                 </p>
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="mt-2 text-sm text-muted-foreground">
                   {searchQuery ? 'Try a different search' : 'Create a contact list to get started'}
                 </p>
               </div>
             ) : (
-              <div className="p-3 space-y-2">
+              <div className="space-y-2 p-3">
                 {filteredLists.map((list) => (
                   <Card
                     key={list.id}
                     className={cn(
-                      "cursor-pointer transition-all hover:shadow-md",
-                      selectedListIds.has(list.id) && "border-primary bg-primary/5"
+                      'cursor-pointer transition-all hover:shadow-md',
+                      selectedListIds.has(list.id) && 'border-primary bg-primary/5'
                     )}
                     onClick={() => toggleListSelection(list.id)}
                   >
@@ -349,14 +346,12 @@ export default function MessageFansPage() {
                           onCheckedChange={() => toggleListSelection(list.id)}
                           className="mt-1"
                         />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm truncate mb-1">
-                            {list.list_name}
-                          </p>
+                        <div className="min-w-0 flex-1">
+                          <p className="mb-1 truncate text-sm font-semibold">{list.list_name}</p>
                           <p className="text-xs text-muted-foreground">
                             {list.contact_count} contact{list.contact_count !== 1 ? 's' : ''}
                           </p>
-                          <p className="text-xs text-muted-foreground mt-1 capitalize">
+                          <p className="mt-1 text-xs capitalize text-muted-foreground">
                             {list.list_type.replace('_', ' ')}
                           </p>
                         </div>
@@ -370,18 +365,18 @@ export default function MessageFansPage() {
         </div>
 
         {/* Main Panel - Message Composer */}
-        <div className="flex-1 flex flex-col bg-background">
+        <div className="flex flex-1 flex-col bg-background">
           {/* Header */}
-          <div className="p-4 border-b bg-muted/30">
+          <div className="border-b bg-muted/30 p-4">
             <h2 className="text-2xl font-bold">Message Fans</h2>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="mt-1 text-sm text-muted-foreground">
               Compose and send messages to your fan lists
             </p>
           </div>
 
           {/* Composer Area */}
           <ScrollArea className="flex-1 p-6">
-            <div className="max-w-4xl mx-auto space-y-6">
+            <div className="mx-auto max-w-4xl space-y-6">
               {/* AI Draft Button */}
               <Card>
                 <CardContent className="p-4">
@@ -393,18 +388,18 @@ export default function MessageFansPage() {
                   >
                     {aiDraftLoading ? (
                       <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Generating draft...
                       </>
                     ) : (
                       <>
-                        <Sparkles className="h-4 w-4 mr-2" />
+                        <Sparkles className="mr-2 h-4 w-4" />
                         Ask Violet to Draft
                       </>
                     )}
                   </Button>
                   {selectedListIds.size === 0 && (
-                    <p className="text-xs text-muted-foreground mt-2 text-center">
+                    <p className="mt-2 text-center text-xs text-muted-foreground">
                       Select at least one contact list to use AI draft
                     </p>
                   )}
@@ -424,10 +419,7 @@ export default function MessageFansPage() {
                   maxLength={SUBJECT_CHAR_LIMIT}
                 />
                 <div className="flex justify-end">
-                  <CharacterCounter
-                    current={subject.length}
-                    maximum={SUBJECT_CHAR_LIMIT}
-                  />
+                  <CharacterCounter current={subject.length} maximum={SUBJECT_CHAR_LIMIT} />
                 </div>
               </div>
 
@@ -446,20 +438,21 @@ export default function MessageFansPage() {
                   className="min-h-[300px] resize-none font-mono text-sm"
                   maxLength={MESSAGE_CHAR_LIMIT}
                 />
-                <div className="flex justify-between items-center text-xs text-muted-foreground">
-                  <span>{wordCount} word{wordCount !== 1 ? 's' : ''}</span>
-                  <CharacterCounter
-                    current={messageBody.length}
-                    maximum={MESSAGE_CHAR_LIMIT}
-                  />
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>
+                    {wordCount} word{wordCount !== 1 ? 's' : ''}
+                  </span>
+                  <CharacterCounter current={messageBody.length} maximum={MESSAGE_CHAR_LIMIT} />
                 </div>
               </div>
 
               {/* Information Notice */}
-              <Card className="bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800">
+              <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
                 <CardContent className="p-4">
                   <p className="text-sm text-blue-800 dark:text-blue-200">
-                    <strong>Note:</strong> This MVP supports text-only broadcasts. Messages will be sent via email and SMS to opted-in contacts. All emails will include an unsubscribe link.
+                    <strong>Note:</strong> This MVP supports text-only broadcasts. Messages will be
+                    sent via email and SMS to opted-in contacts. All emails will include an
+                    unsubscribe link.
                   </p>
                 </CardContent>
               </Card>
@@ -468,7 +461,7 @@ export default function MessageFansPage() {
 
           {/* Action Buttons */}
           <div className="border-t bg-muted/30 p-4">
-            <div className="max-w-4xl mx-auto flex flex-col sm:flex-row gap-3">
+            <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row">
               <Button
                 onClick={handleSaveDraft}
                 disabled={savingDraft || (!subject.trim() && !messageBody.trim())}
@@ -477,12 +470,12 @@ export default function MessageFansPage() {
               >
                 {savingDraft ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Saving...
                   </>
                 ) : (
                   <>
-                    <Save className="h-4 w-4 mr-2" />
+                    <Save className="mr-2 h-4 w-4" />
                     Save Draft
                   </>
                 )}
@@ -493,7 +486,7 @@ export default function MessageFansPage() {
                 variant="outline"
                 className="flex-1"
               >
-                <Calendar className="h-4 w-4 mr-2" />
+                <Calendar className="mr-2 h-4 w-4" />
                 Schedule Send
               </Button>
               <Button
@@ -501,7 +494,7 @@ export default function MessageFansPage() {
                 disabled={!subject.trim() || !messageBody.trim() || selectedListIds.size === 0}
                 className="flex-1"
               >
-                <Send className="h-4 w-4 mr-2" />
+                <Send className="mr-2 h-4 w-4" />
                 Send Now
               </Button>
             </div>
@@ -515,7 +508,8 @@ export default function MessageFansPage() {
           <DialogHeader>
             <DialogTitle>Schedule Message</DialogTitle>
             <DialogDescription>
-              Choose when you want this message to be sent to {totalRecipients} recipient{totalRecipients !== 1 ? 's' : ''}.
+              Choose when you want this message to be sent to {totalRecipients} recipient
+              {totalRecipients !== 1 ? 's' : ''}.
             </DialogDescription>
           </DialogHeader>
 
@@ -550,9 +544,7 @@ export default function MessageFansPage() {
             <Button variant="outline" onClick={() => setShowScheduleModal(false)}>
               Cancel
             </Button>
-            <Button onClick={confirmScheduleSend}>
-              Schedule Send
-            </Button>
+            <Button onClick={confirmScheduleSend}>Schedule Send</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -562,25 +554,27 @@ export default function MessageFansPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm Send</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to send this message now?
-            </DialogDescription>
+            <DialogDescription>Are you sure you want to send this message now?</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            <div className="bg-muted p-4 rounded-lg space-y-2">
+            <div className="space-y-2 rounded-lg bg-muted p-4">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Recipients:</span>
-                <span className="font-semibold">{totalRecipients} contact{totalRecipients !== 1 ? 's' : ''}</span>
+                <span className="font-semibold">
+                  {totalRecipients} contact{totalRecipients !== 1 ? 's' : ''}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Lists:</span>
-                <span className="font-semibold">{selectedListIds.size} list{selectedListIds.size !== 1 ? 's' : ''}</span>
+                <span className="font-semibold">
+                  {selectedListIds.size} list{selectedListIds.size !== 1 ? 's' : ''}
+                </span>
               </div>
               <Separator className="my-2" />
               <div className="text-sm">
                 <span className="text-muted-foreground">Subject:</span>
-                <p className="font-semibold mt-1">{subject}</p>
+                <p className="mt-1 font-semibold">{subject}</p>
               </div>
             </div>
 
@@ -596,12 +590,12 @@ export default function MessageFansPage() {
             <Button onClick={confirmSendNow} disabled={sendingNow}>
               {sendingNow ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Sending...
                 </>
               ) : (
                 <>
-                  <Send className="h-4 w-4 mr-2" />
+                  <Send className="mr-2 h-4 w-4" />
                   Send Now
                 </>
               )}

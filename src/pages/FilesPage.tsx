@@ -70,7 +70,7 @@ const FILE_CATEGORIES = [
 ] as const
 
 type ViewMode = 'grid' | 'list'
-type CategoryId = typeof FILE_CATEGORIES[number]['id']
+type CategoryId = (typeof FILE_CATEGORIES)[number]['id']
 
 export default function FilesPage() {
   const navigate = useNavigate()
@@ -124,7 +124,7 @@ export default function FilesPage() {
 
     // Filter by category
     if (selectedCategory !== 'all') {
-      result = result.filter(file => {
+      result = result.filter((file) => {
         const fileType = file.file_type.toLowerCase()
         switch (selectedCategory) {
           case 'image':
@@ -134,11 +134,13 @@ export default function FilesPage() {
           case 'video':
             return fileType.startsWith('video/')
           case 'document':
-            return fileType.includes('pdf') ||
-                   fileType.includes('document') ||
-                   fileType.includes('text') ||
-                   fileType.includes('msword') ||
-                   fileType.includes('wordprocessingml')
+            return (
+              fileType.includes('pdf') ||
+              fileType.includes('document') ||
+              fileType.includes('text') ||
+              fileType.includes('msword') ||
+              fileType.includes('wordprocessingml')
+            )
           default:
             return true
         }
@@ -148,9 +150,7 @@ export default function FilesPage() {
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
-      result = result.filter(file =>
-        file.filename.toLowerCase().includes(query)
-      )
+      result = result.filter((file) => file.filename.toLowerCase().includes(query))
     }
 
     setFilteredFiles(result)
@@ -166,7 +166,7 @@ export default function FilesPage() {
       document: 0,
     }
 
-    files.forEach(file => {
+    files.forEach((file) => {
       const fileType = file.file_type.toLowerCase()
       if (fileType.startsWith('image/')) counts.image++
       else if (fileType.startsWith('audio/')) counts.audio++
@@ -177,7 +177,8 @@ export default function FilesPage() {
         fileType.includes('text') ||
         fileType.includes('msword') ||
         fileType.includes('wordprocessingml')
-      ) counts.document++
+      )
+        counts.document++
     })
 
     return counts
@@ -301,21 +302,21 @@ export default function FilesPage() {
 
     if (viewMode === 'grid') {
       return (
-        <Card key={file.id} className="group overflow-hidden hover:shadow-md transition-shadow">
+        <Card key={file.id} className="group overflow-hidden transition-shadow hover:shadow-md">
           <CardContent className="p-0">
-            <div className="aspect-square relative bg-muted flex items-center justify-center overflow-hidden">
+            <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-muted">
               {isImage && file.thumbnail_url ? (
                 <img
                   src={file.thumbnail_url}
                   alt={file.filename}
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                 />
               ) : (
-                <FileIcon className="w-12 h-12 text-muted-foreground" />
+                <FileIcon className="h-12 w-12 text-muted-foreground" />
               )}
 
               {/* Action menu overlay */}
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="secondary" size="icon" className="h-8 w-8">
@@ -344,7 +345,7 @@ export default function FilesPage() {
             </div>
 
             <div className="p-3">
-              <p className="font-medium text-sm truncate mb-1">{file.filename}</p>
+              <p className="mb-1 truncate text-sm font-medium">{file.filename}</p>
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>{formatFileSize(file.file_size)}</span>
                 <span>{formatDate(file.uploaded_at)}</span>
@@ -357,7 +358,7 @@ export default function FilesPage() {
 
     // List view
     return (
-      <Card key={file.id} className="mb-2 hover:shadow-sm transition-shadow">
+      <Card key={file.id} className="mb-2 transition-shadow hover:shadow-sm">
         <CardContent className="p-3">
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0">
@@ -365,17 +366,17 @@ export default function FilesPage() {
                 <img
                   src={file.thumbnail_url}
                   alt={file.filename}
-                  className="w-10 h-10 object-cover rounded"
+                  className="h-10 w-10 rounded object-cover"
                 />
               ) : (
-                <div className="w-10 h-10 bg-muted rounded flex items-center justify-center">
-                  <FileIcon className="w-5 h-5 text-muted-foreground" />
+                <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
+                  <FileIcon className="h-5 w-5 text-muted-foreground" />
                 </div>
               )}
             </div>
 
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm truncate">{file.filename}</p>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{file.filename}</p>
               <p className="text-xs text-muted-foreground">
                 {formatFileSize(file.file_size)} • {formatDate(file.uploaded_at)}
               </p>
@@ -431,7 +432,7 @@ export default function FilesPage() {
 
   return (
     <AppLayout>
-      <div className="h-full flex flex-col">
+      <div className="flex h-full flex-col">
         {/* Header */}
         <div className="border-b bg-background">
           <div className="flex items-center justify-between p-4">
@@ -445,7 +446,7 @@ export default function FilesPage() {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div className="flex items-center gap-2">
-                <div className="bg-primary/10 p-2 rounded-lg">
+                <div className="rounded-lg bg-primary/10 p-2">
                   <Cloud className="h-5 w-5 text-primary" />
                 </div>
                 <div>
@@ -473,9 +474,9 @@ export default function FilesPage() {
           </div>
         </div>
 
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex flex-1 overflow-hidden">
           {/* Left Sidebar - Categories */}
-          <div className="w-64 border-r bg-muted/30 hidden md:flex flex-col">
+          <div className="hidden w-64 flex-col border-r bg-muted/30 md:flex">
             <div className="p-4">
               <Button className="w-full" onClick={() => fileInputRef.current?.click()}>
                 <FolderPlus className="mr-2 h-4 w-4" />
@@ -494,14 +495,14 @@ export default function FilesPage() {
 
             <ScrollArea className="flex-1">
               <div className="p-2">
-                {FILE_CATEGORIES.map(category => {
+                {FILE_CATEGORIES.map((category) => {
                   const Icon = category.icon
                   return (
                     <button
                       key={category.id}
                       onClick={() => setSelectedCategory(category.id)}
                       className={cn(
-                        'w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors mb-1',
+                        'mb-1 flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors',
                         selectedCategory === category.id
                           ? 'bg-primary text-primary-foreground'
                           : 'hover:bg-muted'
@@ -522,11 +523,11 @@ export default function FilesPage() {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex flex-1 flex-col overflow-hidden">
             {/* Toolbar */}
-            <div className="border-b p-4 flex items-center gap-3">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-3 border-b p-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search files..."
                   value={searchQuery}
@@ -535,7 +536,7 @@ export default function FilesPage() {
                 />
               </div>
 
-              <div className="flex items-center gap-1 border rounded-lg p-1">
+              <div className="flex items-center gap-1 rounded-lg border p-1">
                 <Button
                   variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                   size="icon"
@@ -554,10 +555,7 @@ export default function FilesPage() {
                 </Button>
               </div>
 
-              <Button
-                className="md:hidden"
-                onClick={() => fileInputRef.current?.click()}
-              >
+              <Button className="md:hidden" onClick={() => fileInputRef.current?.click()}>
                 <Upload className="mr-2 h-4 w-4" />
                 Upload
               </Button>
@@ -573,33 +571,31 @@ export default function FilesPage() {
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
                     className={cn(
-                      'border-2 border-dashed rounded-lg p-12 text-center transition-colors',
+                      'rounded-lg border-2 border-dashed p-12 text-center transition-colors',
                       isDragging ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'
                     )}
                   >
-                    <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">
+                    <Upload className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                    <h3 className="mb-2 text-lg font-semibold">
                       {searchQuery || selectedCategory !== 'all'
                         ? 'No files found'
                         : 'Drop files or click to upload'}
                     </h3>
-                    <p className="text-muted-foreground mb-4">
+                    <p className="mb-4 text-muted-foreground">
                       {searchQuery || selectedCategory !== 'all'
                         ? 'Try adjusting your search or filters'
                         : 'Images, audio, video, documents'}
                     </p>
                     {!searchQuery && selectedCategory === 'all' && (
-                      <Button onClick={() => fileInputRef.current?.click()}>
-                        Browse Files
-                      </Button>
+                      <Button onClick={() => fileInputRef.current?.click()}>Browse Files</Button>
                     )}
                   </div>
                 )}
 
                 {uploading && (
-                  <div className="text-center py-8">
+                  <div className="py-8 text-center">
                     <LoadingState />
-                    <p className="text-muted-foreground mt-4">Uploading files...</p>
+                    <p className="mt-4 text-muted-foreground">Uploading files...</p>
                   </div>
                 )}
 
@@ -611,7 +607,7 @@ export default function FilesPage() {
                     onDrop={handleDrop}
                     className={cn(
                       viewMode === 'grid'
-                        ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
+                        ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
                         : 'space-y-2'
                     )}
                   >
@@ -629,9 +625,7 @@ export default function FilesPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Rename File</DialogTitle>
-            <DialogDescription>
-              Enter a new name for this file.
-            </DialogDescription>
+            <DialogDescription>Enter a new name for this file.</DialogDescription>
           </DialogHeader>
           <Input
             value={newFileName}
@@ -642,10 +636,12 @@ export default function FilesPage() {
             <Button variant="outline" onClick={() => setRenameDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => {
-              // TODO: Implement rename functionality when API is ready
-              setRenameDialogOpen(false)
-            }}>
+            <Button
+              onClick={() => {
+                // TODO: Implement rename functionality when API is ready
+                setRenameDialogOpen(false)
+              }}
+            >
               Rename
             </Button>
           </DialogFooter>
@@ -658,12 +654,16 @@ export default function FilesPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete File</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{selectedFile?.filename}"? This action cannot be undone.
+              Are you sure you want to delete "{selectedFile?.filename}"? This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteFile} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDeleteFile}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

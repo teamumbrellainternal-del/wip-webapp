@@ -6,6 +6,7 @@
 
 import { verifyToken } from '@clerk/backend'
 import { verifyJWT, type JWTPayload } from '../utils/jwt'
+import { logger } from '../utils/logger'
 import type { User } from '../models/user'
 import {
   AuthenticationError,
@@ -80,75 +81,87 @@ export async function requireAuth(
   request: Request,
   env: Env
 ): Promise<User> {
-  // 1. Extract token from Authorization header
-  const authHeader = request.headers.get('Authorization')
+    // 1. Extract token from Authorization header
+    const authHeader = request.headers.get('Authorization')
+    const requestId = request.headers.get('X-Request-ID') || 'unknown-request-id'
 
-  if (!authHeader) {
-    throw new AuthenticationError('Missing authentication header')
-  }
-
-  if (!authHeader.startsWith('Bearer ')) {
-    throw new AuthenticationError(
-      'Invalid Authorization header format. Expected: Bearer <token>'
-    )
-  }
-
-  const token = authHeader.replace('Bearer ', '')
-
-  if (!token) {
-    throw new AuthenticationError('Missing session token')
-  }
-
-  try {
-    // 2. Verify Clerk session token
-    const payload = await verifyToken(token, {
-      secretKey: env.CLERK_SECRET_KEY,
-    })
-
-    if (!payload || !payload.sub) {
-      throw new AuthenticationError('Invalid token payload')
+    if (!authHeader) {
+      logger.warn('Missing authentication header', { requestId })
+      throw new AuthenticationError('Missing authentication header')
     }
 
-    const clerkId = payload.sub
-
-    // 3. Fetch user from D1 by clerk_id
-    let user = await env.DB.prepare(
-      'SELECT * FROM users WHERE clerk_id = ?'
-    )
-      .bind(clerkId)
-      .first<User>()
-
-    // 4. If user not found, attempt manual sync (webhook failure recovery)
-    if (!user) {
-      console.warn(
-        `[AUTH MIDDLEWARE] User ${clerkId} authenticated with Clerk but not found in D1. Attempting manual sync...`
+    if (!authHeader.startsWith('Bearer ')) {
+      logger.warn('Invalid Authorization header format', { requestId })
+      throw new AuthenticationError(
+        'Invalid Authorization header format. Expected: Bearer <token>'
       )
-
-      try {
-        // Fetch user from Clerk API and create in D1
-        user = await syncClerkUser(clerkId, env)
-        console.log(
-          `[AUTH MIDDLEWARE] Manual sync successful for user ${clerkId}, proceeding with request`
-        )
-      } catch (syncError) {
-        console.error('[AUTH MIDDLEWARE] Manual sync failed:', {
-          clerkId,
-          error: syncError instanceof Error ? syncError.message : String(syncError),
-        })
-
-        // If manual sync fails, throw NotFoundError
-        throw new NotFoundError(
-          'User not found in database and manual sync failed. Please try logging in again.',
-          {
-            clerkId,
-            syncError: syncError instanceof Error ? syncError.message : undefined,
-          }
-        )
-      }
     }
 
-    // 5. Return user object
-    return user
+    const token = authHeader.replace('Bearer ', '')
+
+    if (!token) {
+      logger.warn('Missing session token', { requestId })
+      throw new AuthenticationError('Missing session token')
+    }
+
+    try {
+      // 2. Verify Clerk session token
+      logger.debug('Verifying Clerk session token', { requestId })
+      const payload = await verifyToken(token, {
+        secretKey: env.CLERK_SECRET_KEY,
+      })
+
+      if (!payload || !payload.sub) {
+        logger.error('Invalid token payload', { requestId, payload })
+        throw new AuthenticationError('Invalid token payload')
+      }
+
+      const clerkId = payload.sub
+      logger.debug('Token verified', { requestId, clerkId })
+
+      // 3. Fetch user from D1 by clerk_id
+      let user = await env.DB.prepare(
+        'SELECT * FROM users WHERE clerk_id = ?'
+      )
+        .bind(clerkId)
+        .first<User>()
+
+      // 4. If user not found, attempt manual sync (webhook failure recovery)
+      if (!user) {
+        logger.warn(
+          `[AUTH MIDDLEWARE] User authenticated with Clerk but not found in D1. Attempting manual sync...`,
+          { requestId, clerkId }
+        )
+
+        try {
+          // Fetch user from Clerk API and create in D1
+          user = await syncClerkUser(clerkId, env)
+          logger.info(
+            `[AUTH MIDDLEWARE] Manual sync successful, proceeding with request`,
+            { requestId, clerkId, userId: user.id }
+          )
+        } catch (syncError) {
+          logger.error('[AUTH MIDDLEWARE] Manual sync failed', {
+            requestId,
+            clerkId,
+            error: syncError instanceof Error ? syncError.message : String(syncError),
+          })
+
+          // If manual sync fails, throw NotFoundError
+          throw new NotFoundError(
+            'User not found in database and manual sync failed. Please try logging in again.',
+            {
+              clerkId,
+              syncError: syncError instanceof Error ? syncError.message : undefined,
+            }
+          )
+        }
+      } else {
+        logger.debug('User found in D1', { requestId, userId: user.id })
+      }
+
+      // 5. Return user object
+      return user
   } catch (error) {
     // Re-throw our custom errors
     if (

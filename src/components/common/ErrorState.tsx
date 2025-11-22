@@ -17,12 +17,7 @@ interface ErrorStateProps {
   title?: string
 }
 
-export default function ErrorState({
-  error,
-  retry,
-  fullScreen = false,
-  title,
-}: ErrorStateProps) {
+export default function ErrorState({ error, retry, fullScreen = false, title }: ErrorStateProps) {
   // Handle different error types
   let errorTitle: string
   let errorMessage: string
@@ -50,15 +45,13 @@ export default function ErrorState({
 
   return (
     <div className={containerClasses}>
-      <div className="text-center max-w-md px-4">
-        <div className="text-destructive text-5xl mb-4" aria-hidden="true">
+      <div className="max-w-md px-4 text-center">
+        <div className="mb-4 text-5xl text-destructive" aria-hidden="true">
           ⚠️
         </div>
-        <h3 className="text-lg font-semibold mb-2">{errorTitle}</h3>
-        <p className="text-muted-foreground mb-2">{errorMessage}</p>
-        {errorAction && (
-          <p className="text-sm text-muted-foreground mb-6">{errorAction}</p>
-        )}
+        <h3 className="mb-2 text-lg font-semibold">{errorTitle}</h3>
+        <p className="mb-2 text-muted-foreground">{errorMessage}</p>
+        {errorAction && <p className="mb-6 text-sm text-muted-foreground">{errorAction}</p>}
         {retry && (
           <Button onClick={retry} variant="default" className="mt-4">
             Try Again
@@ -72,7 +65,13 @@ export default function ErrorState({
 /**
  * Inline error message for forms and small spaces
  */
-export function InlineError({ error, title }: { error: Error | string | ErrorMessage; title?: string }) {
+export function InlineError({
+  error,
+  title,
+}: {
+  error: Error | string | ErrorMessage
+  title?: string
+}) {
   let errorTitle: string
   let errorMessage: string
 
@@ -116,9 +115,9 @@ export function ErrorMessage({
   }
 
   return (
-    <div className="flex items-center justify-between p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-      <div className="flex items-start gap-3 flex-1">
-        <span className="text-destructive text-xl" aria-hidden="true">
+    <div className="flex items-center justify-between rounded-lg border border-destructive/20 bg-destructive/10 p-4">
+      <div className="flex flex-1 items-start gap-3">
+        <span className="text-xl text-destructive" aria-hidden="true">
           ⚠️
         </span>
         <p className="text-sm text-destructive">{message}</p>
@@ -151,14 +150,12 @@ export function EmptyState({
 }) {
   return (
     <div className="flex items-center justify-center py-12">
-      <div className="text-center max-w-md px-4">
-        <div className="text-5xl mb-4" aria-hidden="true">
+      <div className="max-w-md px-4 text-center">
+        <div className="mb-4 text-5xl" aria-hidden="true">
           {icon}
         </div>
-        <h3 className="text-lg font-semibold mb-2">{title}</h3>
-        {description && (
-          <p className="text-muted-foreground mb-6">{description}</p>
-        )}
+        <h3 className="mb-2 text-lg font-semibold">{title}</h3>
+        {description && <p className="mb-6 text-muted-foreground">{description}</p>}
         {action && (
           <Button onClick={action.onClick} variant="default">
             {action.label}

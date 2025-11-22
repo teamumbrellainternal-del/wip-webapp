@@ -1,7 +1,13 @@
-import { Label } from "@/components/ui/label"
-import { FormDescription } from "@/components/ui/form"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { FrameworkIcon } from "./framework-icon"
+import { Label } from '@/components/ui/label'
+import { FormDescription } from '@/components/ui/form'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { FrameworkIcon } from './framework-icon'
 
 interface Framework {
   id: string
@@ -21,7 +27,7 @@ export function FrameworkPresetSelector({
   frameworks,
   value,
   onChange,
-  label = "Framework Preset",
+  label = 'Framework Preset',
   description,
 }: FrameworkPresetSelectorProps) {
   return (

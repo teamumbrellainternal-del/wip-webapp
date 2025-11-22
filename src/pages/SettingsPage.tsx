@@ -55,7 +55,8 @@ export default function SettingsPage() {
       // Account deleted successfully
       toast({
         title: 'Account deleted',
-        description: 'Your account has been permanently deleted. You will receive a confirmation email.',
+        description:
+          'Your account has been permanently deleted. You will receive a confirmation email.',
       })
 
       // Close dialog and redirect to login after short delay
@@ -78,9 +79,9 @@ export default function SettingsPage() {
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto max-w-4xl px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold tracking-tight mb-2">Account Settings</h1>
+          <h1 className="mb-2 text-4xl font-bold tracking-tight">Account Settings</h1>
           <p className="text-muted-foreground">Manage your account preferences and data</p>
         </div>
 
@@ -110,9 +111,7 @@ export default function SettingsPage() {
               <CardDescription>Manage your public profile</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button onClick={() => navigate('/profile/edit')}>
-                Edit Profile
-              </Button>
+              <Button onClick={() => navigate('/profile/edit')}>Edit Profile</Button>
             </CardContent>
           </Card>
 
@@ -143,7 +142,7 @@ export default function SettingsPage() {
           {/* Danger Zone - Delete Account */}
           <Card className="border-red-200 dark:border-red-800">
             <CardHeader>
-              <CardTitle className="text-red-600 dark:text-red-400 flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
                 <AlertTriangle className="h-5 w-5" />
                 Danger Zone
               </CardTitle>
@@ -152,21 +151,21 @@ export default function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 border border-red-200 dark:border-red-800">
+              <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
                 <div className="flex items-start gap-3">
-                  <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                  <Trash2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400" />
                   <div className="flex-1">
-                    <h3 className="font-semibold text-red-900 dark:text-red-100 mb-1">
+                    <h3 className="mb-1 font-semibold text-red-900 dark:text-red-100">
                       Delete Account
                     </h3>
-                    <p className="text-sm text-red-800 dark:text-red-200 mb-4">
-                      Permanently delete your account and all associated data. This action cannot
-                      be undone and complies with CCPA data deletion requirements.
+                    <p className="mb-4 text-sm text-red-800 dark:text-red-200">
+                      Permanently delete your account and all associated data. This action cannot be
+                      undone and complies with CCPA data deletion requirements.
                     </p>
-                    <p className="text-sm text-red-800 dark:text-red-200 mb-4">
+                    <p className="mb-4 text-sm text-red-800 dark:text-red-200">
                       When you delete your account, we will:
                     </p>
-                    <ul className="text-sm text-red-800 dark:text-red-200 list-disc list-inside mb-4 space-y-1">
+                    <ul className="mb-4 list-inside list-disc space-y-1 text-sm text-red-800 dark:text-red-200">
                       <li>Delete your profile and all personal information</li>
                       <li>Remove all uploaded files, tracks, and media</li>
                       <li>Delete all messages and conversations</li>
@@ -179,7 +178,7 @@ export default function SettingsPage() {
                       onClick={() => setDeleteDialogOpen(true)}
                       className="bg-red-600 hover:bg-red-700"
                     >
-                      <Trash2 className="h-4 w-4 mr-2" />
+                      <Trash2 className="mr-2 h-4 w-4" />
                       Delete My Account
                     </Button>
                   </div>
@@ -203,12 +202,12 @@ export default function SettingsPage() {
               immediately and cannot be recovered.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 border border-red-200 dark:border-red-800">
-              <p className="text-sm font-semibold text-red-900 dark:text-red-100 mb-2">
+          <div className="space-y-4 py-4">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
+              <p className="mb-2 text-sm font-semibold text-red-900 dark:text-red-100">
                 The following data will be permanently deleted:
               </p>
-              <ul className="text-sm text-red-800 dark:text-red-200 list-disc list-inside space-y-1">
+              <ul className="list-inside list-disc space-y-1 text-sm text-red-800 dark:text-red-200">
                 <li>Your profile and personal information</li>
                 <li>All uploaded files and media ({user.name}'s content)</li>
                 <li>All messages and conversations</li>
@@ -251,7 +250,7 @@ export default function SettingsPage() {
                 <>Deleting...</>
               ) : (
                 <>
-                  <Trash2 className="h-4 w-4 mr-2" />
+                  <Trash2 className="mr-2 h-4 w-4" />
                   Delete Account Permanently
                 </>
               )}

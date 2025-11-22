@@ -7,7 +7,13 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -22,7 +28,7 @@ import {
   CheckCircle2,
   X,
   Loader2,
-  Users
+  Users,
 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import ErrorState from '@/components/common/ErrorState'
@@ -40,8 +46,18 @@ interface FilterChip {
 }
 
 const GENRES = [
-  'Rock', 'Pop', 'Hip Hop', 'R&B', 'Jazz', 'Classical',
-  'Electronic', 'Country', 'Folk', 'Blues', 'Metal', 'Indie'
+  'Rock',
+  'Pop',
+  'Hip Hop',
+  'R&B',
+  'Jazz',
+  'Classical',
+  'Electronic',
+  'Country',
+  'Folk',
+  'Blues',
+  'Metal',
+  'Indie',
 ]
 
 const PRICE_RANGES = [
@@ -104,7 +120,15 @@ export default function MarketplacePage() {
     setHasMore(true)
     fetchData(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, debouncedQuery, selectedGenres, locationFilter, priceRange, urgentOnly, verifiedOnly])
+  }, [
+    activeTab,
+    debouncedQuery,
+    selectedGenres,
+    locationFilter,
+    priceRange,
+    urgentOnly,
+    verifiedOnly,
+  ])
 
   // Update URL when tab changes
   useEffect(() => {
@@ -299,18 +323,19 @@ export default function MarketplacePage() {
 
   // Active filter chips
   const activeFilters: FilterChip[] = []
-  selectedGenres.forEach(genre => {
+  selectedGenres.forEach((genre) => {
     activeFilters.push({ id: `genre-${genre}`, label: genre, value: genre })
   })
   if (locationFilter) {
     activeFilters.push({ id: 'location', label: `📍 ${locationFilter}`, value: locationFilter })
   }
   if (priceRange.min || priceRange.max) {
-    const label = priceRange.min && priceRange.max
-      ? `${formatCurrency(priceRange.min)} - ${formatCurrency(priceRange.max)}`
-      : priceRange.min
-      ? `${formatCurrency(priceRange.min)}+`
-      : `Up to ${formatCurrency(priceRange.max!)}`
+    const label =
+      priceRange.min && priceRange.max
+        ? `${formatCurrency(priceRange.min)} - ${formatCurrency(priceRange.max)}`
+        : priceRange.min
+          ? `${formatCurrency(priceRange.min)}+`
+          : `Up to ${formatCurrency(priceRange.max!)}`
     activeFilters.push({ id: 'price', label: `💰 ${label}`, value: 'price' })
   }
   if (urgentOnly) {
@@ -325,22 +350,26 @@ export default function MarketplacePage() {
       <MetaTags
         title="Find Gigs & Discover Artists"
         description="Connect independent artists with gigs, tools, and opportunities. Browse available gigs or discover talented artists for your venue."
-        keywords={['music gigs', 'artist marketplace', 'live music', 'independent artists', 'venue booking']}
+        keywords={[
+          'music gigs',
+          'artist marketplace',
+          'live music',
+          'independent artists',
+          'venue booking',
+        ]}
         url="/marketplace"
       />
-      <div className="container mx-auto px-4 py-6 h-screen flex flex-col">
+      <div className="container mx-auto flex h-screen flex-col px-4 py-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Marketplace</h1>
-          <p className="text-muted-foreground">
-            Discover opportunities and connect with artists
-          </p>
+          <h1 className="mb-2 text-3xl font-bold tracking-tight">Marketplace</h1>
+          <p className="text-muted-foreground">Discover opportunities and connect with artists</p>
         </div>
 
         {/* Search Bar */}
         <div className="mb-4 flex gap-2">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
             <Input
               placeholder={activeTab === 'gigs' ? 'Search gigs...' : 'Search artists...'}
               value={searchQuery}
@@ -351,7 +380,7 @@ export default function MarketplacePage() {
           <Dialog open={showFiltersModal} onOpenChange={setShowFiltersModal}>
             <DialogTrigger asChild>
               <Button variant="outline">
-                <Filter className="h-4 w-4 mr-2" />
+                <Filter className="mr-2 h-4 w-4" />
                 Filters
                 {activeFilters.length > 0 && (
                   <Badge variant="secondary" className="ml-2">
@@ -360,14 +389,14 @@ export default function MarketplacePage() {
                 )}
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Advanced Filters</DialogTitle>
               </DialogHeader>
               <div className="space-y-6 py-4">
                 {/* Genre Filter */}
                 <div>
-                  <h3 className="font-semibold mb-3">Genre</h3>
+                  <h3 className="mb-3 font-semibold">Genre</h3>
                   <div className="flex flex-wrap gap-2">
                     {GENRES.map((genre: string) => (
                       <Button
@@ -392,7 +421,7 @@ export default function MarketplacePage() {
 
                 {/* Location Filter */}
                 <div>
-                  <h3 className="font-semibold mb-3">Location</h3>
+                  <h3 className="mb-3 font-semibold">Location</h3>
                   <Input
                     placeholder="City or State"
                     value={locationFilter}
@@ -404,12 +433,13 @@ export default function MarketplacePage() {
 
                 {/* Price Range Filter */}
                 <div>
-                  <h3 className="font-semibold mb-3">
+                  <h3 className="mb-3 font-semibold">
                     {activeTab === 'gigs' ? 'Payment Range' : 'Price Range'}
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {PRICE_RANGES.map(range => {
-                      const isSelected = priceRange.min === range.min && priceRange.max === range.max
+                    {PRICE_RANGES.map((range) => {
+                      const isSelected =
+                        priceRange.min === range.min && priceRange.max === range.max
                       return (
                         <Button
                           key={range.label}
@@ -434,7 +464,7 @@ export default function MarketplacePage() {
                   <>
                     <Separator />
                     <div>
-                      <h3 className="font-semibold mb-3">Urgency</h3>
+                      <h3 className="mb-3 font-semibold">Urgency</h3>
                       <Button
                         variant={urgentOnly ? 'default' : 'outline'}
                         onClick={() => setUrgentOnly(!urgentOnly)}
@@ -449,7 +479,7 @@ export default function MarketplacePage() {
                   <>
                     <Separator />
                     <div>
-                      <h3 className="font-semibold mb-3">Verification</h3>
+                      <h3 className="mb-3 font-semibold">Verification</h3>
                       <Button
                         variant={verifiedOnly ? 'default' : 'outline'}
                         onClick={() => setVerifiedOnly(!verifiedOnly)}
@@ -463,17 +493,10 @@ export default function MarketplacePage() {
                 <Separator />
 
                 <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={handleClearAllFilters}
-                  >
+                  <Button variant="outline" className="flex-1" onClick={handleClearAllFilters}>
                     Clear All
                   </Button>
-                  <Button
-                    className="flex-1"
-                    onClick={() => setShowFiltersModal(false)}
-                  >
+                  <Button className="flex-1" onClick={() => setShowFiltersModal(false)}>
                     Apply Filters
                   </Button>
                 </div>
@@ -484,9 +507,9 @@ export default function MarketplacePage() {
 
         {/* Active Filter Chips */}
         {activeFilters.length > 0 && (
-          <div className="mb-4 flex flex-wrap gap-2 items-center">
+          <div className="mb-4 flex flex-wrap items-center gap-2">
             <span className="text-sm text-muted-foreground">Active filters:</span>
-            {activeFilters.map(filter => (
+            {activeFilters.map((filter) => (
               <Badge key={filter.id} variant="secondary" className="gap-1">
                 {filter.label}
                 <X
@@ -519,27 +542,31 @@ export default function MarketplacePage() {
         )}
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabType)} className="flex-1 flex flex-col min-h-0">
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as TabType)}
+          className="flex min-h-0 flex-1 flex-col"
+        >
           <TabsList className="mb-4">
             <TabsTrigger value="gigs" className="flex-1">
-              <Calendar className="h-4 w-4 mr-2" />
+              <Calendar className="mr-2 h-4 w-4" />
               Find Gigs
             </TabsTrigger>
             <TabsTrigger value="artists" className="flex-1">
-              <Users className="h-4 w-4 mr-2" />
+              <Users className="mr-2 h-4 w-4" />
               Discover Artists
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="min-h-0 flex-1 overflow-hidden">
             {/* Gigs Tab */}
-            <TabsContent value="gigs" className="h-full m-0">
+            <TabsContent value="gigs" className="m-0 h-full">
               {loading ? (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {Array.from({ length: 6 }).map((_, i) => (
                     <Card key={i}>
                       <CardHeader>
-                        <Skeleton className="h-4 w-3/4 mb-2" />
+                        <Skeleton className="mb-2 h-4 w-3/4" />
                         <Skeleton className="h-3 w-1/2" />
                       </CardHeader>
                       <CardContent>
@@ -553,27 +580,27 @@ export default function MarketplacePage() {
               ) : (
                 <ScrollArea ref={scrollContainerRef} className="h-full">
                   {gigs.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                      <h3 className="text-lg font-semibold mb-2">No gigs found</h3>
-                      <p className="text-muted-foreground mb-4">
+                    <div className="py-12 text-center">
+                      <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground opacity-50" />
+                      <h3 className="mb-2 text-lg font-semibold">No gigs found</h3>
+                      <p className="mb-4 text-muted-foreground">
                         Try adjusting your filters or search query
                       </p>
                       <Button onClick={handleClearAllFilters}>Clear Filters</Button>
                     </div>
                   ) : (
                     <>
-                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
-                        {gigs.map(gig => (
+                      <div className="grid gap-4 pb-4 md:grid-cols-2 lg:grid-cols-3">
+                        {gigs.map((gig) => (
                           <Card
                             key={gig.id}
-                            className="hover:shadow-lg transition-shadow cursor-pointer relative"
+                            className="relative cursor-pointer transition-shadow hover:shadow-lg"
                             onClick={() => handleGigClick(gig)}
                           >
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="absolute top-2 right-2 z-10"
+                              className="absolute right-2 top-2 z-10"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 handleToggleFavorite(gig.id)
@@ -590,7 +617,7 @@ export default function MarketplacePage() {
                             <CardHeader>
                               <div className="flex items-start justify-between gap-2 pr-8">
                                 <div className="flex-1">
-                                  <CardTitle className="text-base line-clamp-1">
+                                  <CardTitle className="line-clamp-1 text-base">
                                     {gig.title}
                                   </CardTitle>
                                   <CardDescription className="line-clamp-1">
@@ -623,7 +650,7 @@ export default function MarketplacePage() {
                               </div>
                               {gig.genre_tags.length > 0 && (
                                 <div className="flex flex-wrap gap-1">
-                                  {gig.genre_tags.slice(0, 3).map(genre => (
+                                  {gig.genre_tags.slice(0, 3).map((genre) => (
                                     <Badge key={genre} variant="secondary" className="text-xs">
                                       {genre}
                                     </Badge>
@@ -659,7 +686,7 @@ export default function MarketplacePage() {
                         </div>
                       )}
                       {!hasMore && gigs.length > 0 && (
-                        <div className="text-center py-4 text-muted-foreground text-sm">
+                        <div className="py-4 text-center text-sm text-muted-foreground">
                           No more results
                         </div>
                       )}
@@ -670,13 +697,13 @@ export default function MarketplacePage() {
             </TabsContent>
 
             {/* Artists Tab */}
-            <TabsContent value="artists" className="h-full m-0">
+            <TabsContent value="artists" className="m-0 h-full">
               {loading ? (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {Array.from({ length: 6 }).map((_, i) => (
                     <Card key={i}>
                       <CardHeader>
-                        <Skeleton className="h-4 w-3/4 mb-2" />
+                        <Skeleton className="mb-2 h-4 w-3/4" />
                         <Skeleton className="h-3 w-1/2" />
                       </CardHeader>
                       <CardContent>
@@ -690,27 +717,27 @@ export default function MarketplacePage() {
               ) : (
                 <ScrollArea ref={scrollContainerRef} className="h-full">
                   {artists.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                      <h3 className="text-lg font-semibold mb-2">No artists found</h3>
-                      <p className="text-muted-foreground mb-4">
+                    <div className="py-12 text-center">
+                      <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground opacity-50" />
+                      <h3 className="mb-2 text-lg font-semibold">No artists found</h3>
+                      <p className="mb-4 text-muted-foreground">
                         Try adjusting your filters or search query
                       </p>
                       <Button onClick={handleClearAllFilters}>Clear Filters</Button>
                     </div>
                   ) : (
                     <>
-                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
-                        {artists.map(artist => (
+                      <div className="grid gap-4 pb-4 md:grid-cols-2 lg:grid-cols-3">
+                        {artists.map((artist) => (
                           <Card
                             key={artist.id}
-                            className="hover:shadow-lg transition-shadow cursor-pointer relative"
+                            className="relative cursor-pointer transition-shadow hover:shadow-lg"
                             onClick={() => handleArtistClick(artist)}
                           >
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="absolute top-2 right-2 z-10"
+                              className="absolute right-2 top-2 z-10"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 handleToggleFavorite(artist.id)
@@ -726,11 +753,11 @@ export default function MarketplacePage() {
                             </Button>
                             <CardHeader>
                               <div className="flex items-start gap-3">
-                                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 font-semibold text-white">
                                   {artist.artist_name.charAt(0).toUpperCase()}
                                 </div>
-                                <div className="flex-1 min-w-0 pr-8">
-                                  <CardTitle className="text-base line-clamp-1 flex items-center gap-1">
+                                <div className="min-w-0 flex-1 pr-8">
+                                  <CardTitle className="line-clamp-1 flex items-center gap-1 text-base">
                                     {artist.artist_name}
                                     {artist.verified && (
                                       <CheckCircle2 className="h-4 w-4 text-blue-500" />
@@ -744,14 +771,16 @@ export default function MarketplacePage() {
                             </CardHeader>
                             <CardContent className="space-y-3">
                               {artist.bio && (
-                                <p className="text-sm text-muted-foreground line-clamp-2">
+                                <p className="line-clamp-2 text-sm text-muted-foreground">
                                   {artist.bio}
                                 </p>
                               )}
                               <div className="flex items-center justify-between text-sm">
                                 <div className="flex items-center gap-1">
                                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                  <span className="font-semibold">{artist.rating_avg.toFixed(1)}</span>
+                                  <span className="font-semibold">
+                                    {artist.rating_avg.toFixed(1)}
+                                  </span>
                                   <span className="text-muted-foreground">
                                     ({artist.review_count})
                                   </span>
@@ -762,7 +791,7 @@ export default function MarketplacePage() {
                               </div>
                               {artist.genres.length > 0 && (
                                 <div className="flex flex-wrap gap-1">
-                                  {artist.genres.slice(0, 3).map(genre => (
+                                  {artist.genres.slice(0, 3).map((genre) => (
                                     <Badge key={genre} variant="secondary" className="text-xs">
                                       {genre}
                                     </Badge>
@@ -793,7 +822,7 @@ export default function MarketplacePage() {
                         </div>
                       )}
                       {!hasMore && artists.length > 0 && (
-                        <div className="text-center py-4 text-muted-foreground text-sm">
+                        <div className="py-4 text-center text-sm text-muted-foreground">
                           No more results
                         </div>
                       )}
@@ -806,11 +835,8 @@ export default function MarketplacePage() {
         </Tabs>
 
         {/* Detail Sidebar - Gig */}
-        <Sheet
-          open={!!selectedGig}
-          onOpenChange={(open) => !open && setSelectedGig(null)}
-        >
-          <SheetContent className="sm:max-w-xl overflow-y-auto">
+        <Sheet open={!!selectedGig} onOpenChange={(open) => !open && setSelectedGig(null)}>
+          <SheetContent className="overflow-y-auto sm:max-w-xl">
             {selectedGig && (
               <>
                 <SheetHeader>
@@ -818,24 +844,22 @@ export default function MarketplacePage() {
                 </SheetHeader>
                 <div className="mt-6 space-y-6">
                   <div>
-                    <h3 className="font-semibold text-lg mb-2">{selectedGig.venue_name}</h3>
-                    {selectedGig.urgency_flag && (
-                      <Badge variant="destructive">Urgent</Badge>
-                    )}
+                    <h3 className="mb-2 text-lg font-semibold">{selectedGig.venue_name}</h3>
+                    {selectedGig.urgency_flag && <Badge variant="destructive">Urgent</Badge>}
                   </div>
 
                   <Separator />
 
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
-                      <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
+                      <MapPin className="mt-0.5 h-5 w-5 text-muted-foreground" />
                       <div>
                         <div className="font-medium">Location</div>
                         <div className="text-muted-foreground">{selectedGig.location}</div>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+                      <Calendar className="mt-0.5 h-5 w-5 text-muted-foreground" />
                       <div>
                         <div className="font-medium">Date & Time</div>
                         <div className="text-muted-foreground">
@@ -844,7 +868,7 @@ export default function MarketplacePage() {
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <DollarSign className="h-5 w-5 text-muted-foreground mt-0.5" />
+                      <DollarSign className="mt-0.5 h-5 w-5 text-muted-foreground" />
                       <div>
                         <div className="font-medium">Payment</div>
                         <div className="text-2xl font-bold text-green-600">
@@ -853,7 +877,7 @@ export default function MarketplacePage() {
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
+                      <Users className="mt-0.5 h-5 w-5 text-muted-foreground" />
                       <div>
                         <div className="font-medium">Capacity</div>
                         <div className="text-muted-foreground">{selectedGig.capacity} people</div>
@@ -865,7 +889,7 @@ export default function MarketplacePage() {
                     <>
                       <Separator />
                       <div>
-                        <h3 className="font-semibold mb-2">Description</h3>
+                        <h3 className="mb-2 font-semibold">Description</h3>
                         <p className="text-muted-foreground">{selectedGig.description}</p>
                       </div>
                     </>
@@ -875,9 +899,9 @@ export default function MarketplacePage() {
                     <>
                       <Separator />
                       <div>
-                        <h3 className="font-semibold mb-2">Genres</h3>
+                        <h3 className="mb-2 font-semibold">Genres</h3>
                         <div className="flex flex-wrap gap-2">
-                          {selectedGig.genre_tags.map(genre => (
+                          {selectedGig.genre_tags.map((genre) => (
                             <Badge key={genre} variant="secondary">
                               {genre}
                             </Badge>
@@ -900,15 +924,10 @@ export default function MarketplacePage() {
                       )}
                       {applyingGigId === selectedGig.id ? 'Applying...' : 'Apply to Gig'}
                     </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleToggleFavorite(selectedGig.id)}
-                    >
+                    <Button variant="outline" onClick={() => handleToggleFavorite(selectedGig.id)}>
                       <Heart
                         className={`h-4 w-4 ${
-                          favorites.has(selectedGig.id)
-                            ? 'fill-red-500 text-red-500'
-                            : ''
+                          favorites.has(selectedGig.id) ? 'fill-red-500 text-red-500' : ''
                         }`}
                       />
                     </Button>
@@ -920,20 +939,17 @@ export default function MarketplacePage() {
         </Sheet>
 
         {/* Detail Sidebar - Artist */}
-        <Sheet
-          open={!!selectedArtist}
-          onOpenChange={(open) => !open && setSelectedArtist(null)}
-        >
-          <SheetContent className="sm:max-w-xl overflow-y-auto">
+        <Sheet open={!!selectedArtist} onOpenChange={(open) => !open && setSelectedArtist(null)}>
+          <SheetContent className="overflow-y-auto sm:max-w-xl">
             {selectedArtist && (
               <>
                 <SheetHeader>
                   <div className="flex items-center gap-3">
-                    <div className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-2xl">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-2xl font-bold text-white">
                       {selectedArtist.artist_name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <SheetTitle className="text-2xl flex items-center gap-2">
+                      <SheetTitle className="flex items-center gap-2 text-2xl">
                         {selectedArtist.artist_name}
                         {selectedArtist.verified && (
                           <CheckCircle2 className="h-5 w-5 text-blue-500" />
@@ -947,7 +963,9 @@ export default function MarketplacePage() {
                 <div className="mt-6 space-y-6">
                   <div className="flex items-center gap-6 text-center">
                     <div>
-                      <div className="text-2xl font-bold">{selectedArtist.rating_avg.toFixed(1)}</div>
+                      <div className="text-2xl font-bold">
+                        {selectedArtist.rating_avg.toFixed(1)}
+                      </div>
                       <div className="text-sm text-muted-foreground">Rating</div>
                     </div>
                     <Separator orientation="vertical" className="h-12" />
@@ -966,7 +984,7 @@ export default function MarketplacePage() {
                     <>
                       <Separator />
                       <div>
-                        <h3 className="font-semibold mb-2">About</h3>
+                        <h3 className="mb-2 font-semibold">About</h3>
                         <p className="text-muted-foreground">{selectedArtist.bio}</p>
                       </div>
                     </>
@@ -976,9 +994,9 @@ export default function MarketplacePage() {
                     <>
                       <Separator />
                       <div>
-                        <h3 className="font-semibold mb-2">Genres</h3>
+                        <h3 className="mb-2 font-semibold">Genres</h3>
                         <div className="flex flex-wrap gap-2">
-                          {selectedArtist.genres.map(genre => (
+                          {selectedArtist.genres.map((genre) => (
                             <Badge key={genre} variant="secondary">
                               {genre}
                             </Badge>
@@ -992,7 +1010,7 @@ export default function MarketplacePage() {
                     <>
                       <Separator />
                       <div>
-                        <h3 className="font-semibold mb-2">Price Range</h3>
+                        <h3 className="mb-2 font-semibold">Price Range</h3>
                         <div className="text-2xl font-bold">
                           {formatCurrency(selectedArtist.price_range_min)} -{' '}
                           {formatCurrency(selectedArtist.price_range_max)}
@@ -1016,9 +1034,7 @@ export default function MarketplacePage() {
                     >
                       <Heart
                         className={`h-4 w-4 ${
-                          favorites.has(selectedArtist.id)
-                            ? 'fill-red-500 text-red-500'
-                            : ''
+                          favorites.has(selectedArtist.id) ? 'fill-red-500 text-red-500' : ''
                         }`}
                       />
                     </Button>

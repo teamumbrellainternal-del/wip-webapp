@@ -169,29 +169,38 @@ export const discoverArtists: RouteHandler = async (ctx) => {
 
       return {
         id: artist.id,
-        name: artist.stage_name,
-        verified: Boolean(artist.verified),
-        genre: artist.primary_genre,
+        artist_name: artist.stage_name,
+        full_name: artist.stage_name, // Using stage_name as legal_name may be null
+        bio: bioPreview,
         location: [artist.location_city, artist.location_state]
           .filter(Boolean)
           .join(', '),
-        bioPreview,
-        rating: artist.avg_rating,
-        followers: artist.follower_count,
-        gigs: artist.total_gigs,
-        priceRange,
-        distance,
-        avatarUrl: artist.avatar_url,
+        genres: artist.primary_genre ? [artist.primary_genre] : [],
+        verified: Boolean(artist.verified),
+        rating_avg: artist.avg_rating,
+        review_count: 0, // TODO: Get actual review count from reviews table
+        follower_count: artist.follower_count,
+        gigs_completed: artist.total_gigs,
+        price_range_min: artist.base_rate_flat || artist.base_rate_hourly || undefined,
+        price_range_max: artist.base_rate_flat || artist.base_rate_hourly || undefined,
+        avatar_url: artist.avatar_url || undefined,
+        banner_url: undefined, // TODO: Add banner_url to database
+        social_links: {}, // TODO: Add social_links to response
+        created_at: new Date().toISOString(), // TODO: Add created_at to query
+        updated_at: new Date().toISOString(), // TODO: Add updated_at to query
       }
     }) || []
 
+    // Return response with artists and pagination metadata
+    // Frontend expects: { data, total, page, limit, has_more }
+    const page = Math.floor(offset / limit) + 1
     return successResponse(
       {
-        artists,
-        totalCount,
+        data: artists,
+        total: totalCount,
+        page,
         limit,
-        offset,
-        hasMore: offset + artists.length < totalCount,
+        has_more: offset + artists.length < totalCount,
       },
       200,
       ctx.requestId
@@ -224,25 +233,108 @@ export const getArtist: RouteHandler = async (ctx) => {
     )
   }
 
-  // TODO: Implement artist retrieval
-  return successResponse(
-    {
-      id,
-      artistName: 'Sample Artist',
-      bio: 'Sample bio',
-      location: 'Los Angeles, CA',
-      genres: ['Rock', 'Alternative'],
-      instruments: ['Guitar', 'Vocals'],
-      verified: false,
-      stats: {
-        gigsCompleted: 0,
-        rating: 0,
-        reviewCount: 0,
+  try {
+    // Fetch artist from database
+    const artist = await ctx.env.DB.prepare(`
+      SELECT
+        a.id,
+        a.stage_name,
+        a.legal_name,
+        a.verified,
+        a.primary_genre,
+        a.secondary_genres,
+        a.location_city,
+        a.location_state,
+        a.bio,
+        a.avg_rating,
+        a.total_gigs,
+        a.avatar_url,
+        a.website_url,
+        (SELECT COUNT(*) FROM artist_followers WHERE artist_id = a.id) as follower_count
+      FROM artists a
+      WHERE a.id = ?
+    `).bind(id).first<{
+      id: string
+      stage_name: string
+      legal_name: string | null
+      verified: number
+      primary_genre: string | null
+      secondary_genres: string | null
+      location_city: string | null
+      location_state: string | null
+      bio: string | null
+      avg_rating: number
+      total_gigs: number
+      avatar_url: string | null
+      website_url: string | null
+      follower_count: number
+    }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist not found',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Parse genres
+    const genres: string[] = []
+    if (artist.primary_genre) {
+      genres.push(artist.primary_genre)
+    }
+    if (artist.secondary_genres) {
+      try {
+        const secondaryGenres = JSON.parse(artist.secondary_genres)
+        if (Array.isArray(secondaryGenres)) {
+          genres.push(...secondaryGenres)
+        }
+      } catch (e) {
+        // Ignore JSON parse errors
+      }
+    }
+
+    // Build social links (only website_url exists in schema for now)
+    const social_links: any = {}
+    if (artist.website_url) social_links.website = artist.website_url
+    // TODO: Add other social links when columns are added to database
+
+    // Return artist data matching the Artist interface
+    return successResponse(
+      {
+        id: artist.id,
+        artist_name: artist.stage_name,
+        full_name: artist.legal_name || artist.stage_name,
+        bio: artist.bio || undefined,
+        location: [artist.location_city, artist.location_state]
+          .filter(Boolean)
+          .join(', '),
+        genres,
+        verified: Boolean(artist.verified),
+        rating_avg: artist.avg_rating,
+        review_count: 0, // TODO: Get actual review count
+        follower_count: artist.follower_count,
+        gigs_completed: artist.total_gigs,
+        avatar_url: artist.avatar_url || undefined,
+        banner_url: undefined, // TODO: Add banner_url column to database
+        social_links,
+        created_at: new Date().toISOString(), // TODO: Add to database
+        updated_at: new Date().toISOString(), // TODO: Add to database
       },
-    },
-    200,
-    ctx.requestId
-  )
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      error instanceof Error ? error.message : 'Failed to fetch artist',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
 }
 
 /**

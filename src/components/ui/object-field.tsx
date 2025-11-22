@@ -1,11 +1,17 @@
-import React from "react"
-import { Plus, X, ChevronDown, ChevronRight } from "lucide-react"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { FormDescription } from "@/components/ui/form"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import React from 'react'
+import { Plus, X, ChevronDown, ChevronRight } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { FormDescription } from '@/components/ui/form'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 
 interface ObjectFieldProps {
   label: string
@@ -20,7 +26,7 @@ interface ObjectFieldProps {
   currentDepth?: number
 }
 
-type PropertyType = "string" | "number" | "boolean" | "object" | "array"
+type PropertyType = 'string' | 'number' | 'boolean' | 'object' | 'array'
 
 export function ObjectField({
   label,
@@ -30,41 +36,41 @@ export function ObjectField({
   onChange,
   disabled = false,
   _id,
-  allowedTypes = ["string", "number", "boolean", "object"],
+  allowedTypes = ['string', 'number', 'boolean', 'object'],
   maxDepth = 3,
   currentDepth = 0,
 }: ObjectFieldProps) {
   const [isOpen, setIsOpen] = React.useState(true)
-  const [newPropertyName, setNewPropertyName] = React.useState("")
-  const [newPropertyType, setNewPropertyType] = React.useState<PropertyType>("string")
+  const [newPropertyName, setNewPropertyName] = React.useState('')
+  const [newPropertyType, setNewPropertyType] = React.useState<PropertyType>('string')
 
   const handleAddProperty = () => {
     if (!newPropertyName.trim()) return
-    
+
     let defaultValue: any
     switch (newPropertyType) {
-      case "string":
-        defaultValue = ""
+      case 'string':
+        defaultValue = ''
         break
-      case "number":
+      case 'number':
         defaultValue = 0
         break
-      case "boolean":
+      case 'boolean':
         defaultValue = false
         break
-      case "object":
+      case 'object':
         defaultValue = {}
         break
-      case "array":
+      case 'array':
         defaultValue = []
         break
       default:
-        defaultValue = ""
+        defaultValue = ''
     }
 
     const newObject = { ...value, [newPropertyName]: defaultValue }
     onChange?.(newObject)
-    setNewPropertyName("")
+    setNewPropertyName('')
   }
 
   const handleRemoveProperty = (key: string) => {
@@ -79,10 +85,10 @@ export function ObjectField({
   }
 
   const renderPropertyValue = (key: string, propertyValue: any) => {
-    const propertyType = Array.isArray(propertyValue) ? "array" : typeof propertyValue
-    
+    const propertyType = Array.isArray(propertyValue) ? 'array' : typeof propertyValue
+
     switch (propertyType) {
-      case "string":
+      case 'string':
         return (
           <Input
             value={propertyValue}
@@ -91,8 +97,8 @@ export function ObjectField({
             disabled={disabled}
           />
         )
-      
-      case "number":
+
+      case 'number':
         return (
           <Input
             type="number"
@@ -105,12 +111,12 @@ export function ObjectField({
             disabled={disabled}
           />
         )
-      
-      case "boolean":
+
+      case 'boolean':
         return (
           <Select
             value={propertyValue.toString()}
-            onValueChange={(value) => handlePropertyValueChange(key, value === "true")}
+            onValueChange={(value) => handlePropertyValueChange(key, value === 'true')}
             disabled={disabled}
           >
             <SelectTrigger>
@@ -122,11 +128,11 @@ export function ObjectField({
             </SelectContent>
           </Select>
         )
-      
-      case "object":
+
+      case 'object':
         if (currentDepth >= maxDepth) {
           return (
-            <div className="text-sm text-muted-foreground p-2 border rounded">
+            <div className="rounded border p-2 text-sm text-muted-foreground">
               Max nesting depth reached. Edit as JSON if needed.
             </div>
           )
@@ -142,8 +148,8 @@ export function ObjectField({
             currentDepth={currentDepth + 1}
           />
         )
-      
-      case "array":
+
+      case 'array':
         return (
           <div className="space-y-2">
             <div className="text-sm text-muted-foreground">Array (simplified JSON edit):</div>
@@ -164,7 +170,7 @@ export function ObjectField({
             />
           </div>
         )
-      
+
       default:
         return (
           <Input
@@ -180,19 +186,17 @@ export function ObjectField({
     <div className="space-y-2">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <div className="flex items-center justify-between">
-          <Label className={error ? "text-destructive" : ""}>
-            {label}
-          </Label>
+          <Label className={error ? 'text-destructive' : ''}>{label}</Label>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="sm">
               {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </Button>
           </CollapsibleTrigger>
         </div>
-        
+
         <CollapsibleContent className="space-y-4">
           {/* Object Properties */}
-          <div className="space-y-3 border rounded-lg p-4">
+          <div className="space-y-3 rounded-lg border p-4">
             {Object.entries(value).map(([key, propertyValue]) => (
               <div key={key} className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -209,10 +213,10 @@ export function ObjectField({
                 {renderPropertyValue(key, propertyValue)}
               </div>
             ))}
-            
+
             {/* Add new property */}
             {!disabled && (
-              <div className="pt-2 border-t space-y-2">
+              <div className="space-y-2 border-t pt-2">
                 <div className="flex gap-2">
                   <Input
                     placeholder="Property name"
@@ -220,7 +224,10 @@ export function ObjectField({
                     onChange={(e) => setNewPropertyName(e.target.value)}
                     className="flex-1"
                   />
-                  <Select value={newPropertyType} onValueChange={(value: PropertyType) => setNewPropertyType(value)}>
+                  <Select
+                    value={newPropertyType}
+                    onValueChange={(value: PropertyType) => setNewPropertyType(value)}
+                  >
                     <SelectTrigger className="w-32">
                       <SelectValue />
                     </SelectTrigger>
@@ -232,11 +239,7 @@ export function ObjectField({
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button
-                    onClick={handleAddProperty}
-                    disabled={!newPropertyName.trim()}
-                    size="sm"
-                  >
+                  <Button onClick={handleAddProperty} disabled={!newPropertyName.trim()} size="sm">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
@@ -245,7 +248,7 @@ export function ObjectField({
           </div>
         </CollapsibleContent>
       </Collapsible>
-      
+
       {description && !error && <FormDescription>{description}</FormDescription>}
       {error && <p className="text-sm font-medium text-destructive">{error}</p>}
     </div>

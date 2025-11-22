@@ -5,7 +5,7 @@
  * NOTE: Use these services directly in your hooks/components, not browser fetch
  */
 
-import { apiRequest } from '@/hooks/use-api'
+import { apiClient } from '@/lib/api-client'
 import type {
   UserProfile,
   Artist,
@@ -43,6 +43,51 @@ import type {
 } from '@/types'
 
 // ============================================================================
+// API REQUEST HELPER
+// ============================================================================
+
+/**
+ * Wrapper around apiClient for cleaner service definitions
+ * Handles GET, POST, PUT, PATCH, DELETE requests with type safety
+ */
+async function apiRequest<T>(
+  endpoint: string,
+  options?: {
+    method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+    body?: unknown
+    params?: Record<string, string | number | boolean | string[] | undefined>
+  }
+): Promise<T> {
+  const { method = 'GET', body, params } = options || {}
+
+  // Build query string from params
+  let url = endpoint
+  if (params) {
+    const searchParams = new URLSearchParams()
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined) {
+        if (Array.isArray(value)) {
+          value.forEach((v) => searchParams.append(key, String(v)))
+        } else {
+          searchParams.append(key, String(value))
+        }
+      }
+    })
+    const queryString = searchParams.toString()
+    if (queryString) {
+      url = `${endpoint}?${queryString}`
+    }
+  }
+
+  // Make the request using apiClient's private request method
+  // We need to access it via bracket notation since it's private
+  return (apiClient as any).request(url, {
+    method,
+    body: body ? JSON.stringify(body) : undefined,
+  }) as Promise<T>
+}
+
+// ============================================================================
 // ANALYTICS SERVICES
 // ============================================================================
 
@@ -50,28 +95,68 @@ export const analyticsService = {
   /**
    * Get dashboard metrics (updated daily at midnight UTC - D-008)
    */
-  getDashboard: () =>
-    apiRequest<DashboardMetrics>('/analytics/dashboard'),
+  getDashboard: () => apiClient['request']<DashboardMetrics>('/analytics/dashboard'),
 
   /**
    * Get performance data for charts
    */
   getPerformance: (period: 'monthly' | 'yearly') =>
     apiRequest<PerformanceData>('/analytics/performance', {
-      params: { period }
+      method: 'GET',
+      params: { period },
     }),
 
   /**
    * Get user goals
    */
-  getGoals: () =>
-    apiRequest<Goal[]>('/analytics/goals'),
+  getGoals: () => apiClient['request']<Goal[]>('/analytics/goals'),
+
+  /**
+   * Create a new goal
+   */
+  createGoal: (data: {
+    title: string
+    description?: string
+    target_value: number
+    goal_type: 'earnings' | 'gigs' | 'followers' | 'tracks' | 'custom'
+    target_date?: string
+  }) =>
+    apiRequest<Goal>('/analytics/goals', {
+      method: 'POST',
+      body: data,
+    }),
+
+  /**
+   * Update a goal
+   */
+  updateGoal: (
+    id: string,
+    data: {
+      title?: string
+      description?: string
+      target_value?: number
+      current_value?: number
+      target_date?: string
+      completed?: boolean
+    }
+  ) =>
+    apiRequest<Goal>(`/analytics/goals/${id}`, {
+      method: 'PUT',
+      body: data,
+    }),
+
+  /**
+   * Delete a goal
+   */
+  deleteGoal: (id: string) =>
+    apiRequest<{ message: string; id: string }>(`/analytics/goals/${id}`, {
+      method: 'DELETE',
+    }),
 
   /**
    * Get user achievements
    */
-  getAchievements: () =>
-    apiRequest<Achievement[]>('/analytics/achievements'),
+  getAchievements: () => apiClient['request']<Achievement[]>('/analytics/achievements'),
 }
 
 // ============================================================================
@@ -84,14 +169,13 @@ export const artistsService = {
    */
   search: (params: ArtistSearchParams) =>
     apiRequest<PaginatedResponse<Artist>>('/artists', {
-      params: params as Record<string, string | number | boolean | string[] | undefined>
+      params: params as Record<string, string | number | boolean | string[] | undefined>,
     }),
 
   /**
    * Get artist profile by ID
    */
-  getById: (id: string) =>
-    apiRequest<Artist>(`/artists/${id}`),
+  getById: (id: string) => apiRequest<Artist>(`/artists/${id}`),
 
   /**
    * Update artist profile (own profile only)
@@ -105,14 +189,12 @@ export const artistsService = {
   /**
    * Get artist's tracks
    */
-  getTracks: (id: string) =>
-    apiRequest<Track[]>(`/artists/${id}/tracks`),
+  getTracks: (id: string) => apiRequest<Track[]>(`/artists/${id}/tracks`),
 
   /**
    * Get artist's reviews
    */
-  getReviews: (id: string) =>
-    apiRequest<Review[]>(`/artists/${id}/reviews`),
+  getReviews: (id: string) => apiRequest<Review[]>(`/artists/${id}/reviews`),
 
   /**
    * Follow an artist
@@ -141,14 +223,99 @@ export const gigsService = {
    */
   search: (params: GigSearchParams) =>
     apiRequest<PaginatedResponse<Gig>>('/gigs', {
-      params: params as Record<string, string | number | boolean | string[] | undefined>
+      params: params as Record<string, string | number | boolean | string[] | undefined>,
     }),
 
   /**
    * Get gig details by ID
    */
-  getById: (id: string) =>
-    apiRequest<Gig>(`/gigs/${id}`),
+  getById: (id: string) => apiRequest<Gig>(`/gigs/${id}`),
+
+  /**
+   * Create a new gig (Venue Owners)
+   */
+  create: (data: {
+    title: string
+    description?: string
+    venue_name: string
+    location_city: string
+    location_state: string
+    location_address?: string
+    location_zip?: string
+    date: string
+    start_time?: string
+    end_time?: string
+    genre?: string
+    capacity?: number
+    payment_amount?: number
+    payment_type?: 'flat' | 'hourly' | 'negotiable'
+  }) =>
+    apiRequest<{ message: string; id: string }>('/gigs', {
+      method: 'POST',
+      body: data,
+    }),
+
+  /**
+   * Update a gig (Venue Owners - own gigs only)
+   */
+  update: (
+    id: string,
+    data: {
+      title?: string
+      description?: string
+      venue_name?: string
+      location_city?: string
+      location_state?: string
+      location_address?: string
+      location_zip?: string
+      date?: string
+      start_time?: string
+      end_time?: string
+      genre?: string
+      capacity?: number
+      payment_amount?: number
+      payment_type?: 'flat' | 'hourly' | 'negotiable'
+    }
+  ) =>
+    apiRequest<{ message: string; id: string }>(`/gigs/${id}`, {
+      method: 'PUT',
+      body: data,
+    }),
+
+  /**
+   * Delete/Cancel a gig (Venue Owners - own gigs only)
+   */
+  delete: (id: string) =>
+    apiRequest<{ message: string; id: string }>(`/gigs/${id}`, {
+      method: 'DELETE',
+    }),
+
+  /**
+   * Get my posted gigs (Venue Owners)
+   */
+  getMyGigs: () => apiRequest<{ gigs: any[] }>('/gigs/mine'),
+
+  /**
+   * Get applications for a specific gig (Venue Owners - own gigs only)
+   */
+  getApplications: (id: string) => apiRequest<{ applications: any[] }>(`/gigs/${id}/applications`),
+
+  /**
+   * Update application status - accept or reject (Venue Owners)
+   */
+  updateApplicationStatus: (gigId: string, appId: string, status: 'accepted' | 'rejected') =>
+    apiRequest<{ message: string; applicationId: string; status: string }>(
+      `/gigs/${gigId}/applications/${appId}`,
+      {
+        method: 'PUT',
+        body: { status },
+      }
+    ),
+
+  /**
+   * Get my gig applications (Artists)
+   */
+  getMyApplications: () => apiRequest<{ applications: any[] }>('/gigs/applications'),
 
   /**
    * Apply to a gig (D-077: Single-click apply)
@@ -159,10 +326,10 @@ export const gigsService = {
     }),
 
   /**
-   * Withdraw application from a gig
+   * Withdraw application from a gig (Artists)
    */
   withdrawApplication: (id: string) =>
-    apiRequest<void>(`/gigs/${id}/apply`, {
+    apiRequest<{ message: string; gigId: string }>(`/gigs/${id}/apply`, {
       method: 'DELETE',
     }),
 }
@@ -175,20 +342,18 @@ export const messagesService = {
   /**
    * Get all conversations
    */
-  getConversations: () =>
-    apiRequest<Conversation[]>('/messages/conversations'),
+  getConversations: () => apiRequest<Conversation[]>('/conversations'),
 
   /**
    * Get conversation thread with messages
    */
-  getThread: (id: string) =>
-    apiRequest<Conversation>(`/messages/conversations/${id}`),
+  getThread: (id: string) => apiRequest<Conversation>(`/conversations/${id}`),
 
   /**
    * Send a message (D-043: 2000 char limit, D-087: No rate limits)
    */
   sendMessage: (conversationId: string, content: string, attachments?: string[]) =>
-    apiRequest<Message>(`/messages/conversations/${conversationId}/messages`, {
+    apiRequest<Message>(`/conversations/${conversationId}/messages`, {
       method: 'POST',
       body: { content, attachments },
     }),
@@ -197,7 +362,7 @@ export const messagesService = {
    * Mark conversation as read
    */
   markAsRead: (conversationId: string) =>
-    apiRequest<void>(`/messages/conversations/${conversationId}/read`, {
+    apiRequest<void>(`/conversations/${conversationId}/read`, {
       method: 'POST',
     }),
 
@@ -209,7 +374,7 @@ export const messagesService = {
     context_type: 'artist' | 'venue' | 'producer' | 'band'
     initial_message?: string
   }) =>
-    apiRequest<Conversation>('/messages/conversations', {
+    apiRequest<Conversation>('/conversations', {
       method: 'POST',
       body: params,
     }),
@@ -300,8 +465,7 @@ export const profileService = {
   /**
    * Get current user profile
    */
-  getCurrent: () =>
-    apiRequest<UserProfile>('/profile'),
+  getCurrent: () => apiRequest<UserProfile>('/profile'),
 
   /**
    * Update current user profile
@@ -362,23 +526,24 @@ export const violetService = {
   /**
    * Get daily usage stats
    */
-  getUsage: () =>
-    apiRequest<VioletUsage>('/violet/usage'),
+  getUsage: () => apiRequest<VioletUsage>('/violet/usage'),
 
   /**
    * Get Violet toolkit categories
    */
   getCategories: () =>
-    apiRequest<Array<{
-      id: string
-      name: string
-      description: string
-      tools: Array<{
+    apiRequest<
+      Array<{
         id: string
         name: string
         description: string
+        tools: Array<{
+          id: string
+          name: string
+          description: string
+        }>
       }>
-    }>>('/violet/categories'),
+    >('/violet/categories'),
 }
 
 // ============================================================================
@@ -410,8 +575,7 @@ export const filesService = {
   /**
    * Get file metadata by ID
    */
-  getById: (id: string) =>
-    apiRequest<FileMetadata>(`/files/${id}`),
+  getById: (id: string) => apiRequest<FileMetadata>(`/files/${id}`),
 
   /**
    * Delete file
@@ -440,11 +604,14 @@ export const tracksService = {
   /**
    * Upload a track (D-028: Manual upload only for MVP)
    */
-  upload: (file: File, metadata: {
-    title: string
-    genre: string
-    cover_art_url?: string
-  }) => {
+  upload: (
+    file: File,
+    metadata: {
+      title: string
+      genre: string
+      cover_art_url?: string
+    }
+  ) => {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('title', metadata.title)
@@ -462,8 +629,7 @@ export const tracksService = {
   /**
    * Get track by ID
    */
-  getById: (id: string) =>
-    apiRequest<Track>(`/tracks/${id}`),
+  getById: (id: string) => apiRequest<Track>(`/tracks/${id}`),
 
   /**
    * Update track metadata
@@ -499,11 +665,14 @@ export const reviewsService = {
   /**
    * Submit a review (D-032: Email invitations)
    */
-  create: (artistId: string, data: {
-    rating: number
-    comment: string
-    gig_id?: string
-  }) =>
+  create: (
+    artistId: string,
+    data: {
+      rating: number
+      comment: string
+      gig_id?: string
+    }
+  ) =>
     apiRequest<Review>(`/artists/${artistId}/reviews`, {
       method: 'POST',
       body: data,
@@ -512,10 +681,13 @@ export const reviewsService = {
   /**
    * Update review
    */
-  update: (reviewId: string, data: {
-    rating?: number
-    comment?: string
-  }) =>
+  update: (
+    reviewId: string,
+    data: {
+      rating?: number
+      comment?: string
+    }
+  ) =>
     apiRequest<Review>(`/reviews/${reviewId}`, {
       method: 'PATCH',
       body: data,
@@ -598,8 +770,7 @@ export const contactsService = {
   /**
    * Get all contact lists for the artist
    */
-  getLists: () =>
-    apiRequest<ContactList[]>('/contacts/lists'),
+  getLists: () => apiRequest<ContactList[]>('/contacts/lists'),
 
   /**
    * Create a new contact list
@@ -689,23 +860,17 @@ export const broadcastService = {
   /**
    * Get all broadcast messages
    */
-  getAll: () =>
-    apiRequest<BroadcastMessage[]>('/broadcast/messages'),
+  getAll: () => apiRequest<BroadcastMessage[]>('/broadcast/messages'),
 
   /**
    * Get a single broadcast message by ID
    */
-  getById: (id: string) =>
-    apiRequest<BroadcastMessage>(`/broadcast/messages/${id}`),
+  getById: (id: string) => apiRequest<BroadcastMessage>(`/broadcast/messages/${id}`),
 
   /**
    * Save a draft broadcast
    */
-  saveDraft: (data: {
-    subject: string
-    body: string
-    list_ids: string[]
-  }) =>
+  saveDraft: (data: { subject: string; body: string; list_ids: string[] }) =>
     apiRequest<BroadcastMessage>('/broadcast/drafts', {
       method: 'POST',
       body: data,
@@ -745,8 +910,7 @@ export const journalService = {
   /**
    * Get a single journal entry by ID
    */
-  getById: (id: string) =>
-    apiRequest<JournalEntry>(`/journal/${id}`),
+  getById: (id: string) => apiRequest<JournalEntry>(`/journal/${id}`),
 
   /**
    * Create a new journal entry

@@ -9,14 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { CharacterCounter } from '@/components/ui/character-counter'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import {
-  Send,
-  Paperclip,
-  Music,
-  Briefcase,
-  FileText,
-  MessageCircle,
-} from 'lucide-react'
+import { Send, Paperclip, Music, Briefcase, FileText, MessageCircle } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
@@ -29,11 +22,11 @@ const POLLING_INTERVAL = 5000 // 5 seconds
 
 // Quick conversation starters
 const CONVERSATION_STARTERS = [
-  "Thanks for reaching out!",
+  'Thanks for reaching out!',
   "I'd love to collaborate!",
-  "Let me check my availability",
-  "Can you tell me more about this?",
-  "Looking forward to working together!",
+  'Let me check my availability',
+  'Can you tell me more about this?',
+  'Looking forward to working together!',
 ]
 
 export default function MessagesPage() {
@@ -81,12 +74,8 @@ export default function MessagesPage() {
       await messagesService.markAsRead(convId)
 
       // Update conversations list to reflect read status
-      setConversations(prev =>
-        prev.map(conv =>
-          conv.id === convId
-            ? { ...conv, unread_count: 0 }
-            : conv
-        )
+      setConversations((prev) =>
+        prev.map((conv) => (conv.id === convId ? { ...conv, unread_count: 0 } : conv))
       )
 
       // Scroll to bottom after messages load
@@ -147,7 +136,7 @@ export default function MessagesPage() {
       const newMessage = await messagesService.sendMessage(conversationId, messageInput.trim())
 
       // Add message to local state immediately for better UX
-      setMessages(prev => [...prev, newMessage])
+      setMessages((prev) => [...prev, newMessage])
       setMessageInput('')
 
       // Scroll to bottom
@@ -201,13 +190,15 @@ export default function MessagesPage() {
   const getInitials = (name: string) => {
     return name
       .split(' ')
-      .map(n => n[0])
+      .map((n) => n[0])
       .join('')
       .toUpperCase()
       .slice(0, 2)
   }
 
-  const getContextBadgeVariant = (contextType: string): "default" | "secondary" | "destructive" | "outline" => {
+  const getContextBadgeVariant = (
+    contextType: string
+  ): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (contextType) {
       case 'artist':
         return 'default'
@@ -223,7 +214,7 @@ export default function MessagesPage() {
   }
 
   const getOtherParticipant = (conversation: Conversation) => {
-    return conversation.participants.find(p => p.id !== user?.id) || conversation.participants[0]
+    return conversation.participants.find((p) => p.id !== user?.id) || conversation.participants[0]
   }
 
   if (!user) return null
@@ -246,11 +237,11 @@ export default function MessagesPage() {
 
   return (
     <AppLayout>
-      <div className="h-[calc(100vh-4rem)] flex">
+      <div className="flex h-[calc(100vh-4rem)]">
         {/* Left Sidebar - Conversation List */}
-        <div className="w-full md:w-80 lg:w-96 border-r bg-muted/30 flex flex-col">
+        <div className="flex w-full flex-col border-r bg-muted/30 md:w-80 lg:w-96">
           {/* Header */}
-          <div className="p-4 border-b bg-background">
+          <div className="border-b bg-background p-4">
             <h2 className="text-xl font-bold">Messages</h2>
             <p className="text-sm text-muted-foreground">
               {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
@@ -260,15 +251,15 @@ export default function MessagesPage() {
           {/* Conversation List */}
           <ScrollArea className="flex-1">
             {conversations.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                <MessageCircle className="h-16 w-16 text-muted-foreground/50 mb-4" />
-                <p className="text-muted-foreground font-medium">No messages yet</p>
-                <p className="text-sm text-muted-foreground mt-2">
+              <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+                <MessageCircle className="mb-4 h-16 w-16 text-muted-foreground/50" />
+                <p className="font-medium text-muted-foreground">No messages yet</p>
+                <p className="mt-2 text-sm text-muted-foreground">
                   Start a conversation to get connected
                 </p>
               </div>
             ) : (
-              <div className="p-2 space-y-1">
+              <div className="space-y-1 p-2">
                 {conversations.map((conversation) => {
                   const otherParticipant = getOtherParticipant(conversation)
                   const isSelected = conversation.id === conversationId
@@ -277,8 +268,8 @@ export default function MessagesPage() {
                     <Card
                       key={conversation.id}
                       className={cn(
-                        "cursor-pointer transition-all hover:shadow-md",
-                        isSelected && "border-primary bg-primary/5"
+                        'cursor-pointer transition-all hover:shadow-md',
+                        isSelected && 'border-primary bg-primary/5'
                       )}
                       onClick={() => handleSelectConversation(conversation)}
                     >
@@ -288,14 +279,12 @@ export default function MessagesPage() {
                             {otherParticipant.avatar_url && (
                               <AvatarImage src={otherParticipant.avatar_url} />
                             )}
-                            <AvatarFallback>
-                              {getInitials(otherParticipant.name)}
-                            </AvatarFallback>
+                            <AvatarFallback>{getInitials(otherParticipant.name)}</AvatarFallback>
                           </Avatar>
 
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2 mb-1">
-                              <p className="font-semibold text-sm truncate">
+                          <div className="min-w-0 flex-1">
+                            <div className="mb-1 flex items-center justify-between gap-2">
+                              <p className="truncate text-sm font-semibold">
                                 {otherParticipant.name}
                               </p>
                               <Badge variant={getContextBadgeVariant(conversation.context_type)}>
@@ -303,7 +292,7 @@ export default function MessagesPage() {
                               </Badge>
                             </div>
 
-                            <p className="text-sm text-muted-foreground truncate mb-1">
+                            <p className="mb-1 truncate text-sm text-muted-foreground">
                               {conversation.last_message_preview}
                             </p>
 
@@ -329,12 +318,12 @@ export default function MessagesPage() {
         </div>
 
         {/* Main Panel - Message Thread */}
-        <div className="flex-1 flex flex-col bg-background">
+        <div className="flex flex-1 flex-col bg-background">
           {!conversationId || !selectedConversation ? (
-            <div className="flex-1 flex items-center justify-center text-center p-8">
+            <div className="flex flex-1 items-center justify-center p-8 text-center">
               <div>
-                <MessageCircle className="h-20 w-20 text-muted-foreground/50 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Select a conversation</h3>
+                <MessageCircle className="mx-auto mb-4 h-20 w-20 text-muted-foreground/50" />
+                <h3 className="mb-2 text-xl font-semibold">Select a conversation</h3>
                 <p className="text-muted-foreground">
                   Choose a conversation from the sidebar to view messages
                 </p>
@@ -343,7 +332,7 @@ export default function MessagesPage() {
           ) : (
             <>
               {/* Thread Header */}
-              <div className="p-4 border-b bg-muted/30">
+              <div className="border-b bg-muted/30 p-4">
                 <div className="flex items-center gap-3">
                   {(() => {
                     const otherParticipant = getOtherParticipant(selectedConversation)
@@ -353,9 +342,7 @@ export default function MessagesPage() {
                           {otherParticipant.avatar_url && (
                             <AvatarImage src={otherParticipant.avatar_url} />
                           )}
-                          <AvatarFallback>
-                            {getInitials(otherParticipant.name)}
-                          </AvatarFallback>
+                          <AvatarFallback>{getInitials(otherParticipant.name)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <h3 className="font-semibold">{otherParticipant.name}</h3>
@@ -373,8 +360,10 @@ export default function MessagesPage() {
               {/* Messages */}
               <ScrollArea className="flex-1 p-4">
                 {messages.length === 0 ? (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
+                  <div className="flex h-full items-center justify-center">
+                    <p className="text-muted-foreground">
+                      No messages yet. Start the conversation!
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-4 pb-4">
@@ -384,44 +373,33 @@ export default function MessagesPage() {
                       return (
                         <div
                           key={message.id}
-                          className={cn(
-                            "flex gap-3",
-                            isSender ? "justify-end" : "justify-start"
-                          )}
+                          className={cn('flex gap-3', isSender ? 'justify-end' : 'justify-start')}
                         >
                           {!isSender && (
                             <Avatar className="h-8 w-8">
                               {message.sender_avatar_url && (
                                 <AvatarImage src={message.sender_avatar_url} />
                               )}
-                              <AvatarFallback>
-                                {getInitials(message.sender_name)}
-                              </AvatarFallback>
+                              <AvatarFallback>{getInitials(message.sender_name)}</AvatarFallback>
                             </Avatar>
                           )}
 
                           <div
                             className={cn(
-                              "max-w-[70%] rounded-lg px-4 py-2",
-                              isSender
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted"
+                              'max-w-[70%] rounded-lg px-4 py-2',
+                              isSender ? 'bg-primary text-primary-foreground' : 'bg-muted'
                             )}
                           >
                             {!isSender && (
-                              <p className="text-xs font-medium mb-1">
-                                {message.sender_name}
-                              </p>
+                              <p className="mb-1 text-xs font-medium">{message.sender_name}</p>
                             )}
-                            <p className="text-sm whitespace-pre-wrap break-words">
+                            <p className="whitespace-pre-wrap break-words text-sm">
                               {message.content}
                             </p>
                             <p
                               className={cn(
-                                "text-xs mt-1",
-                                isSender
-                                  ? "text-primary-foreground/70"
-                                  : "text-muted-foreground"
+                                'mt-1 text-xs',
+                                isSender ? 'text-primary-foreground/70' : 'text-muted-foreground'
                               )}
                             >
                               {formatTimestamp(message.timestamp)}
@@ -430,12 +408,8 @@ export default function MessagesPage() {
 
                           {isSender && (
                             <Avatar className="h-8 w-8">
-                              {clerkUser?.imageUrl && (
-                                <AvatarImage src={clerkUser.imageUrl} />
-                              )}
-                              <AvatarFallback>
-                                {getInitials(user?.name || 'You')}
-                              </AvatarFallback>
+                              {clerkUser?.imageUrl && <AvatarImage src={clerkUser.imageUrl} />}
+                              <AvatarFallback>{getInitials(user?.name || 'You')}</AvatarFallback>
                             </Avatar>
                           )}
                         </div>
@@ -447,7 +421,7 @@ export default function MessagesPage() {
               </ScrollArea>
 
               {/* Message Input Area */}
-              <div className="border-t bg-muted/30 p-4 space-y-3">
+              <div className="space-y-3 border-t bg-muted/30 p-4">
                 {/* Quick Conversation Starters */}
                 <div className="flex flex-wrap gap-2">
                   {CONVERSATION_STARTERS.map((starter, index) => (
@@ -495,7 +469,7 @@ export default function MessagesPage() {
                         disabled
                         title="Share track feature coming soon"
                       >
-                        <Music className="h-4 w-4 mr-1" />
+                        <Music className="mr-1 h-4 w-4" />
                         Share Track
                       </Button>
                       <Button
@@ -504,7 +478,7 @@ export default function MessagesPage() {
                         disabled
                         title="Share portfolio feature coming soon"
                       >
-                        <Briefcase className="h-4 w-4 mr-1" />
+                        <Briefcase className="mr-1 h-4 w-4" />
                         Share Portfolio
                       </Button>
                       <Button
@@ -513,7 +487,7 @@ export default function MessagesPage() {
                         disabled
                         title="Share gig flyer feature coming soon"
                       >
-                        <FileText className="h-4 w-4 mr-1" />
+                        <FileText className="mr-1 h-4 w-4" />
                         Share Gig Flyer
                       </Button>
                     </div>
@@ -525,10 +499,14 @@ export default function MessagesPage() {
                       />
                       <Button
                         onClick={handleSendMessage}
-                        disabled={!messageInput.trim() || messageInput.length > MESSAGE_CHAR_LIMIT || sending}
+                        disabled={
+                          !messageInput.trim() ||
+                          messageInput.length > MESSAGE_CHAR_LIMIT ||
+                          sending
+                        }
                         size="sm"
                       >
-                        <Send className="h-4 w-4 mr-1" />
+                        <Send className="mr-1 h-4 w-4" />
                         {sending ? 'Sending...' : 'Send'}
                       </Button>
                     </div>

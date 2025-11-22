@@ -39,15 +39,13 @@ export function NavigationTabs({ tabs, className }: NavigationTabsProps) {
             key={tab.path}
             to={tab.path}
             className={cn(
-              'text-sm font-medium transition-colors hover:text-primary relative py-4 flex items-center gap-2',
+              'relative flex items-center gap-2 py-4 text-sm font-medium transition-colors hover:text-primary',
               active ? 'text-foreground' : 'text-muted-foreground'
             )}
           >
             {tab.icon && <span className="h-4 w-4">{tab.icon}</span>}
             {tab.label}
-            {active && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-            )}
+            {active && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
           </Link>
         )
       })}

@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 
 interface CharacterCounterProps {
   current: number
@@ -13,10 +13,10 @@ export function CharacterCounter({ current, maximum, className }: CharacterCount
   return (
     <span
       className={cn(
-        "text-xs text-muted-foreground",
-        isNearLimit && !isAtLimit && "text-amber-500",
-        isAtLimit && "text-destructive",
-        className,
+        'text-xs text-muted-foreground',
+        isNearLimit && !isAtLimit && 'text-amber-500',
+        isAtLimit && 'text-destructive',
+        className
       )}
     >
       {current}/{maximum}

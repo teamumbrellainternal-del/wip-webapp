@@ -114,9 +114,7 @@ export function useGig(gigId: string) {
  * ```
  */
 export function useApplyToGig(gigId: string) {
-  const { mutate, loading, error } = usePost<void>(
-    `/gigs/${gigId}/apply`
-  )
+  const { mutate, loading, error } = usePost<void>(`/gigs/${gigId}/apply`)
 
   return {
     applyToGig: mutate,
@@ -150,9 +148,7 @@ export function useArtist(artistId: string) {
  * Example: Follow/unfollow artist
  */
 export function useFollowArtist(artistId: string) {
-  const { mutate: follow, loading: followLoading } = usePost<void>(
-    `/artists/${artistId}/follow`
-  )
+  const { mutate: follow, loading: followLoading } = usePost<void>(`/artists/${artistId}/follow`)
 
   const { mutate: unfollow, loading: unfollowLoading } = usePost<void>(
     `/artists/${artistId}/unfollow`
@@ -268,10 +264,9 @@ export function useCompleteOnboarding() {
  * ```
  */
 export function useVioletPrompt() {
-  const { mutate, loading, error, data } = usePost<
-    VioletResponse,
-    { prompt: string }
-  >('/violet/prompt')
+  const { mutate, loading, error, data } = usePost<VioletResponse, { prompt: string }>(
+    '/violet/prompt'
+  )
 
   return {
     sendPrompt: (prompt: string) => mutate({ prompt }),
@@ -314,9 +309,7 @@ export function useVioletUsage() {
  * ```
  */
 export function useFileUpload() {
-  const { mutate, loading, error } = usePost<FileUploadResponse, FormData>(
-    '/files/upload'
-  )
+  const { mutate, loading, error } = usePost<FileUploadResponse, FormData>('/files/upload')
 
   return {
     uploadFile: async (file: File) => {
