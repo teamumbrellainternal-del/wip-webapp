@@ -6,6 +6,16 @@
 import type { UserProfile, Artist, Gig, Conversation, Message } from '@/types'
 import { getSession, clearSession } from '@/lib/session'
 import { triggerSessionTimeout } from '@/contexts/SessionTimeoutContext'
+import { 
+  MOCK_ARTIST, 
+  MOCK_GIGS, 
+  MOCK_ARTISTS, 
+  MOCK_CONVERSATIONS, 
+  MOCK_MESSAGES, 
+  MOCK_DASHBOARD_METRICS 
+} from './mock-data'
+
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
 // API Response wrapper type
 interface APIResponse<T> {
@@ -57,9 +67,68 @@ class APIClient {
   }
 
   /**
+   * Handle Mock Requests for Demo Mode
+   */
+  private async handleMockRequest<T>(endpoint: string): Promise<T> {
+    console.log(`[Demo Mode] Mocking request to: ${endpoint}`)
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    if (endpoint.includes('/analytics/dashboard')) {
+      return MOCK_DASHBOARD_METRICS as unknown as T
+    }
+    
+    if (endpoint.includes('/gigs')) {
+      if (endpoint.includes('/gigs/')) {
+        return MOCK_GIGS[0] as unknown as T
+      }
+      return {
+        data: MOCK_GIGS,
+        total: MOCK_GIGS.length,
+        page: 1,
+        limit: 20,
+        has_more: false
+      } as unknown as T
+    }
+
+    if (endpoint.includes('/artists')) {
+      if (endpoint.includes('/artists/')) {
+        return MOCK_ARTIST as unknown as T
+      }
+      return {
+        data: MOCK_ARTISTS,
+        total: MOCK_ARTISTS.length,
+        page: 1,
+        limit: 20,
+        has_more: false
+      } as unknown as T
+    }
+
+    if (endpoint.includes('/conversations')) {
+      if (endpoint.includes('/messages')) {
+        return MOCK_MESSAGES as unknown as T
+      }
+      return MOCK_CONVERSATIONS as unknown as T
+    }
+
+    if (endpoint.includes('/profile')) {
+      return MOCK_ARTIST as unknown as T
+    }
+
+    // Default fallback
+    return {} as T
+  }
+
+  /**
    * Make an authenticated API request
    */
   async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    // Demo Mode Interception
+    if (DEMO_MODE) {
+      return this.handleMockRequest<T>(endpoint)
+    }
+
     // Check if offline before making request
     if (!navigator.onLine) {
       throw new Error('You are offline. Please check your internet connection.')
