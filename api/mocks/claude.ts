@@ -214,6 +214,23 @@ export class MockClaudeService {
   }
 
   /**
+   * Estimate cost for Claude API usage (mock implementation)
+   * Based on Claude 3 Sonnet pricing: $3/million input tokens, $15/million output tokens
+   * @param inputTokens - Number of input tokens
+   * @param outputTokens - Number of output tokens
+   * @returns Estimated cost in USD
+   */
+  estimateCost(inputTokens: number, outputTokens: number): number {
+    const INPUT_COST_PER_MILLION = 3.0
+    const OUTPUT_COST_PER_MILLION = 15.0
+
+    const inputCost = (inputTokens / 1_000_000) * INPUT_COST_PER_MILLION
+    const outputCost = (outputTokens / 1_000_000) * OUTPUT_COST_PER_MILLION
+
+    return inputCost + outputCost
+  }
+
+  /**
    * Get current usage for artist (for quota display)
    */
   async getUsage(): Promise<{
