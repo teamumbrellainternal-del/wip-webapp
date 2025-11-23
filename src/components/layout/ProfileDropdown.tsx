@@ -9,7 +9,6 @@
  */
 
 import { Link, useNavigate } from 'react-router-dom'
-import { useClerk } from '@clerk/clerk-react'
 import { User, Settings, LogOut } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -36,36 +35,51 @@ const mockUser = {
   verified: true,
 }
 
-export function ProfileDropdown() {
+// Production version that uses Clerk
+function ProfileDropdownProduction() {
   const navigate = useNavigate()
-
-  // Always call the hook - hooks must be called unconditionally
+  // Dynamic import to avoid loading Clerk in demo mode
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { useClerk } = require('@clerk/clerk-react')
   const clerk = useClerk()
-
-  // Determine if we should use Clerk based on demo mode
-  const shouldUseClerk = !DEMO_MODE
 
   const handleLogout = async () => {
     try {
-      // Call backend logout endpoint
       await apiClient.logout()
     } catch (error) {
       console.error('Error during logout:', error)
-      // Continue with logout even if backend call fails
     } finally {
-      // Clear local session
       localStorage.removeItem('umbrella_session')
-
-      // Sign out from Clerk if available and not in demo mode
-      if (shouldUseClerk && clerk) {
+      if (clerk) {
         await clerk.signOut()
       }
-
-      // Navigate to auth page
       navigate('/auth')
     }
   }
 
+  return <ProfileDropdownContent onLogout={handleLogout} />
+}
+
+// Demo version that doesn't use Clerk
+function ProfileDropdownDemo() {
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    try {
+      await apiClient.logout()
+    } catch (error) {
+      console.error('Error during logout:', error)
+    } finally {
+      localStorage.removeItem('umbrella_session')
+      navigate('/auth')
+    }
+  }
+
+  return <ProfileDropdownContent onLogout={handleLogout} />
+}
+
+// Shared content component
+function ProfileDropdownContent({ onLogout }: { onLogout: () => void }) {
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -111,11 +125,19 @@ export function ProfileDropdown() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+        <DropdownMenuItem onClick={onLogout} className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           Logout
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
+}
+
+export function ProfileDropdown() {
+  // Conditionally render based on demo mode
+  if (DEMO_MODE) {
+    return <ProfileDropdownDemo />
+  }
+  return <ProfileDropdownProduction />
 }
