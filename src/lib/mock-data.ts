@@ -83,7 +83,7 @@ export const MOCK_ARTISTS: Artist[] = [
     bio: 'Indie rock band playing original songs and covers.',
     avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Band',
     social_links: {
-      email: 'band@example.com'
+      website: 'https://band.example.com'
     },
     verified: true,
     created_at: new Date().toISOString(),
