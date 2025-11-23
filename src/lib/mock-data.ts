@@ -7,25 +7,22 @@ import { Artist, Gig, Conversation, Message, DashboardMetrics, UserProfile } fro
 
 export const MOCK_ARTIST: Artist = {
   id: 'demo-artist-1',
-  user_id: 'demo-user-123',
   artist_name: 'DJ Demo',
   full_name: 'Demo User',
-  email: 'demo@umbrella-app.com',
-  location_city: 'Los Angeles',
-  location_state: 'CA',
+  location: 'Los Angeles, CA',
+  genres: ['Electronic', 'House', 'Techno'],
   bio: 'Electronic music producer and DJ specializing in house and techno. Available for clubs, festivals, and private events.',
-  primary_genre: 'Electronic',
-  secondary_genres: ['House', 'Techno'],
   avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo',
   banner_url: 'https://images.unsplash.com/photo-1571266028243-e4733b090bb1?w=1200&q=80',
-  website: 'https://demo-artist.com',
-  instagram_handle: 'djdemo',
-  spotify_id: 'demo',
-  soundcloud_id: 'demo',
-  base_rate_hourly: 150,
-  base_rate_flat: 500,
+  social_links: {
+    website: 'https://demo-artist.com',
+    instagram: 'djdemo',
+    spotify: 'demo',
+    soundcloud: 'demo',
+  },
+  price_range_min: 150,
+  price_range_max: 500,
   verified: true,
-  onboarding_step: 6,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
   rating_avg: 4.8,
@@ -41,16 +38,18 @@ export const MOCK_GIGS: Gig[] = [
     description: 'Looking for an energetic DJ for our annual summer rooftop party. Must be able to play a mix of house and top 40.',
     venue_name: 'Sky High Lounge',
     venue_id: 'venue-1',
-    location_city: 'Los Angeles',
-    location_state: 'CA',
+    location: 'Los Angeles, CA',
     date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    time: '20:00',
+    capacity: 200,
+    venue_rating_avg: 4.5,
+    venue_review_count: 10,
+    genre_tags: ['House', 'Pop'],
     payment_amount: 400,
-    payment_type: 'flat',
-    genres: ['House', 'Pop'],
+    urgency_flag: false,
     status: 'open',
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    applicant_count: 5
+    updated_at: new Date().toISOString()
   },
   {
     id: 'gig-2',
@@ -58,16 +57,18 @@ export const MOCK_GIGS: Gig[] = [
     description: 'Seeking a resident DJ for Friday nights. Deep house and lounge vibes.',
     venue_name: 'The Basement',
     venue_id: 'venue-2',
-    location_city: 'West Hollywood',
-    location_state: 'CA',
+    location: 'West Hollywood, CA',
     date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+    time: '22:00',
+    capacity: 150,
+    venue_rating_avg: 4.2,
+    venue_review_count: 8,
+    genre_tags: ['Deep House'],
     payment_amount: 200,
-    payment_type: 'hourly',
-    genres: ['Deep House'],
+    urgency_flag: true,
     status: 'open',
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    applicant_count: 3
+    updated_at: new Date().toISOString()
   }
 ]
 
@@ -75,18 +76,16 @@ export const MOCK_ARTISTS: Artist[] = [
   MOCK_ARTIST,
   {
     id: 'artist-2',
-    user_id: 'user-2',
     artist_name: 'The Midnight Band',
     full_name: 'John Smith',
-    email: 'band@example.com',
-    location_city: 'San Francisco',
-    location_state: 'CA',
+    location: 'San Francisco, CA',
+    genres: ['Rock', 'Indie'],
     bio: 'Indie rock band playing original songs and covers.',
-    primary_genre: 'Rock',
-    secondary_genres: ['Indie'],
     avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Band',
+    social_links: {
+      email: 'band@example.com'
+    },
     verified: true,
-    onboarding_step: 6,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     rating_avg: 4.5,
@@ -103,77 +102,63 @@ export const MOCK_CONVERSATIONS: Conversation[] = [
       {
         id: 'venue-1',
         name: 'Sky High Lounge',
-        avatarUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=SH'
+        avatar_url: 'https://api.dicebear.com/7.x/initials/svg?seed=SH',
+        role: 'venue'
       },
       {
         id: 'demo-artist-1',
         name: 'DJ Demo',
-        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo'
+        avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo',
+        role: 'artist'
       }
     ],
-    lastMessage: {
-      id: 'msg-1',
-      content: 'Hey, are you available for the rooftop party?',
-      senderId: 'venue-1',
-      createdAt: new Date().toISOString(),
-      read: false
-    },
-    unreadCount: 1,
-    updatedAt: new Date().toISOString()
+    context_type: 'venue',
+    last_message_preview: 'Hey, are you available for the rooftop party?',
+    unread_count: 1,
+    updated_at: new Date().toISOString()
   }
 ]
 
 export const MOCK_MESSAGES: Message[] = [
   {
     id: 'msg-1',
-    conversationId: 'conv-1',
+    conversation_id: 'conv-1',
     content: 'Hey, are you available for the rooftop party?',
-    senderId: 'venue-1',
-    createdAt: new Date().toISOString(),
-    read: false
+    sender_id: 'venue-1',
+    sender_name: 'Sky High Lounge',
+    timestamp: new Date().toISOString(),
+    read_status: false
   }
 ]
 
 export const MOCK_DASHBOARD_METRICS: DashboardMetrics = {
-  profileViews: 125,
-  profileViewsGrowth: 12,
-  gigInvites: 3,
-  gigInvitesGrowth: 1,
-  messageResponseRate: 95,
-  messageResponseRateGrowth: 2,
-  searchAppearances: 450,
-  searchAppearancesGrowth: 8,
-  nextGig: {
-    id: 'gig-upcoming',
-    title: 'Private Event',
-    date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-    venue: 'Downtown Loft',
-    amount: 600
+  earnings: {
+    current_month: 1200,
+    percentage_change: 15
   },
-  recentActivity: [
-    {
-      id: 'act-1',
-      type: 'view',
-      title: 'New Profile View',
-      description: 'Sky High Lounge viewed your profile',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: 'act-2',
-      type: 'message',
-      title: 'New Message',
-      description: 'Message from Sky High Lounge',
-      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
-    }
-  ]
+  gigs_booked: {
+    count: 3,
+    timeframe: 'this month'
+  },
+  profile_views: {
+    count: 125,
+    percentage_change: 12
+  },
+  opportunities: [],
+  messages: [],
+  endorsements: []
 }
 
 export const MOCK_USER_PROFILE: UserProfile = {
   id: 'demo-user-123',
   email: 'demo@umbrella-app.com',
-  name: 'Demo User',
-  avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo',
+  full_name: 'Demo User',
+  avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo',
   role: 'artist',
-  onboardingComplete: true
+  onboarding_completed: true,
+  profile_completion_percentage: 85,
+  verified: true,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString()
 }
 
