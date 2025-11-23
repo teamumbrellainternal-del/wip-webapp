@@ -58,6 +58,24 @@ ENVIRONMENT = "development"  # Environment name (development, staging, productio
 #   - Token limit: 25,000/month per user (D-059)
 # Note: AI generation will be mocked when USE_MOCKS="true"
 
+# R2 Storage Configuration (Presigned URLs - D-028)
+# Create API tokens at: https://dash.cloudflare.com → R2 → Manage R2 API Tokens
+# Documentation: https://developers.cloudflare.com/r2/api/s3/presigned-urls/
+# Set secrets via:
+#   wrangler secret put R2_ACCESS_KEY_ID --env production
+#   wrangler secret put R2_SECRET_ACCESS_KEY --env production
+#   wrangler secret put R2_ACCOUNT_ID --env production
+# Secrets required:
+#   - R2_ACCESS_KEY_ID: Access key ID from R2 API token
+#   - R2_SECRET_ACCESS_KEY: Secret access key from R2 API token
+#   - R2_ACCOUNT_ID: Cloudflare account ID (for presigned URL domain)
+# Features:
+#   - Presigned upload URLs (15-minute expiry)
+#   - Presigned download URLs (24-hour expiry per D-028)
+#   - Direct-to-R2 uploads (no proxy bandwidth)
+#   - 50GB storage quota per artist (per D-026)
+# Note: Storage will be mocked when USE_MOCKS="true" or BUCKET binding missing
+
 # Sentry Configuration (Error Tracking - Optional)
 # Sign up at: https://sentry.io
 # Get DSN from: https://sentry.io/settings/projects/
@@ -166,10 +184,11 @@ binding = "KV"
 id = "04fceb9a09054bbd991d5252a9a169cf"
 
 # Production R2 bucket binding
-# Uncomment after creating the bucket via: wrangler r2 bucket create umbrella-prod
-# [[env.production.r2_buckets]]
-# binding = "BUCKET"
-# bucket_name = "umbrella-prod"
+# Create bucket via: wrangler r2 bucket create umbrella-prod-media --env production
+# Verify with: wrangler r2 bucket list
+[[env.production.r2_buckets]]
+binding = "BUCKET"
+bucket_name = "umbrella-prod-media"
 
 # Production cron triggers
 # Analytics aggregation: Daily at midnight UTC

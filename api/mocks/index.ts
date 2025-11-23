@@ -12,11 +12,17 @@ import { MockR2Service, createMockR2Service } from './r2'
 // import { ResendEmailService, createResendService } from '../services/resend'
 // import { TwilioSMSService, createTwilioService } from '../services/twilio'
 import { ClaudeAPIService, createClaudeService } from '../services/claude'
+import { R2StorageService, createR2Service } from '../services/r2'
 
 /**
  * Union type for AI service (supports both mock and real)
  */
 type AIService = MockClaudeService | ClaudeAPIService
+
+/**
+ * Union type for storage service (supports both mock and real)
+ */
+type StorageService = MockR2Service | R2StorageService
 
 /**
  * Environment interface for type safety
@@ -29,6 +35,9 @@ export interface Env {
   TWILIO_FROM_PHONE?: string
   ANTHROPIC_API_KEY?: string
   CLAUDE_API_KEY?: string // Alternative name for Claude API key
+  R2_ACCESS_KEY_ID?: string
+  R2_SECRET_ACCESS_KEY?: string
+  R2_ACCOUNT_ID?: string
   DB?: D1Database
   BUCKET?: R2Bucket
   KV?: KVNamespace
@@ -119,20 +128,44 @@ export function getAIService(env: Env): AIService {
 /**
  * Get storage service (mock or real based on environment)
  * @param env - Environment variables
- * @returns Storage service instance
+ * @returns Storage service instance (mock or real)
  */
-export function getStorageService(env: Env): MockR2Service {
+export function getStorageService(env: Env): StorageService {
   const useMocks = env.USE_MOCKS === 'true' || env.USE_MOCKS === undefined
 
-  if (useMocks || !env.BUCKET) {
-    console.log('[SERVICE FACTORY] Using mock R2 storage service')
-    return createMockR2Service()
+  // Check if we should use real service
+  const shouldUseReal = !useMocks && env.BUCKET
+
+  if (shouldUseReal) {
+    try {
+      console.log('[SERVICE FACTORY] Using real R2 storage service')
+
+      // Build R2 credentials if available (for presigned URLs)
+      const credentials = env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY && env.R2_ACCOUNT_ID
+        ? {
+            accessKeyId: env.R2_ACCESS_KEY_ID,
+            secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+            accountId: env.R2_ACCOUNT_ID,
+            bucketName: 'umbrella-prod-media', // TODO: Make configurable per environment
+          }
+        : undefined
+
+      if (!credentials) {
+        console.warn('[SERVICE FACTORY] R2 API credentials not found - presigned URLs will use placeholders')
+      }
+
+      return createR2Service(env.BUCKET!, credentials)
+    } catch (error) {
+      console.error(
+        '[SERVICE FACTORY] Failed to initialize real R2 service, falling back to mock:',
+        error
+      )
+      return createMockR2Service()
+    }
   }
 
-  // Real service implementation (M10)
-  // In M10, we'll use the actual R2 bucket methods directly
-  // For now, return mock
-  console.log('[SERVICE FACTORY] Using mock R2 storage service (real R2 not yet configured)')
+  // Default to mock for development/preview or if real service unavailable
+  console.log('[SERVICE FACTORY] Using mock R2 storage service')
   return createMockR2Service()
 }
 

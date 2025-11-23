@@ -18,6 +18,7 @@
  */
 
 import { generateUUIDv4 } from '../utils/uuid'
+import { AwsClient } from 'aws4fetch'
 import {
   R2_PATHS,
   TTL,
@@ -89,6 +90,7 @@ export function validateFileSize(
 
 /**
  * Generate signed URL for R2 object upload (15-minute TTL)
+ * Uses AWS SigV4 signing via aws4fetch
  */
 export async function generateUploadSignedUrl(
   bucket: R2Bucket,
@@ -97,6 +99,12 @@ export async function generateUploadSignedUrl(
     contentType: string
     contentLength: number
     expiresIn?: number
+    credentials?: {
+      accessKeyId: string
+      secretAccessKey: string
+      accountId: string
+      bucketName: string
+    }
   }
 ): Promise<R2Result<{ url: string; uploadId: string; expiresAt: string }>> {
   try {
@@ -105,43 +113,57 @@ export async function generateUploadSignedUrl(
     // Generate upload ID for tracking
     const uploadId = generateUUIDv4()
 
-    // Create signed URL using R2 httpMetadata
-    const object = await bucket.put(key, new ArrayBuffer(0), {
-      httpMetadata: {
-        contentType: options.contentType,
-      },
-      customMetadata: {
-        uploadId,
-        uploadedAt: new Date().toISOString(),
-        status: 'pending',
-      },
-    })
-
-    if (!object) {
+    // If no credentials provided, fall back to placeholder (for testing)
+    if (!options.credentials) {
+      const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString()
+      const url = `https://upload.placeholder/${key}?uploadId=${uploadId}`
+      console.warn('[R2 STORAGE] No R2 API credentials provided, returning placeholder URL')
       return {
-        success: false,
-        error: 'Failed to generate upload URL',
+        success: true,
+        data: { url, uploadId, expiresAt },
       }
     }
 
-    // For R2, we need to use Workers to create signed URLs
-    // The actual signed URL generation requires creating a presigned URL
-    // using the R2 API, which is done via the createPresignedUrl method
-    // However, Cloudflare R2 doesn't directly expose presigned URLs in the same way as S3
-    // Instead, we'll use the R2 bucket's URL with custom metadata
+    const { accessKeyId, secretAccessKey, accountId, bucketName } = options.credentials
 
-    const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString()
+    // Create AWS client for signing
+    const aws = new AwsClient({
+      accessKeyId,
+      secretAccessKey,
+      service: 's3',
+      region: 'auto',
+    })
 
-    // Note: In production, you would typically use R2's presigned URL feature
-    // For now, we'll return a placeholder that should be replaced with actual implementation
-    const url = `https://upload.placeholder/${key}?uploadId=${uploadId}`
+    // Build R2 endpoint URL
+    const endpoint = `https://${accountId}.r2.cloudflarestorage.com/${bucketName}/${key}`
+
+    // Calculate expiration timestamp
+    const expiresAt = new Date(Date.now() + expiresIn * 1000)
+
+    // Create presigned URL using aws4fetch
+    const signedUrl = await aws.sign(endpoint, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': options.contentType,
+        'Content-Length': options.contentLength.toString(),
+      },
+      aws: {
+        signQuery: true,
+        datetime: new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z',
+        allHeaders: true,
+      },
+    })
+
+    // Add expiry to query params
+    const url = new URL(signedUrl.url)
+    url.searchParams.set('X-Amz-Expires', expiresIn.toString())
 
     return {
       success: true,
       data: {
-        url,
+        url: url.toString(),
         uploadId,
-        expiresAt,
+        expiresAt: expiresAt.toISOString(),
       },
     }
   } catch (error) {
@@ -154,11 +176,18 @@ export async function generateUploadSignedUrl(
 
 /**
  * Generate signed URL for R2 object download (1-hour TTL)
+ * Uses AWS SigV4 signing via aws4fetch
  */
 export async function generateDownloadSignedUrl(
   bucket: R2Bucket,
   key: string,
-  expiresIn: number = TTL.DOWNLOAD_URL
+  expiresIn: number = TTL.DOWNLOAD_URL,
+  credentials?: {
+    accessKeyId: string
+    secretAccessKey: string
+    accountId: string
+    bucketName: string
+  }
 ): Promise<R2Result<{ url: string; expiresAt: string }>> {
   try {
     // Check if object exists
@@ -171,18 +200,52 @@ export async function generateDownloadSignedUrl(
       }
     }
 
-    const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString()
+    // If no credentials provided, fall back to placeholder (for testing)
+    if (!credentials) {
+      const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString()
+      const url = `https://download.placeholder/${key}`
+      console.warn('[R2 STORAGE] No R2 API credentials provided, returning placeholder URL')
+      return {
+        success: true,
+        data: { url, expiresAt },
+      }
+    }
 
-    // Note: Cloudflare R2 signed URLs are generated differently than S3
-    // In production, you would use R2's createPresignedUrl or a custom domain with signed URLs
-    // For now, we'll return a placeholder
-    const url = `https://download.placeholder/${key}`
+    const { accessKeyId, secretAccessKey, accountId, bucketName } = credentials
+
+    // Create AWS client for signing
+    const aws = new AwsClient({
+      accessKeyId,
+      secretAccessKey,
+      service: 's3',
+      region: 'auto',
+    })
+
+    // Build R2 endpoint URL
+    const endpoint = `https://${accountId}.r2.cloudflarestorage.com/${bucketName}/${key}`
+
+    // Calculate expiration timestamp
+    const expiresAt = new Date(Date.now() + expiresIn * 1000)
+
+    // Create presigned URL using aws4fetch
+    const signedUrl = await aws.sign(endpoint, {
+      method: 'GET',
+      aws: {
+        signQuery: true,
+        datetime: new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z',
+        allHeaders: true,
+      },
+    })
+
+    // Add expiry to query params
+    const url = new URL(signedUrl.url)
+    url.searchParams.set('X-Amz-Expires', expiresIn.toString())
 
     return {
       success: true,
       data: {
-        url,
-        expiresAt,
+        url: url.toString(),
+        expiresAt: expiresAt.toISOString(),
       },
     }
   } catch (error) {
