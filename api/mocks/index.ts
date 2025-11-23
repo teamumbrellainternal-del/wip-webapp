@@ -9,9 +9,14 @@ import { MockClaudeService, createMockClaudeService } from './claude'
 import { MockR2Service, createMockR2Service } from './r2'
 
 // Real service imports (when available in M10)
-// import { ResendEmailService, createResendService } from '../services/resend'
+import { ResendEmailService, createResendService } from '../services/resend'
 // import { TwilioSMSService, createTwilioService } from '../services/twilio'
 // import { ClaudeAPIService, createClaudeService } from '../services/claude'
+
+/**
+ * Union type for email service (supports both mock and real)
+ */
+type EmailService = MockResendService | ResendEmailService
 
 /**
  * Environment interface for type safety
@@ -31,22 +36,29 @@ export interface Env {
 /**
  * Get email service (mock or real based on environment)
  * @param env - Environment variables
- * @returns Email service instance
+ * @returns Email service instance (mock or real)
  */
-export function getEmailService(env: Env): MockResendService {
+export function getEmailService(env: Env): EmailService {
   const useMocks = env.USE_MOCKS === 'true' || env.USE_MOCKS === undefined
 
-  if (useMocks || !env.RESEND_API_KEY || !env.DB) {
-    console.log('[SERVICE FACTORY] Using mock email service')
-    return createMockResendService()
+  // Check if we should use real service
+  const shouldUseReal = !useMocks && env.RESEND_API_KEY && env.DB
+
+  if (shouldUseReal) {
+    try {
+      console.log('[SERVICE FACTORY] Using real Resend email service')
+      return createResendService(env.RESEND_API_KEY!, env.DB!)
+    } catch (error) {
+      console.error(
+        '[SERVICE FACTORY] Failed to initialize real email service, falling back to mock:',
+        error
+      )
+      return createMockResendService()
+    }
   }
 
-  // Real service implementation (M10)
-  // console.log('[SERVICE FACTORY] Using real Resend email service')
-  // return createResendService(env.RESEND_API_KEY, env.DB)
-
-  // Default to mock until M10
-  console.log('[SERVICE FACTORY] Using mock email service (real service not yet implemented)')
+  // Default to mock for development/preview or if real service unavailable
+  console.log('[SERVICE FACTORY] Using mock email service')
   return createMockResendService()
 }
 
@@ -144,10 +156,13 @@ export function getServiceStatus(env: Env): {
 } {
   const mockMode = isMockMode(env)
 
+  // Check if real email service would be used
+  const emailService = !mockMode && env.RESEND_API_KEY && env.DB ? 'real' : 'mock'
+
   return {
     mockMode,
     services: {
-      email: mockMode || !env.RESEND_API_KEY ? 'mock' : 'real',
+      email: emailService,
       sms: mockMode || !env.TWILIO_ACCOUNT_SID ? 'mock' : 'real',
       ai: mockMode || !env.ANTHROPIC_API_KEY ? 'mock' : 'real',
       storage: mockMode || !env.BUCKET ? 'mock' : 'real',
