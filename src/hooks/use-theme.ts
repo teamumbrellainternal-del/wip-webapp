@@ -37,7 +37,7 @@ export function useTheme(): UseThemeReturn {
     const updateResolvedTheme = () => {
       const resolved = theme === 'system' ? getSystemTheme() : theme
       setResolvedTheme(resolved)
-      
+
       if (typeof document !== 'undefined') {
         document.documentElement.setAttribute(THEME_ATTRIBUTE, resolved)
         document.documentElement.classList.remove('light', 'dark')
@@ -50,7 +50,7 @@ export function useTheme(): UseThemeReturn {
     if (theme === 'system') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
       const handleSystemThemeChange = () => updateResolvedTheme()
-      
+
       mediaQuery.addEventListener('change', handleSystemThemeChange)
       return () => mediaQuery.removeEventListener('change', handleSystemThemeChange)
     }

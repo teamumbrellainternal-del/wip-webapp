@@ -1,11 +1,11 @@
-import type React from "react"
+import type React from 'react'
 
-import { useState } from "react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Plus, X } from "lucide-react"
-import { Label } from "@/components/ui/label"
-import { FormDescription } from "@/components/ui/form"
+import { useState } from 'react'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Plus, X } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { FormDescription } from '@/components/ui/form'
 
 interface PathManagementListProps {
   paths: string[]
@@ -19,17 +19,17 @@ interface PathManagementListProps {
 export function PathManagementList({
   paths,
   onChange,
-  placeholder = "/api/route",
-  label = "Paths",
+  placeholder = '/api/route',
+  label = 'Paths',
   description,
   pathPrefix,
 }: PathManagementListProps) {
-  const [newPath, setNewPath] = useState("")
+  const [newPath, setNewPath] = useState('')
 
   const handleAddPath = () => {
     if (newPath.trim()) {
       onChange([...paths, newPath.trim()])
-      setNewPath("")
+      setNewPath('')
     }
   }
 
@@ -40,7 +40,7 @@ export function PathManagementList({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault()
       handleAddPath()
     }
@@ -56,11 +56,11 @@ export function PathManagementList({
           <div key={index} className="flex items-center gap-2">
             <div className="relative flex-1">
               {pathPrefix && (
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                   <span className="text-sm text-muted-foreground">{pathPrefix}</span>
                 </div>
               )}
-              <Input value={path} readOnly className={pathPrefix ? "pl-12" : ""} />
+              <Input value={path} readOnly className={pathPrefix ? 'pl-12' : ''} />
             </div>
             <Button
               type="button"
@@ -77,7 +77,7 @@ export function PathManagementList({
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             {pathPrefix && (
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                 <span className="text-sm text-muted-foreground">{pathPrefix}</span>
               </div>
             )}
@@ -86,10 +86,16 @@ export function PathManagementList({
               onChange={(e) => setNewPath(e.target.value)}
               placeholder={placeholder}
               onKeyDown={handleKeyDown}
-              className={pathPrefix ? "pl-12" : ""}
+              className={pathPrefix ? 'pl-12' : ''}
             />
           </div>
-          <Button type="button" variant="outline" size="icon" onClick={handleAddPath} disabled={!newPath.trim()}>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={handleAddPath}
+            disabled={!newPath.trim()}
+          >
             <Plus className="h-4 w-4" />
           </Button>
         </div>

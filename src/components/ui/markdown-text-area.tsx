@@ -1,11 +1,11 @@
-import type React from "react"
+import type React from 'react'
 
-import { useState } from "react"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { FormDescription } from "@/components/ui/form"
-import { cn } from "@/lib/utils"
-import { ExternalLink } from "lucide-react"
+import { useState } from 'react'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { FormDescription } from '@/components/ui/form'
+import { cn } from '@/lib/utils'
+import { ExternalLink } from 'lucide-react'
 
 interface MarkdownTextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label: string
@@ -20,13 +20,13 @@ export function MarkdownTextArea({
   description,
   maxLength,
   error,
-  markdownDocsUrl = "https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax",
+  markdownDocsUrl = 'https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax',
   className,
   id,
   ...props
 }: MarkdownTextAreaProps) {
   const [charCount, setCharCount] = useState(props.value?.toString().length || 0)
-  const fieldId = id || label.toLowerCase().replace(/\s+/g, "-")
+  const fieldId = id || label.toLowerCase().replace(/\s+/g, '-')
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCharCount(e.target.value.length)
@@ -35,16 +35,16 @@ export function MarkdownTextArea({
 
   return (
     <div className="space-y-2">
-      <div className="flex justify-between items-center">
-        <Label htmlFor={fieldId} className={error ? "text-destructive" : ""}>
+      <div className="flex items-center justify-between">
+        <Label htmlFor={fieldId} className={error ? 'text-destructive' : ''}>
           {label}
         </Label>
         {maxLength && (
           <span
             className={cn(
-              "text-xs text-muted-foreground",
-              charCount > maxLength * 0.8 && "text-amber-500",
-              charCount >= maxLength && "text-destructive",
+              'text-xs text-muted-foreground',
+              charCount > maxLength * 0.8 && 'text-amber-500',
+              charCount >= maxLength && 'text-destructive'
             )}
           >
             {charCount}/{maxLength}
@@ -53,12 +53,12 @@ export function MarkdownTextArea({
       </div>
       <Textarea
         id={fieldId}
-        className={cn("min-h-[120px] font-mono text-sm", error && "border-destructive", className)}
+        className={cn('min-h-[120px] font-mono text-sm', error && 'border-destructive', className)}
         maxLength={maxLength}
         onChange={handleChange}
         {...props}
       />
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         {(description || error) && (
           <div>
             {description && !error && <FormDescription>{description}</FormDescription>}
@@ -69,7 +69,7 @@ export function MarkdownTextArea({
           href={markdownDocsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1"
+          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
         >
           Markdown is supported
           <ExternalLink className="h-3 w-3" />

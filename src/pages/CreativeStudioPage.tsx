@@ -114,9 +114,7 @@ export default function CreativeStudioPage() {
       setError(null)
 
       // Load the first entry for current type or create new
-      const existingEntry = response.entries.find(
-        (e) => e.entry_type === currentEntryType
-      )
+      const existingEntry = response.entries.find((e) => e.entry_type === currentEntryType)
       if (existingEntry) {
         loadEntry(existingEntry)
       } else {
@@ -191,11 +189,7 @@ export default function CreativeStudioPage() {
 
   // Update block content
   const updateBlock = (blockId: string, content: any) => {
-    setBlocks(
-      blocks.map((block) =>
-        block.id === blockId ? { ...block, content } : block
-      )
-    )
+    setBlocks(blocks.map((block) => (block.id === blockId ? { ...block, content } : block)))
     setHasUnsavedChanges(true)
   }
 
@@ -351,7 +345,7 @@ export default function CreativeStudioPage() {
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <div className="container mx-auto max-w-5xl px-4 py-8">
         {/* Page Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold tracking-tight">Creative Studio</h1>
@@ -362,7 +356,7 @@ export default function CreativeStudioPage() {
 
         {/* Entry Type Tabs */}
         <Tabs value={currentEntryType} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="mb-6 grid w-full grid-cols-3">
             {entryTypeTabs.map((tab) => (
               <TabsTrigger key={tab.value} value={tab.value} className="gap-2">
                 <tab.icon className="h-4 w-4" />
@@ -384,7 +378,7 @@ export default function CreativeStudioPage() {
                           setHasUnsavedChanges(true)
                         }}
                         placeholder={`${tab.label} title...`}
-                        className="text-2xl font-bold border-0 px-0 focus-visible:ring-0"
+                        className="border-0 px-0 text-2xl font-bold focus-visible:ring-0"
                       />
                     </CardTitle>
                     {autoSaveTime && (
@@ -399,9 +393,7 @@ export default function CreativeStudioPage() {
                 <CardContent className="space-y-6">
                   {/* Toolbar */}
                   <div className="border-b pb-4">
-                    <Label className="text-sm font-medium mb-2 block">
-                      Add Block
-                    </Label>
+                    <Label className="mb-2 block text-sm font-medium">Add Block</Label>
                     <div className="flex flex-wrap gap-2">
                       {blockTypes.map((blockType) => (
                         <Button
@@ -410,7 +402,7 @@ export default function CreativeStudioPage() {
                           size="sm"
                           onClick={() => addBlock(blockType.type)}
                         >
-                          <blockType.icon className="h-4 w-4 mr-2" />
+                          <blockType.icon className="mr-2 h-4 w-4" />
                           {blockType.label}
                         </Button>
                       ))}
@@ -420,8 +412,8 @@ export default function CreativeStudioPage() {
                   {/* Blocks */}
                   <div className="space-y-4">
                     {blocks.length === 0 ? (
-                      <div className="text-center py-12 text-muted-foreground">
-                        <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <div className="py-12 text-center text-muted-foreground">
+                        <FileText className="mx-auto mb-4 h-12 w-12 opacity-50" />
                         <p>No blocks yet. Add your first block above!</p>
                       </div>
                     ) : (
@@ -435,24 +427,19 @@ export default function CreativeStudioPage() {
                           onDelete={() => deleteBlock(block.id)}
                           onMoveUp={() => moveBlockUp(index)}
                           onMoveDown={() => moveBlockDown(index)}
-                          onFileUpload={(file, type) =>
-                            handleFileUpload(file, block.id, type)
-                          }
+                          onFileUpload={(file, type) => handleFileUpload(file, block.id, type)}
                         />
                       ))
                     )}
                   </div>
 
                   {/* Footer */}
-                  <div className="border-t pt-4 flex items-center justify-between">
+                  <div className="flex items-center justify-between border-t pt-4">
                     <div className="text-sm text-muted-foreground">
                       {blocks.length} {blocks.length === 1 ? 'block' : 'blocks'}
                     </div>
-                    <Button
-                      onClick={handleSave}
-                      disabled={isSaving || !hasUnsavedChanges}
-                    >
-                      <Save className="h-4 w-4 mr-2" />
+                    <Button onClick={handleSave} disabled={isSaving || !hasUnsavedChanges}>
+                      <Save className="mr-2 h-4 w-4" />
                       {isSaving ? 'Saving...' : 'Save Entry'}
                     </Button>
                   </div>
@@ -495,8 +482,8 @@ function BlockEditor({
       <CardContent className="pt-6">
         <div className="flex gap-4">
           {/* Drag Handle & Controls */}
-          <div className="flex flex-col gap-2 items-center">
-            <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+          <div className="flex flex-col items-center gap-2">
+            <GripVertical className="h-5 w-5 cursor-grab text-muted-foreground" />
             <div className="flex flex-col gap-1">
               <Button
                 variant="ghost"
@@ -521,9 +508,7 @@ function BlockEditor({
 
           {/* Block Content */}
           <div className="flex-1">
-            {block.type === 'text' && (
-              <TextBlock content={block.content} onUpdate={onUpdate} />
-            )}
+            {block.type === 'text' && <TextBlock content={block.content} onUpdate={onUpdate} />}
             {block.type === 'image' && (
               <ImageBlock
                 content={block.content}
@@ -608,12 +593,8 @@ function ImageBlock({
           placeholder="Image URL or upload..."
           className="flex-1"
         />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <Upload className="h-4 w-4 mr-2" />
+        <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+          <Upload className="mr-2 h-4 w-4" />
           Upload
         </Button>
         <input
@@ -628,7 +609,7 @@ function ImageBlock({
         <img
           src={content.url}
           alt={content.caption || 'Image'}
-          className="max-w-full h-auto rounded-md"
+          className="h-auto max-w-full rounded-md"
         />
       )}
       <Input
@@ -652,9 +633,7 @@ function AudioVideoBlock({
   onFileUpload: (file: File, type: 'audio' | 'video') => void
   fileInputRef: React.RefObject<HTMLInputElement>
 }) {
-  const [mediaType, setMediaType] = useState<'audio' | 'video'>(
-    content.type || 'audio'
-  )
+  const [mediaType, setMediaType] = useState<'audio' | 'video'>(content.type || 'audio')
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -677,18 +656,12 @@ function AudioVideoBlock({
       <div className="flex gap-2">
         <Input
           value={content.url || ''}
-          onChange={(e) =>
-            onUpdate({ ...content, url: e.target.value, type: mediaType })
-          }
+          onChange={(e) => onUpdate({ ...content, url: e.target.value, type: mediaType })}
           placeholder="Media URL or upload..."
           className="flex-1"
         />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <Upload className="h-4 w-4 mr-2" />
+        <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+          <Upload className="mr-2 h-4 w-4" />
           Upload
         </Button>
         <input
@@ -706,7 +679,7 @@ function AudioVideoBlock({
               <source src={content.url} />
             </audio>
           ) : (
-            <video controls className="w-full max-h-[400px]">
+            <video controls className="max-h-[400px] w-full">
               <source src={content.url} />
             </video>
           )}
@@ -768,21 +741,16 @@ function ChecklistBlock({
           className="flex-1"
         />
         <Button variant="outline" size="sm" onClick={addItem}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           Add
         </Button>
       </div>
       <div className="space-y-2">
         {(content.items || []).map((item) => (
           <div key={item.id} className="flex items-center gap-2">
-            <Checkbox
-              checked={item.completed}
-              onCheckedChange={() => toggleItem(item.id)}
-            />
+            <Checkbox checked={item.completed} onCheckedChange={() => toggleItem(item.id)} />
             <span
-              className={`flex-1 ${
-                item.completed ? 'line-through text-muted-foreground' : ''
-              }`}
+              className={`flex-1 ${item.completed ? 'text-muted-foreground line-through' : ''}`}
             >
               {item.text}
             </span>
@@ -797,7 +765,7 @@ function ChecklistBlock({
           </div>
         ))}
         {(content.items || []).length === 0 && (
-          <p className="text-sm text-muted-foreground text-center py-4">
+          <p className="py-4 text-center text-sm text-muted-foreground">
             No tasks yet. Add one above!
           </p>
         )}

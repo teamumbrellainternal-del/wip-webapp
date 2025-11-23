@@ -276,31 +276,51 @@ const pendingUploads = storageService.getUploadIntents()
 storageService.clearAll()
 ```
 
-## Migration to Real Services (M10)
+## Migration to Real Services
 
-When migrating to real services in M10:
+### ✅ Email Service - Connected and Ready!
+
+The **Resend email service** is now connected to the factory and ready for production use!
+
+**To enable in production:**
+1. Configure API credential:
+   ```bash
+   wrangler secret put RESEND_API_KEY --env production
+   ```
+
+2. Set environment variable in `wrangler.toml`:
+   ```toml
+   [env.production]
+   USE_MOCKS = "false"
+   ```
+
+3. Ensure D1 database is configured and accessible
+
+**Features when enabled:**
+- ✅ Real email delivery via Resend API
+- ✅ Failed email queue with retry logic
+- ✅ Delivery tracking and logging
+- ✅ Unsubscribe list management
+- ✅ Automatic fallback to mock if real service fails
+
+### Remaining Services (Future Migration)
+
+When migrating remaining services:
 
 1. **Configure API credentials** in Cloudflare Workers secrets:
    ```bash
-   wrangler secret put RESEND_API_KEY
    wrangler secret put TWILIO_ACCOUNT_SID
    wrangler secret put TWILIO_AUTH_TOKEN
    wrangler secret put ANTHROPIC_API_KEY
    ```
 
-2. **Set environment variable** in `wrangler.toml`:
-   ```toml
-   [vars]
-   USE_MOCKS = "false"
-   ```
+2. **Test each service individually**:
+   - Email service is already connected ✅
+   - Next: SMS service (Twilio)
+   - Then: AI service (Claude)
+   - Finally: Storage service (R2)
 
-3. **Test each service individually**:
-   - Start with one service (e.g., email)
-   - Verify real API integration works
-   - Monitor for errors and API costs
-   - Migrate next service once stable
-
-4. **Keep mocks available** for development:
+3. **Keep mocks available** for development:
    - Use `USE_MOCKS = "true"` in dev environment
    - Use `USE_MOCKS = "false"` in production
    - Developers can still work without real credentials

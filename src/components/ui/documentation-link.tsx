@@ -1,5 +1,5 @@
-import type React from "react"
-import { ExternalLink } from "lucide-react"
+import type React from 'react'
+import { ExternalLink } from 'lucide-react'
 
 interface DocumentationLinkProps {
   href: string

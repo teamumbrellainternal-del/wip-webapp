@@ -36,9 +36,9 @@ export default function SSOCallbackPage() {
 
   if (DEMO_MODE) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-12 w-12 animate-spin mx-auto text-purple-600" />
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950">
+        <div className="space-y-4 text-center">
+          <Loader2 className="mx-auto h-12 w-12 animate-spin text-purple-600" />
           <h2 className="text-xl font-semibold">Demo mode active</h2>
           <p className="text-muted-foreground">Redirecting to the dashboard...</p>
         </div>
@@ -47,9 +47,9 @@ export default function SSOCallbackPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950">
-      <div className="text-center space-y-4">
-        <Loader2 className="h-12 w-12 animate-spin mx-auto text-purple-600" />
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950">
+      <div className="space-y-4 text-center">
+        <Loader2 className="mx-auto h-12 w-12 animate-spin text-purple-600" />
         <h2 className="text-xl font-semibold">Completing sign-in...</h2>
         <p className="text-muted-foreground">Please wait while we set up your account</p>
       </div>

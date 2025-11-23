@@ -264,6 +264,9 @@ export class MockD1Database implements D1Database {
     this.tables.set('files', new Map())
     this.tables.set('analytics_daily', new Map())
     this.tables.set('violet_prompts', new Map())
+    this.tables.set('email_delivery_log', new Map())
+    this.tables.set('email_delivery_queue', new Map())
+    this.tables.set('unsubscribe_list', new Map())
   }
 
   prepare(query: string): D1PreparedStatement {
@@ -387,6 +390,31 @@ export class MockD1Database implements D1Database {
       }
     }
 
+    // Email delivery queue
+    if (query.includes('from email_delivery_queue')) {
+      const queue = this.tables.get('email_delivery_queue')!
+
+      if (query.includes('where status') && query.includes('order by created_at')) {
+        const results = Array.from(queue.values())
+          .filter((item) => item.status === values[0])
+          .filter((item) => !values[1] || !item.nextRetryAt || item.nextRetryAt <= values[1])
+          .sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''))
+          .slice(0, query.includes('limit') ? 100 : undefined)
+
+        return mode === 'all' ? results : results[0] || null
+      }
+    }
+
+    // Unsubscribe list
+    if (query.includes('from unsubscribe_list')) {
+      const unsubscribeList = this.tables.get('unsubscribe_list')!
+
+      if (query.includes('where email')) {
+        const result = Array.from(unsubscribeList.values()).find((entry) => entry.email === values[0])
+        return mode === 'all' ? (result ? [result] : []) : result || null
+      }
+    }
+
     return mode === 'all' ? [] : null
   }
 
@@ -452,6 +480,70 @@ export class MockD1Database implements D1Database {
       return { changes: 1 }
     }
 
+    // Email delivery log
+    if (query.includes('into email_delivery_log')) {
+      const logs = this.tables.get('email_delivery_log')!
+      const id = values[0]
+      logs.set(id, {
+        id,
+        toEmail: values[1],
+        subject: values[2],
+        templateType: values[3],
+        status: values[4],
+        errorMessage: values[5],
+        externalId: values[6],
+        artistId: values[7],
+        createdAt: values[8],
+      })
+      return { changes: 1 }
+    }
+
+    // Email delivery queue
+    if (query.includes('into email_delivery_queue')) {
+      const queue = this.tables.get('email_delivery_queue')!
+      const id = values[0]
+      queue.set(id, {
+        id,
+        toEmail: values[1],
+        fromEmail: values[2],
+        subject: values[3],
+        htmlBody: values[4],
+        textBody: values[5],
+        templateType: values[6],
+        retryCount: values[7],
+        maxRetries: values[8],
+        nextRetryAt: values[9],
+        status: values[10],
+        artistId: values[11],
+        createdAt: values[12],
+        updatedAt: values[13],
+        lastError: null,
+      })
+      return { changes: 1 }
+    }
+
+    // Unsubscribe list
+    if (query.includes('into unsubscribe_list') || query.includes('insert or ignore into unsubscribe_list')) {
+      const unsubscribeList = this.tables.get('unsubscribe_list')!
+      const id = values[0]
+      const email = values[1]
+
+      // Check if email already exists (for INSERT OR IGNORE)
+      const exists = Array.from(unsubscribeList.values()).some((entry) => entry.email === email)
+      if (query.includes('or ignore') && exists) {
+        return { changes: 0 }
+      }
+
+      unsubscribeList.set(id, {
+        id,
+        email,
+        artistId: values[2],
+        reason: values[3],
+        createdAt: values[4],
+      })
+      return { changes: 1 }
+    }
+
     return { changes: 1 }
   }
 
@@ -477,6 +569,42 @@ export class MockD1Database implements D1Database {
         // Update fields based on query
         Object.assign(artist, { updated_at: new Date().toISOString() })
         artists.set(artistId, artist)
+        return { changes: 1 }
+      }
+    }
+
+    // Email delivery queue updates
+    if (query.includes('update email_delivery_queue')) {
+      const queue = this.tables.get('email_delivery_queue')!
+      const itemId = values[values.length - 1]
+      const item = queue.get(itemId)
+
+      if (item) {
+        const now = new Date().toISOString()
+
+        // Update status
+        if (query.includes('set status')) {
+          item.status = values[0]
+          item.updatedAt = values[1] || now
+        }
+
+        // Update retry count and next retry time
+        if (query.includes('retry_count')) {
+          item.retryCount = values[0]
+          item.nextRetryAt = values[1]
+          item.lastError = values[2]
+          item.status = values[3]
+          item.updatedAt = values[4] || now
+        }
+
+        // Update last error
+        if (query.includes('last_error') && !query.includes('retry_count')) {
+          item.status = values[0]
+          item.lastError = values[1]
+          item.updatedAt = values[2] || now
+        }
+
+        queue.set(itemId, item)
         return { changes: 1 }
       }
     }

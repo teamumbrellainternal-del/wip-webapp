@@ -1,5 +1,5 @@
-import type React from "react"
-import { cn } from "@/lib/utils"
+import type React from 'react'
+import { cn } from '@/lib/utils'
 
 interface ConditionalFieldProps {
   show: boolean
@@ -8,7 +8,12 @@ interface ConditionalFieldProps {
   animation?: boolean
 }
 
-export function ConditionalField({ show, children, className, animation = true }: ConditionalFieldProps) {
+export function ConditionalField({
+  show,
+  children,
+  className,
+  animation = true,
+}: ConditionalFieldProps) {
   if (!show && !animation) {
     return null
   }
@@ -16,9 +21,9 @@ export function ConditionalField({ show, children, className, animation = true }
   return (
     <div
       className={cn(
-        "transition-all duration-200 overflow-hidden",
-        show ? "max-h-screen opacity-100" : "max-h-0 opacity-0",
-        className,
+        'overflow-hidden transition-all duration-200',
+        show ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0',
+        className
       )}
       aria-hidden={!show}
     >

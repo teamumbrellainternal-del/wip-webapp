@@ -28,7 +28,10 @@ export function SessionTimeoutModal({ isOpen }: SessionTimeoutModalProps) {
   useEffect(() => {
     if (isOpen) {
       // Save current location for post-login redirect
-      localStorage.setItem('umbrella_pre_timeout_url', window.location.pathname + window.location.search)
+      localStorage.setItem(
+        'umbrella_pre_timeout_url',
+        window.location.pathname + window.location.search
+      )
 
       // Save timestamp for cleanup of stale data
       localStorage.setItem('umbrella_timeout_timestamp', Date.now().toString())
@@ -50,9 +53,11 @@ export function SessionTimeoutModal({ isOpen }: SessionTimeoutModalProps) {
         const formValues: Record<string, any> = {}
 
         inputs.forEach((input) => {
-          if (input instanceof HTMLInputElement ||
-              input instanceof HTMLTextAreaElement ||
-              input instanceof HTMLSelectElement) {
+          if (
+            input instanceof HTMLInputElement ||
+            input instanceof HTMLTextAreaElement ||
+            input instanceof HTMLSelectElement
+          ) {
             const name = input.name || input.id
             if (name && input.value) {
               // Skip password fields for security
@@ -84,7 +89,7 @@ export function SessionTimeoutModal({ isOpen }: SessionTimeoutModalProps) {
 
   const cleanupStaleFormData = () => {
     try {
-      const oneHourAgo = Date.now() - (60 * 60 * 1000)
+      const oneHourAgo = Date.now() - 60 * 60 * 1000
 
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i)
@@ -104,7 +109,7 @@ export function SessionTimeoutModal({ isOpen }: SessionTimeoutModalProps) {
     // Redirect to Clerk sign-in
     // After sign-in, user will be redirected back via returnUrl or we can check localStorage
     redirectToSignIn({
-      redirectUrl: window.location.href
+      redirectUrl: window.location.href,
     })
   }
 
@@ -117,9 +122,9 @@ export function SessionTimeoutModal({ isOpen }: SessionTimeoutModalProps) {
         hideCloseButton
       >
         <DialogHeader>
-          <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
-              <AlertCircle className="w-6 h-6 text-yellow-600 dark:text-yellow-500" />
+          <div className="mb-4 flex justify-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/30">
+              <AlertCircle className="h-6 w-6 text-yellow-600 dark:text-yellow-500" />
             </div>
           </div>
           <DialogTitle className="text-center">Session Expired</DialogTitle>

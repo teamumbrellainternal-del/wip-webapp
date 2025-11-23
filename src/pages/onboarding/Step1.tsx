@@ -89,7 +89,8 @@ export default function OnboardingStep1() {
         legal_name: data.legal_name || undefined,
         pronouns: data.pronouns || undefined,
         inspirations: inspirationsArray,
-        genre_primary: data.genre_primary && data.genre_primary.length > 0 ? data.genre_primary : undefined,
+        genre_primary:
+          data.genre_primary && data.genre_primary.length > 0 ? data.genre_primary : undefined,
       }
 
       // Call API
@@ -124,16 +125,16 @@ export default function OnboardingStep1() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950 p-4">
-      <div className="max-w-3xl mx-auto py-8">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-slate-50 p-4 dark:from-slate-950 dark:to-purple-950">
+      <div className="mx-auto max-w-3xl py-8">
         {/* Progress Indicator */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-2 flex items-center justify-between">
             <span className="text-sm font-medium text-muted-foreground">Step 1 of 5</span>
             <span className="text-sm font-medium text-muted-foreground">20% Complete</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-            <div className="bg-purple-600 h-2.5 rounded-full" style={{ width: '20%' }}></div>
+          <div className="h-2.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+            <div className="h-2.5 rounded-full bg-purple-600" style={{ width: '20%' }}></div>
           </div>
         </div>
 
@@ -148,7 +149,8 @@ export default function OnboardingStep1() {
             <Alert className="mb-6 border-purple-600 bg-purple-50 dark:bg-purple-950">
               <Lightbulb className="h-4 w-4 text-purple-600" />
               <AlertDescription className="text-purple-900 dark:text-purple-100">
-                The better your responses to this form, the better the platform will be able to help you grow!
+                The better your responses to this form, the better the platform will be able to help
+                you grow!
               </AlertDescription>
             </Alert>
 
@@ -172,7 +174,8 @@ export default function OnboardingStep1() {
                       value: 100,
                       message: 'Artist/stage name must be 100 characters or less',
                     },
-                    validate: (value) => value.trim().length > 0 || 'Artist/stage name cannot be empty',
+                    validate: (value) =>
+                      value.trim().length > 0 || 'Artist/stage name cannot be empty',
                   }}
                   render={({ field }) => (
                     <FormItem>
@@ -188,7 +191,7 @@ export default function OnboardingStep1() {
                 />
 
                 {/* Location Fields (Required) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="location_city"
@@ -268,7 +271,7 @@ export default function OnboardingStep1() {
                   render={() => (
                     <FormItem>
                       <FormLabel>Primary Genres (Optional, Select up to 3)</FormLabel>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
+                      <div className="mt-2 grid grid-cols-2 gap-3 md:grid-cols-3">
                         {GENRE_OPTIONS.map((genre) => {
                           const isSelected = selectedGenres.includes(genre.id)
                           const isDisabled = !isSelected && selectedGenres.length >= 3
@@ -276,27 +279,42 @@ export default function OnboardingStep1() {
                           return (
                             <div
                               key={genre.id}
-                              className={`flex items-center space-x-2 p-3 border rounded-lg cursor-pointer transition-colors ${
+                              className={`flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors ${
                                 isSelected
                                   ? 'border-purple-600 bg-purple-50 dark:bg-purple-950'
                                   : isDisabled
-                                  ? 'border-gray-200 bg-gray-50 dark:bg-gray-900 opacity-50 cursor-not-allowed'
-                                  : 'border-gray-200 hover:border-purple-400 dark:border-gray-700'
+                                    ? 'cursor-not-allowed border-gray-200 bg-gray-50 opacity-50 dark:bg-gray-900'
+                                    : 'border-gray-200 hover:border-purple-400 dark:border-gray-700'
                               }`}
-                              onClick={() => !isDisabled && handleGenreToggle(genre.id)}
+                              onClick={(e) => {
+                                if (e.target !== e.currentTarget) return
+                                if (!isDisabled) handleGenreToggle(genre.id)
+                              }}
                             >
-                              <Checkbox
-                                checked={isSelected}
-                                disabled={isDisabled}
-                                onCheckedChange={() => handleGenreToggle(genre.id)}
-                              />
-                              <Label className="cursor-pointer">{genre.label}</Label>
+                              <div className="pointer-events-none flex items-center space-x-2">
+                                <Checkbox
+                                  checked={isSelected}
+                                  disabled={isDisabled}
+                                  onCheckedChange={() => handleGenreToggle(genre.id)}
+                                  className="pointer-events-auto"
+                                />
+                                <Label
+                                  className="pointer-events-auto cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    if (!isDisabled) handleGenreToggle(genre.id)
+                                  }}
+                                >
+                                  {genre.label}
+                                </Label>
+                              </div>
                             </div>
                           )
                         })}
                       </div>
                       <FormDescription>
-                        Select up to 3 genres that best describe your music ({selectedGenres.length}/3 selected)
+                        Select up to 3 genres that best describe your music ({selectedGenres.length}
+                        /3 selected)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -313,7 +331,11 @@ export default function OnboardingStep1() {
                   >
                     Back
                   </Button>
-                  <Button type="submit" disabled={isLoading} className="bg-purple-600 hover:bg-purple-700">
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

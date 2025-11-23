@@ -1,10 +1,10 @@
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Input } from "@/components/ui/input"
-import { FormDescription } from "@/components/ui/form"
-import { HelpCircle } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useState } from "react"
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { Input } from '@/components/ui/input'
+import { FormDescription } from '@/components/ui/form'
+import { HelpCircle } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { useState } from 'react'
 
 interface CommandFieldGroupProps {
   label: string
@@ -26,7 +26,7 @@ export function CommandFieldGroup({
   id,
 }: CommandFieldGroupProps) {
   const [isOverridden, setIsOverridden] = useState(value !== defaultValue)
-  const fieldId = id || label.toLowerCase().replace(/\s+/g, "-")
+  const fieldId = id || label.toLowerCase().replace(/\s+/g, '-')
 
   const handleOverrideChange = (checked: boolean) => {
     setIsOverridden(checked)
@@ -62,7 +62,7 @@ export function CommandFieldGroup({
         id={fieldId}
         value={isOverridden ? value : defaultValue}
         onChange={(e) => onChange(e.target.value)}
-        className={!isOverridden ? "bg-muted text-muted-foreground" : ""}
+        className={!isOverridden ? 'bg-muted text-muted-foreground' : ''}
         readOnly={!isOverridden}
       />
       {description && <FormDescription>{description}</FormDescription>}

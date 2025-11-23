@@ -8,6 +8,7 @@
  * - For now, just UI structure (actual notifications can be wired later)
  */
 
+import { useNavigate } from 'react-router-dom'
 import { Bell, Calendar, MessageSquare, CheckCircle } from 'lucide-react'
 import {
   DropdownMenu,
@@ -55,8 +56,35 @@ const mockNotifications = [
 ]
 
 export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps) {
+  const navigate = useNavigate()
   const hasNotifications = mockNotifications.length > 0
   const unreadCount = mockNotifications.filter((n) => n.unread).length
+
+  const handleNotificationClick = (notification: (typeof mockNotifications)[0]) => {
+    // Navigate based on notification type
+    switch (notification.type) {
+      case 'booking':
+        // Extract gig ID from message (in real implementation, this would come from notification data)
+        navigate('/gigs')
+        break
+      case 'message':
+        navigate('/messages')
+        break
+      case 'profile':
+        navigate('/profile/edit')
+        break
+      default:
+        console.log('Unknown notification type:', notification.type)
+    }
+    onOpenChange(false)
+  }
+
+  const handleMarkAllAsRead = () => {
+    // TODO: Call API endpoint when available
+    // await apiClient.markAllNotificationsAsRead()
+    console.log('Mark all notifications as read')
+    // In real implementation, this would update the notifications state
+  }
 
   // This component is rendered as a child of AppLayout, so we need to
   // create a portal-like behavior using the dropdown menu pattern
@@ -78,9 +106,9 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
 
         {!hasNotifications && (
           <div className="py-12 text-center">
-            <Bell className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <Bell className="mx-auto mb-4 h-12 w-12 text-muted-foreground opacity-50" />
             <p className="text-sm text-muted-foreground">No new notifications</p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="mt-1 text-xs text-muted-foreground">
               We'll notify you when something happens
             </p>
           </div>
@@ -94,40 +122,28 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
                 return (
                   <DropdownMenuItem
                     key={notification.id}
-                    className={`cursor-pointer p-3 ${
-                      notification.unread ? 'bg-accent' : ''
-                    }`}
-                    onClick={() => {
-                      // TODO: Handle notification click
-                      console.log('Notification clicked:', notification.id)
-                      onOpenChange(false)
-                    }}
+                    className={`cursor-pointer p-3 ${notification.unread ? 'bg-accent' : ''}`}
+                    onClick={() => handleNotificationClick(notification)}
                   >
-                    <div className="flex items-start gap-3 w-full">
+                    <div className="flex w-full items-start gap-3">
                       <div
-                        className={`flex-shrink-0 mt-1 ${
-                          notification.unread
-                            ? 'text-primary'
-                            : 'text-muted-foreground'
+                        className={`mt-1 flex-shrink-0 ${
+                          notification.unread ? 'text-primary' : 'text-muted-foreground'
                         }`}
                       >
                         <Icon className="h-4 w-4" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className={`text-sm ${
-                            notification.unread ? 'font-medium' : ''
-                          }`}
-                        >
+                      <div className="min-w-0 flex-1">
+                        <p className={`text-sm ${notification.unread ? 'font-medium' : ''}`}>
                           {notification.message}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           {notification.timestamp}
                         </p>
                       </div>
                       {notification.unread && (
                         <div className="flex-shrink-0">
-                          <div className="w-2 h-2 rounded-full bg-primary" />
+                          <div className="h-2 w-2 rounded-full bg-primary" />
                         </div>
                       )}
                     </div>
@@ -142,15 +158,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
           <>
             <DropdownMenuSeparator />
             <div className="p-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full"
-                onClick={() => {
-                  // TODO: Mark all as read
-                  console.log('Mark all as read')
-                }}
-              >
+              <Button variant="ghost" size="sm" className="w-full" onClick={handleMarkAllAsRead}>
                 Mark all as read
               </Button>
             </div>

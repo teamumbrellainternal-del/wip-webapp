@@ -10,9 +10,9 @@ export default function PrivacyPage() {
         description="Learn about how Umbrella collects, uses, and protects your personal information. Read our comprehensive Privacy Policy."
         url="/privacy"
       />
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto max-w-4xl px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold tracking-tight mb-2">Privacy Policy</h1>
+          <h1 className="mb-2 text-4xl font-bold tracking-tight">Privacy Policy</h1>
           <p className="text-muted-foreground">Last updated: November 17, 2025</p>
         </div>
 
@@ -63,10 +63,14 @@ export default function PrivacyPage() {
                 following circumstances:
               </p>
               <ul>
-                <li>With other users as part of the platform functionality (e.g., your public profile)</li>
+                <li>
+                  With other users as part of the platform functionality (e.g., your public profile)
+                </li>
                 <li>With service providers who perform services on our behalf</li>
                 <li>To comply with legal obligations</li>
-                <li>To protect the rights, property, and safety of Umbrella, our users, or others</li>
+                <li>
+                  To protect the rights, property, and safety of Umbrella, our users, or others
+                </li>
                 <li>With your consent or at your direction</li>
               </ul>
             </CardContent>
@@ -103,9 +107,7 @@ export default function PrivacyPage() {
                   prompts and content for AI features (Violet).
                 </li>
               </ul>
-              <p>
-                We ensure these providers maintain appropriate security and privacy standards.
-              </p>
+              <p>We ensure these providers maintain appropriate security and privacy standards.</p>
             </CardContent>
           </Card>
 
@@ -138,16 +140,16 @@ export default function PrivacyPage() {
               </p>
               <ul>
                 <li>
-                  <strong>Right to Know:</strong> You can request information about the personal data
-                  we collect, use, and share.
+                  <strong>Right to Know:</strong> You can request information about the personal
+                  data we collect, use, and share.
                 </li>
                 <li>
                   <strong>Right to Delete:</strong> You can request deletion of your personal data
                   through the account deletion feature in your settings.
                 </li>
                 <li>
-                  <strong>Right to Opt-Out:</strong> We do not sell your personal information. If our
-                  practices change, we will update this policy and provide an opt-out mechanism.
+                  <strong>Right to Opt-Out:</strong> We do not sell your personal information. If
+                  our practices change, we will update this policy and provide an opt-out mechanism.
                 </li>
                 <li>
                   <strong>Right to Non-Discrimination:</strong> We will not discriminate against you
@@ -195,9 +197,9 @@ export default function PrivacyPage() {
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
                 Our Service is not directed to children under the age of 13. We do not knowingly
-                collect personal information from children under 13. If you become aware that a child
-                has provided us with personal information, please contact us. If we discover that a
-                child under 13 has provided us with personal information, we will delete such
+                collect personal information from children under 13. If you become aware that a
+                child has provided us with personal information, please contact us. If we discover
+                that a child under 13 has provided us with personal information, we will delete such
                 information from our systems.
               </p>
             </CardContent>
@@ -209,9 +211,10 @@ export default function PrivacyPage() {
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                We may update this Privacy Policy from time to time. We will notify you of any changes
-                by posting the new Privacy Policy on this page and updating the "Last updated" date.
-                You are advised to review this Privacy Policy periodically for any changes.
+                We may update this Privacy Policy from time to time. We will notify you of any
+                changes by posting the new Privacy Policy on this page and updating the "Last
+                updated" date. You are advised to review this Privacy Policy periodically for any
+                changes.
               </p>
             </CardContent>
           </Card>
@@ -221,9 +224,7 @@ export default function PrivacyPage() {
               <CardTitle>10. Contact Us</CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <p>
-                If you have any questions about this Privacy Policy, please contact us at:
-              </p>
+              <p>If you have any questions about this Privacy Policy, please contact us at:</p>
               <ul>
                 <li>
                   Email:{' '}
@@ -241,11 +242,11 @@ export default function PrivacyPage() {
             </CardContent>
           </Card>
 
-          <div className="mt-8 p-6 bg-muted rounded-lg">
+          <div className="mt-8 rounded-lg bg-muted p-6">
             <p className="text-sm text-muted-foreground">
-              <strong>Note:</strong> This privacy policy is provided for MVP testing purposes. Before
-              public launch, this content must be reviewed and approved by legal counsel to ensure
-              compliance with all applicable privacy laws and regulations.
+              <strong>Note:</strong> This privacy policy is provided for MVP testing purposes.
+              Before public launch, this content must be reviewed and approved by legal counsel to
+              ensure compliance with all applicable privacy laws and regulations.
             </p>
           </div>
         </div>
