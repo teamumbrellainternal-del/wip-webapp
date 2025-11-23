@@ -264,6 +264,8 @@ export class MockD1Database implements D1Database {
     this.tables.set('files', new Map())
     this.tables.set('analytics_daily', new Map())
     this.tables.set('violet_prompts', new Map())
+    this.tables.set('sms_delivery_log', new Map())
+    this.tables.set('sms_delivery_queue', new Map())
   }
 
   prepare(query: string): D1PreparedStatement {
@@ -387,6 +389,61 @@ export class MockD1Database implements D1Database {
       }
     }
 
+    // SMS delivery log
+    if (query.includes('from sms_delivery_log')) {
+      const logs = this.tables.get('sms_delivery_log')!
+
+      if (query.includes('where artist_id') && query.includes('created_at >=')) {
+        const [artistId, cutoffDate] = values
+        const results = Array.from(logs.values()).filter(
+          (log) => log.artist_id === artistId && log.created_at >= cutoffDate
+        )
+
+        if (query.includes('count(*)')) {
+          const totalSent = results.length
+          const successCount = results.filter(
+            (log) => log.status === 'success' || log.status === 'delivered'
+          ).length
+          const failureCount = results.filter(
+            (log) => log.status === 'failed' || log.status === 'undelivered'
+          ).length
+          return mode === 'all'
+            ? [{ total_sent: totalSent, success_count: successCount, failure_count: failureCount }]
+            : { total_sent: totalSent, success_count: successCount, failure_count: failureCount }
+        }
+
+        return mode === 'all' ? results : results[0] || null
+      }
+
+      if (query.includes('where id')) {
+        const result = logs.get(values[0])
+        return mode === 'all' ? (result ? [result] : []) : result || null
+      }
+
+      if (mode === 'all' && !query.includes('where')) {
+        return Array.from(logs.values())
+      }
+    }
+
+    // SMS delivery queue
+    if (query.includes('from sms_delivery_queue')) {
+      const queue = this.tables.get('sms_delivery_queue')!
+
+      if (query.includes('where status')) {
+        const results = Array.from(queue.values()).filter((item) => item.status === values[0])
+        return mode === 'all' ? results : results[0] || null
+      }
+
+      if (query.includes('where id')) {
+        const result = queue.get(values[0])
+        return mode === 'all' ? (result ? [result] : []) : result || null
+      }
+
+      if (mode === 'all' && !query.includes('where')) {
+        return Array.from(queue.values())
+      }
+    }
+
     return mode === 'all' ? [] : null
   }
 
@@ -452,6 +509,40 @@ export class MockD1Database implements D1Database {
       return { changes: 1 }
     }
 
+    if (query.includes('into sms_delivery_log')) {
+      const logs = this.tables.get('sms_delivery_log')!
+      const id = values[0]
+      logs.set(id, {
+        id,
+        to_phone: values[1],
+        message_type: values[2],
+        status: values[3],
+        error_message: values[4] || null,
+        external_id: values[5] || null,
+        artist_id: values[6] || null,
+        created_at: values[7],
+      })
+      return { changes: 1 }
+    }
+
+    if (query.includes('into sms_delivery_queue')) {
+      const queue = this.tables.get('sms_delivery_queue')!
+      const id = values[0]
+      queue.set(id, {
+        id,
+        artist_id: values[1],
+        to_phone: values[2],
+        message: values[3],
+        status: values[4],
+        retry_count: values[5] || 0,
+        error_message: values[6] || null,
+        scheduled_at: values[7],
+        processed_at: values[8] || null,
+        created_at: values[9],
+      })
+      return { changes: 1 }
+    }
+
     return { changes: 1 }
   }
 
@@ -477,6 +568,32 @@ export class MockD1Database implements D1Database {
         // Update fields based on query
         Object.assign(artist, { updated_at: new Date().toISOString() })
         artists.set(artistId, artist)
+        return { changes: 1 }
+      }
+    }
+
+    if (query.includes('update sms_delivery_queue')) {
+      const queue = this.tables.get('sms_delivery_queue')!
+      const queueId = values[values.length - 1]
+      const item = queue.get(queueId)
+
+      if (item) {
+        // Update fields based on query
+        if (query.includes('status')) {
+          item.status = values[0]
+        }
+        if (query.includes('retry_count')) {
+          const retryIndex = query.includes('status') ? 1 : 0
+          item.retry_count = values[retryIndex]
+        }
+        if (query.includes('error_message')) {
+          const errorIndex = query.includes('status') && query.includes('retry_count') ? 2 : query.includes('status') || query.includes('retry_count') ? 1 : 0
+          item.error_message = values[errorIndex]
+        }
+        if (query.includes('processed_at')) {
+          item.processed_at = new Date().toISOString()
+        }
+        queue.set(queueId, item)
         return { changes: 1 }
       }
     }
