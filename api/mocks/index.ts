@@ -10,8 +10,13 @@ import { MockR2Service, createMockR2Service } from './r2'
 
 // Real service imports (when available in M10)
 // import { ResendEmailService, createResendService } from '../services/resend'
-// import { TwilioSMSService, createTwilioService } from '../services/twilio'
+import { TwilioSMSService, createTwilioService } from '../services/twilio'
 // import { ClaudeAPIService, createClaudeService } from '../services/claude'
+
+/**
+ * Union type for SMS service (supports both mock and real)
+ */
+type SMSService = MockTwilioService | TwilioSMSService
 
 /**
  * Environment interface for type safety
@@ -53,27 +58,35 @@ export function getEmailService(env: Env): MockResendService {
 /**
  * Get SMS service (mock or real based on environment)
  * @param env - Environment variables
- * @returns SMS service instance
+ * @returns SMS service instance (mock or real)
  */
-export function getSMSService(env: Env): MockTwilioService {
+export function getSMSService(env: Env): SMSService {
   const useMocks = env.USE_MOCKS === 'true' || env.USE_MOCKS === undefined
 
-  if (useMocks || !env.TWILIO_ACCOUNT_SID || !env.TWILIO_AUTH_TOKEN || !env.DB) {
-    console.log('[SERVICE FACTORY] Using mock SMS service')
-    return createMockTwilioService(env.TWILIO_FROM_PHONE)
+  // Check if we should use real service
+  const hasRequiredSecrets = env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN
+  const shouldUseReal = !useMocks && hasRequiredSecrets && env.DB
+
+  if (shouldUseReal) {
+    try {
+      console.log('[SERVICE FACTORY] Using real Twilio SMS service')
+      return createTwilioService(
+        env.TWILIO_ACCOUNT_SID!,
+        env.TWILIO_AUTH_TOKEN!,
+        env.TWILIO_FROM_PHONE || '+15555551234', // Default fallback
+        env.DB!
+      )
+    } catch (error) {
+      console.error(
+        '[SERVICE FACTORY] Failed to initialize real SMS service, falling back to mock:',
+        error
+      )
+      return createMockTwilioService(env.TWILIO_FROM_PHONE)
+    }
   }
 
-  // Real service implementation (M10)
-  // console.log('[SERVICE FACTORY] Using real Twilio SMS service')
-  // return createTwilioService(
-  //   env.TWILIO_ACCOUNT_SID,
-  //   env.TWILIO_AUTH_TOKEN,
-  //   env.TWILIO_FROM_PHONE || '+15555551234',
-  //   env.DB
-  // )
-
-  // Default to mock until M10
-  console.log('[SERVICE FACTORY] Using mock SMS service (real service not yet implemented)')
+  // Default to mock for development/preview or if real service unavailable
+  console.log('[SERVICE FACTORY] Using mock SMS service')
   return createMockTwilioService(env.TWILIO_FROM_PHONE)
 }
 
@@ -144,11 +157,15 @@ export function getServiceStatus(env: Env): {
 } {
   const mockMode = isMockMode(env)
 
+  // Check if real SMS service would be used
+  const hasRequiredSecrets = env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN
+  const smsService = !mockMode && hasRequiredSecrets && env.DB ? 'real' : 'mock'
+
   return {
     mockMode,
     services: {
       email: mockMode || !env.RESEND_API_KEY ? 'mock' : 'real',
-      sms: mockMode || !env.TWILIO_ACCOUNT_SID ? 'mock' : 'real',
+      sms: smsService,
       ai: mockMode || !env.ANTHROPIC_API_KEY ? 'mock' : 'real',
       storage: mockMode || !env.BUCKET ? 'mock' : 'real',
     },
