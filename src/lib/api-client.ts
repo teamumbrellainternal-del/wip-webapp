@@ -79,13 +79,18 @@ class APIClient {
       return MOCK_DASHBOARD_METRICS as unknown as T
     }
     
-    // Return empty arrays for unsupported list endpoints to prevent crashes
+    // Return empty arrays/objects for unsupported list/action endpoints to prevent crashes
     if (endpoint.includes('/reviews') || endpoint.includes('/tracks') || endpoint.includes('/lists')) {
       return [] as unknown as T
+    }
+    
+    if (endpoint.includes('/apply') || endpoint.includes('/follow') || endpoint.includes('/unfollow')) {
+      return { success: true } as unknown as T
     }
 
     if (endpoint.includes('/gigs')) {
       if (endpoint.includes('/gigs/')) {
+        // Check if it's a specific gig ID
         return MOCK_GIGS[0] as unknown as T
       }
       return {
@@ -111,7 +116,7 @@ class APIClient {
     }
 
     if (endpoint.includes('/conversations')) {
-      if (endpoint.includes('/messages')) {
+      if (endpoint.includes('/messages') || endpoint.includes('/new')) {
         return MOCK_MESSAGES as unknown as T
       }
       return MOCK_CONVERSATIONS as unknown as T
