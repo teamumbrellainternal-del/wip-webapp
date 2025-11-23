@@ -10,14 +10,13 @@
  */
 
 import { useUser, useAuth as useClerkAuth } from '@clerk/clerk-react'
-import type { UserResource } from '@clerk/types'
 
 /**
  * Return type for the useAuth hook
  */
 export interface UseAuthReturn {
   /** Current user object from Clerk (null if not authenticated) */
-  user: UserResource | null
+  user: ReturnType<typeof useUser>['user']
   /** True while user data is being loaded */
   loading: boolean
   /** True if user is authenticated */
