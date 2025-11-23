@@ -1,1610 +1,790 @@
-# 4 Parallel Claude Code Sessions - Infrastructure Build
+# Session Management - Umbrella MVP
 
-Each session creates a standalone PR to `dev` branch with non-overlapping files. All sessions run in parallel.
-
----
-
-## **Session 1: Backend API Infrastructure**
-**Branch:** `infra/backend-api-auth`  
-**Owner:** Backend foundation + auth patterns
-
-### **Files to Reference from `/inspiration/app.leger.run`**
-```
-inspiration/app.leger.run/api/
-├── index.ts                    # Worker entry point pattern
-├── middleware/auth.ts          # JWT validation (adapt)
-├── utils/
-│   ├── jwt.ts                  # Token utilities
-│   ├── crypto.ts               # Encryption/hashing
-│   ├── encoding.ts             # Base64, URL encoding
-│   └── uuid.ts                 # ID generation
-└── routes/
-    └── auth.ts                 # Auth route pattern
-```
-
-### **Files to Create (Session 1 writes these)**
-```
-umbrella/
-├── api/
-│   ├── index.ts                # NEW - Umbrella worker entry
-│   ├── middleware/
-│   │   ├── auth.ts             # ADAPTED - Cloudflare Access JWT
-│   │   ├── cors.ts             # NEW
-│   │   └── error-handler.ts   # NEW
-│   ├── routes/
-│   │   ├── auth.ts             # NEW - OAuth callback, session check
-│   │   └── health.ts           # NEW - Health check endpoint
-│   └── utils/
-│       ├── jwt.ts              # COPIED from inspiration
-│       ├── crypto.ts           # COPIED from inspiration
-│       ├── encoding.ts         # COPIED from inspiration
-│       ├── uuid.ts             # COPIED from inspiration
-│       └── response.ts         # NEW - JSON response helpers
-├── wrangler.toml               # NEW - Full config with D1/KV/R2
-└── .dev.vars.example           # NEW - Environment variables template
-```
-
-### **System Prompt for Session 1**
-
-```markdown
-# Session 1: Backend API Infrastructure
-
-## Context
-You are setting up the backend API foundation for Umbrella, a marketplace connecting artists and venues. Reference the existing Cloudflare Workers patterns in `/inspiration/app.leger.run/api/`.
-
-## Your Mission
-Build the core Worker API with routing, authentication middleware, and utilities.
-
-## Reference Materials
-1. **MUST READ:** `/inspiration/app.leger.run/api/index.ts` - Worker entry point structure
-2. **MUST READ:** `/inspiration/app.leger.run/api/middleware/auth.ts` - Auth middleware pattern
-3. **MUST READ:** `/inspiration/app.leger.run/api/utils/*.ts` - Copy these utilities directly
-4. **MUST READ:** Project root - `architecture.md` and `eng-spec.md`
-
-## Tasks
-
-### 1. Worker Entry Point (`api/index.ts`)
-Create the main Worker with route handling:
-```typescript
-- Router pattern from inspiration/api/index.ts
-- Routes: /v1/auth/*, /v1/health
-- Error boundary
-- CORS handling
-- Bindings: env.DB (D1), env.KV, env.BUCKET (R2)
-```
-
-### 2. Authentication Middleware (`api/middleware/auth.ts`)
-**CRITICAL ADAPTATION NEEDED:**
-- Inspiration uses custom JWT
-- Umbrella uses **Cloudflare Access JWT** (header: `Cf-Access-Jwt-Assertion`)
-- Validate Access token
-- Extract user from `oauth_provider` + `oauth_id`
-- Check `onboarding_complete` flag (architecture.md D-006)
-- Store session in KV (1 hour TTL)
-
-Reference pattern from inspiration but adapt for Access.
-
-### 3. Auth Routes (`api/routes/auth.ts`)
-Implement:
-- `POST /v1/auth/callback` - OAuth callback handler
-  - Validate Cloudflare Access JWT
-  - Look up user in D1 by oauth_id
-  - If new user → create user record
-  - If existing → check onboarding_complete
-  - Return session token
-- `GET /v1/auth/session` - Check session validity
-- `POST /v1/auth/logout` - Clear session from KV
-
-### 4. Utilities (`api/utils/`)
-**COPY DIRECTLY** from inspiration:
-- `jwt.ts`
-- `crypto.ts`
-- `encoding.ts`
-- `uuid.ts`
-
-**CREATE NEW:**
-- `response.ts` - JSON response helpers
-```typescript
-export const successResponse = (data: any, status = 200)
-export const errorResponse = (message: string, status = 400)
-```
-
-### 5. Wrangler Config (`wrangler.toml`)
-Create complete config:
-```toml
-name = "umbrella-api"
-compatibility_date = "2024-01-01"
-
-[env.dev]
-[[env.dev.d1_databases]]
-binding = "DB"
-database_name = "umbrella-dev-db"
-database_id = "TBD"  # Add after creation
-
-[[env.dev.kv_namespaces]]
-binding = "KV"
-id = "TBD"
-
-[[env.dev.r2_buckets]]
-binding = "BUCKET"
-bucket_name = "umbrella-dev-media"
-
-# Add staging and production configs too
-```
-
-### 6. Environment Variables (`.dev.vars.example`)
-```bash
-CLAUDE_API_KEY=sk-...
-RESEND_API_KEY=re_...
-TWILIO_ACCOUNT_SID=AC...
-TWILIO_AUTH_TOKEN=...
-TWILIO_PHONE_NUMBER=+1...
-JWT_SECRET=...
-```
-
-## Documentation Required
-Create `/docs/backend-api-setup.md`:
-
-### Structure:
-```markdown
-# Backend API Infrastructure
-
-## Completed
-- [x] Worker entry point with routing
-- [x] Authentication middleware (Cloudflare Access)
-- [x] Auth routes (callback, session, logout)
-- [x] Utilities copied from boilerplate
-- [x] Wrangler configuration
-
-## API Endpoints Implemented
-- POST /v1/auth/callback - OAuth handler
-- GET /v1/auth/session - Session check
-- POST /v1/auth/logout - Logout
-- GET /v1/health - Health check
-
-## Next Steps (Future Sessions)
-1. Add profile endpoints (GET/PUT /v1/profile)
-2. Add onboarding endpoints (POST /v1/onboarding/*)
-3. Add marketplace endpoints (GET /v1/gigs, /v1/artists)
-4. Add messaging endpoints (GET/POST /v1/conversations/*)
-5. Implement file upload (R2 signed URLs)
-
-## Manual Setup Required
-1. Create D1 database: `wrangler d1 create umbrella-dev-db`
-2. Create KV namespace: `wrangler kv:namespace create KV --preview`
-3. Create R2 bucket: `wrangler r2 bucket create umbrella-dev-media`
-4. Update wrangler.toml with IDs
-5. Configure Cloudflare Access (Apple/Google OAuth)
-6. Add secrets: `wrangler secret put CLAUDE_API_KEY` (etc.)
-
-## Testing
-```bash
-# Run locally
-wrangler dev
-
-# Test auth callback
-curl -X POST http://localhost:8787/v1/auth/callback \
-  -H "Cf-Access-Jwt-Assertion: <jwt>" \
-  -H "Content-Type: application/json"
-
-# Test session
-curl http://localhost:8787/v1/auth/session \
-  -H "Authorization: Bearer <token>"
-```
-
-## Architecture Notes
-- Uses Cloudflare Access for OAuth (no custom OAuth flow)
-- Session tokens stored in KV with 1-hour TTL
-- User lookup by composite key: oauth_provider + oauth_id
-- Onboarding status checked on every authenticated request
-```
-
-## File Boundaries (DO NOT TOUCH)
-❌ Do NOT create any files in:
-- `src/*` (Session 2)
-- `db/*` (Session 3)
-- `.github/*` (Session 4)
-- `scripts/*` (Session 4)
-
-✅ Only create files in:
-- `api/*`
-- `wrangler.toml`
-- `.dev.vars.example`
-- `/docs/backend-api-setup.md`
-
-## Success Criteria
-- [ ] Worker runs with `wrangler dev`
-- [ ] Auth middleware validates Access JWT
-- [ ] Routes return proper JSON responses
-- [ ] Documentation complete with next steps
-- [ ] No file conflicts with other sessions
-```
+**Version:** 1.0
+**Last Updated:** 2025-11-15
+**Status:** Ready for Development
 
 ---
 
-## **Session 2: UI Foundation & Component Library**
-**Branch:** `infra/ui-components-hooks`  
-**Owner:** Frontend foundation
+## Overview
 
-### **Files to Reference**
-```
-inspiration/app.leger.run/src/
-├── components/
-│   ├── ui/*.tsx               # All shadcn components
-│   ├── layout/*.tsx           # AppLayout, PageHeader
-│   ├── theme-provider.tsx
-│   └── ErrorBoundary.tsx
-├── hooks/*.ts                 # All custom hooks
-└── lib/
-    └── utils.ts               # cn() and utilities
-```
+This document defines the session management architecture for Umbrella MVP, including session token format, storage mechanisms, lifecycle management, and security considerations.
 
-### **Files to Create**
-```
-umbrella/src/
-├── components/
-│   ├── ui/                    # COPY ALL from inspiration
-│   ├── layout/                # COPY ALL from inspiration
-│   ├── theme-provider.tsx     # COPIED
-│   ├── theme-toggle.tsx       # COPIED
-│   └── ErrorBoundary.tsx      # COPIED
-├── hooks/
-│   ├── use-toast.ts           # COPIED
-│   ├── use-theme.ts           # COPIED
-│   ├── use-local-storage.ts   # COPIED
-│   ├── use-mobile.tsx         # COPIED
-│   ├── use-auth.ts            # ADAPTED for Umbrella
-│   └── use-api.ts             # NEW - API client hooks
-├── lib/
-│   ├── utils.ts               # COPIED
-│   └── api-client.ts          # ADAPTED - Umbrella endpoints
-├── App.tsx                    # NEW - Root app component
-├── main.tsx                   # NEW - React entry point
-└── index.css                  # COPIED from inspiration
-```
+### Key Design Decisions
 
-### **System Prompt for Session 2**
-
-```markdown
-# Session 2: UI Foundation & Component Library
-
-## Context
-Set up the complete React UI foundation for Umbrella using proven shadcn/ui patterns from the boilerplate.
-
-## Your Mission
-Copy the entire UI component library, hooks, and create the React app shell.
-
-## Reference Materials
-1. **COPY IN BULK:** `/inspiration/app.leger.run/src/components/ui/*.tsx` - All components
-2. **COPY IN BULK:** `/inspiration/app.leger.run/src/components/layout/*.tsx`
-3. **MUST READ:** `/inspiration/app.leger.run/src/hooks/*.ts` - Hook patterns
-4. **MUST ADAPT:** `/inspiration/app.leger.run/src/lib/api-client.ts`
-
-## Tasks
-
-### 1. Copy UI Components (`src/components/ui/`)
-**COPY ALL FILES** from inspiration/app.leger.run/src/components/ui/:
-- accordion.tsx, alert.tsx, badge.tsx, button.tsx, card.tsx, checkbox.tsx
-- dialog.tsx, dropdown-menu.tsx, form.tsx, input.tsx, label.tsx
-- popover.tsx, select.tsx, separator.tsx, sheet.tsx, switch.tsx
-- tabs.tsx, toast.tsx, tooltip.tsx
-- (Copy ALL 40+ components - this is your UI library)
-
-### 2. Copy Layout Components (`src/components/layout/`)
-**COPY ALL:**
-- AppLayout.tsx
-- PageHeader.tsx
-- PageLayout.tsx
-
-### 3. Copy Theme System
-**COPY DIRECTLY:**
-- `src/components/theme-provider.tsx`
-- `src/components/theme-toggle.tsx`
-- `src/components/ErrorBoundary.tsx`
-
-### 4. Copy Hooks (`src/hooks/`)
-**COPY DIRECTLY:**
-- use-toast.ts
-- use-theme.ts
-- use-local-storage.ts
-- use-mobile.tsx
-
-**ADAPT** `use-auth.ts`:
-```typescript
-// Change from leger-labs auth to Umbrella auth
-// Check for oauth_provider + oauth_id instead of API keys
-// Add onboarding_complete check
-```
-
-**CREATE NEW** `use-api.ts`:
-```typescript
-// Generic API hooks for Umbrella endpoints
-export function useProfile() { ... }
-export function useGigs() { ... }
-export function useArtists() { ... }
-```
-
-### 5. Utilities (`src/lib/`)
-**COPY DIRECTLY:**
-- `utils.ts` (the famous `cn()` function)
-
-**ADAPT** `api-client.ts`:
-```typescript
-// Change base URL to /v1/*
-// Umbrella endpoints:
-const endpoints = {
-  auth: {
-    callback: '/v1/auth/callback',
-    session: '/v1/auth/session',
-    logout: '/v1/auth/logout'
-  },
-  profile: {
-    get: '/v1/profile',
-    update: '/v1/profile'
-  },
-  // Add stubs for future endpoints (marketplace, messaging, etc.)
-}
-```
-
-### 6. React App Shell
-**CREATE** `src/App.tsx`:
-```typescript
-import { ThemeProvider } from './components/theme-provider'
-import { Toaster } from './components/ui/toaster'
-import { ErrorBoundary } from './components/ErrorBoundary'
-
-export default function App() {
-  return (
-    <ErrorBoundary>
-      <ThemeProvider defaultTheme="light">
-        <div className="min-h-screen bg-background">
-          {/* Router will go here in future sessions */}
-          <h1>Umbrella MVP</h1>
-        </div>
-        <Toaster />
-      </ThemeProvider>
-    </ErrorBoundary>
-  )
-}
-```
-
-**CREATE** `src/main.tsx`:
-```typescript
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
-import './index.css'
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-)
-```
-
-**COPY** `src/index.css` from inspiration (Tailwind base styles)
-
-### 7. Create `index.html`:
-```html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Umbrella - Artist Marketplace</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
-```
-
-## Documentation Required
-Create `/docs/ui-foundation.md`:
-
-```markdown
-# UI Foundation & Component Library
-
-## Completed
-- [x] 40+ shadcn/ui components copied
-- [x] Layout components (AppLayout, PageHeader, PageLayout)
-- [x] Theme system (light/dark mode)
-- [x] Toast notifications
-- [x] Error boundaries
-- [x] Custom hooks (toast, theme, local storage, auth)
-- [x] Utility functions (cn, API client)
-- [x] React app shell
-
-## Component Library Inventory
-### Core UI Components
-- Buttons, Inputs, Labels, Forms
-- Cards, Badges, Avatars
-- Dialogs, Sheets, Popovers, Dropdowns
-- Tabs, Accordions, Collapsibles
-- Toasts, Alerts
-- Selects, Checkboxes, Switches, Radios
-- Progress, Sliders, Calendars
-- Tables, Pagination
-- Navigation Menus, Breadcrumbs
-- Charts, Carousels
-- Command Palette
-
-### Layout Components
-- AppLayout (main app shell)
-- PageHeader (page titles, breadcrumbs)
-- PageLayout (consistent page structure)
-
-### Custom Hooks
-- useToast() - Toast notifications
-- useTheme() - Light/dark mode
-- useLocalStorage() - Persistent state
-- useMobile() - Responsive breakpoints
-- useAuth() - Authentication state
-- useApi() - API request wrapper
-
-## Next Steps (Future Sessions)
-1. Build domain-specific components:
-   - ArtistCard, GigCard (marketplace)
-   - ProfileTabs (6-tab artist profile)
-   - MessageThread (messaging)
-   - VioletPromptInterface (AI toolkit)
-2. Add routing with React Router
-3. Build page layouts (Dashboard, Marketplace, Messages, Profile)
-4. Integrate with backend API
-
-## Usage Examples
-```tsx
-// Using components
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { useToast } from '@/hooks/use-toast'
-
-function MyComponent() {
-  const { toast } = useToast()
-  
-  return (
-    <Card>
-      <Button onClick={() => toast({ title: "Success!" })}>
-        Click me
-      </Button>
-    </Card>
-  )
-}
-```
-
-## Testing
-```bash
-# Run dev server
-npm run dev
-
-# Should see:
-# - "Umbrella MVP" heading
-# - No console errors
-# - Light/dark theme toggle works (when added to UI)
-```
-
-## Architecture Notes
-- All components use Tailwind CSS for styling
-- Theme system uses CSS variables (see index.css)
-- Components are fully typed with TypeScript
-- Follows shadcn/ui conventions (consistent API)
-```
-
-## File Boundaries (DO NOT TOUCH)
-❌ Do NOT create any files in:
-- `api/*` (Session 1)
-- `db/*` (Session 3)
-- `.github/*` (Session 4)
-- Root config files except index.html (Session 4 handles those)
-
-✅ Only create files in:
-- `src/*`
-- `index.html`
-- `/docs/ui-foundation.md`
-
-## Success Criteria
-- [ ] Can run `npm run dev` and see basic React app
-- [ ] All UI components compile without errors
-- [ ] Theme toggle works
-- [ ] No TypeScript errors
-- [ ] Documentation complete
-```
+- **Authentication Provider:** Clerk (manages Apple/Google OAuth)
+- **Session Token:** Clerk JWT tokens (not custom JWT)
+- **Token Lifetime:** 7 days (managed by Clerk)
+- **Storage:** KV store for session metadata, Clerk manages token itself
+- **Validation:** Per-request JWT validation via Clerk SDK
+- **Onboarding Gate:** Sessions checked for `onboarding_complete` flag
 
 ---
 
-## **Session 3: Database Schema & Data Models**
-**Branch:** `infra/database-models`  
-**Owner:** D1 migrations + data layer
+## Session Token Format
 
-### **Files to Reference**
-```
-inspiration/app.leger.run/
-├── db/migrations/0001_initial.sql    # Migration pattern
-├── api/models/*.ts                   # Model patterns
-└── api/services/*.ts                 # Service layer patterns
-```
+### Clerk JWT Structure
 
-### **Files to Create**
-```
-umbrella/
-├── db/migrations/
-│   ├── 0001_users_artists.sql        # Users + Artists tables
-│   ├── 0002_tracks_gigs.sql          # Portfolio + Marketplace
-│   ├── 0003_messaging.sql            # Conversations + Messages
-│   ├── 0004_files_reviews.sql        # File metadata + Reviews
-│   └── 0005_analytics.sql            # Analytics + Violet usage
-└── api/models/
-    ├── user.ts                        # User model (ADAPTED)
-    ├── artist.ts                      # NEW - 40 attributes
-    ├── track.ts                       # NEW
-    ├── gig.ts                         # NEW
-    ├── message.ts                     # NEW
-    ├── conversation.ts                # NEW
-    ├── file.ts                        # NEW
-    ├── review.ts                      # NEW
-    └── analytics.ts                   # NEW
+Umbrella uses **Clerk-managed JWT tokens** for authentication. Tokens are issued by Clerk after successful OAuth authentication.
+
+#### Token Header
+```json
+{
+  "alg": "RS256",
+  "typ": "JWT",
+  "kid": "clerk_key_id"
+}
 ```
 
-### **System Prompt for Session 3**
+#### Token Payload
+```json
+{
+  "sub": "clerk_user_id",
+  "iss": "https://clerk.umbrella.app",
+  "aud": "umbrella-app",
+  "exp": 1734192000,
+  "iat": 1733587200,
+  "nbf": 1733587200,
+  "email": "artist@example.com",
+  "email_verified": true,
+  "name": "John Smith",
+  "picture": "https://img.clerk.com/...",
+  "azp": "umbrella-web-client"
+}
+```
 
-```markdown
-# Session 3: Database Schema & Data Models
+#### Key Fields
 
-## Context
-Build the complete D1 database schema and model layer for Umbrella following the data model in architecture.md.
+| Field | Type | Description |
+|-------|------|-------------|
+| `sub` | string | Clerk user ID (unique identifier) |
+| `iss` | string | Token issuer (Clerk instance URL) |
+| `aud` | string | Audience (app identifier) |
+| `exp` | number | Token expiration timestamp (Unix) |
+| `iat` | number | Token issued at timestamp (Unix) |
+| `email` | string | User's email from OAuth provider |
+| `email_verified` | boolean | Email verification status |
+| `name` | string | User's full name from OAuth provider |
 
-## Your Mission
-Create 5 migration files with all tables, indexes, and TypeScript models.
+---
 
-## Reference Materials
-1. **MUST READ:** Project root - `architecture.md` (Data Model section - has complete schema)
-2. **MUST READ:** Project root - `eng-spec.md` (requirements for each entity)
-3. **REFERENCE:** `/inspiration/app.leger.run/db/migrations/0001_initial.sql` - Migration structure
-4. **REFERENCE:** `/inspiration/app.leger.run/api/models/*.ts` - Model patterns
+## Session Storage
 
-## Tasks
+### KV Store Schema
 
-### 1. Migration 0001: Core Entities (`db/migrations/0001_users_artists.sql`)
+While Clerk manages the JWT token, Umbrella stores **session metadata** in Cloudflare KV for fast lookup and additional session state.
+
+#### Key Format
+```
+session:{user_id}
+```
+
+#### Value Structure
+```json
+{
+  "user_id": "uuid_v4",
+  "clerk_id": "clerk_user_id",
+  "email": "artist@example.com",
+  "oauth_provider": "apple" | "google",
+  "oauth_id": "provider_user_id",
+  "onboarding_complete": true,
+  "created_at": "2025-11-15T12:00:00Z",
+  "last_active_at": "2025-11-15T12:00:00Z",
+  "expires_at": "2025-11-22T12:00:00Z"
+}
+```
+
+#### Field Descriptions
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `user_id` | string | Internal Umbrella user UUID |
+| `clerk_id` | string | Clerk user ID (from JWT `sub`) |
+| `email` | string | User's email address |
+| `oauth_provider` | string | OAuth provider: "apple" or "google" |
+| `oauth_id` | string | Provider's user ID |
+| `onboarding_complete` | boolean | Has user completed 5-step onboarding? |
+| `created_at` | string | Session creation timestamp (ISO 8601) |
+| `last_active_at` | string | Last API request timestamp |
+| `expires_at` | string | Session expiration timestamp (7 days from creation) |
+
+### TTL Configuration
+
+| Storage | TTL | Rationale |
+|---------|-----|-----------|
+| KV session metadata | 7 days | Matches Clerk token lifetime |
+| JWT token (Clerk-managed) | 7 days | Clerk default for web apps |
+| Refresh token (Clerk-managed) | 30 days | Automatic refresh via Clerk SDK |
+
+---
+
+## Session Lifecycle
+
+### 1. Session Creation (OAuth Sign-In)
+
+**Flow:**
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Clerk
+    participant OAuth as Apple/Google
+    participant Backend
+    participant KV
+    participant D1
+
+    User->>Frontend: Click "Sign in with Apple"
+    Frontend->>Clerk: clerk.signIn.authenticateWithRedirect()
+    Clerk->>OAuth: Redirect to OAuth provider
+    OAuth->>User: Show consent screen
+    User->>OAuth: Approve
+    OAuth->>Clerk: OAuth callback with code
+    Clerk->>OAuth: Exchange code for access token
+    OAuth->>Clerk: Return user info + token
+    Clerk->>Clerk: Create Clerk session + JWT
+    Clerk->>Frontend: Return session token
+    Frontend->>Backend: GET /v1/auth/session (with token)
+    Backend->>Clerk: Verify JWT signature
+    Clerk->>Backend: Token valid, return claims
+    Backend->>D1: SELECT user WHERE clerk_id = ?
+    alt User exists
+        D1->>Backend: Return user record
+        Backend->>KV: Store session metadata (TTL: 7 days)
+        Backend->>Frontend: Return user + onboarding_complete
+    else New user
+        Backend->>D1: INSERT new user
+        D1->>Backend: Return new user_id
+        Backend->>KV: Store session (onboarding_complete: false)
+        Backend->>Frontend: Redirect to /onboarding/role-selection
+    end
+```
+
+**Steps:**
+1. User clicks OAuth button (Apple/Google)
+2. Clerk SDK initiates OAuth flow
+3. OAuth provider authenticates user
+4. Clerk creates session and issues JWT token
+5. Frontend receives token, stores in localStorage
+6. Frontend calls `GET /v1/auth/session` with token
+7. Backend validates JWT via Clerk SDK
+8. Backend checks if user exists in D1:
+   - If exists: Return user data
+   - If new: Create user record with `onboarding_complete = false`
+9. Backend stores session metadata in KV (TTL: 7 days)
+10. Frontend checks `onboarding_complete`:
+    - `true`: Navigate to dashboard
+    - `false`: Navigate to onboarding Step 1
+
+### 2. Session Validation (Per-Request)
+
+**Middleware Flow:**
+```typescript
+// api/middleware/auth.ts
+export async function authenticateRequest(request: Request, env: Env): Promise<Session> {
+  // 1. Extract token from Authorization header
+  const authHeader = request.headers.get('Authorization')
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    throw new Error('Missing or invalid Authorization header')
+  }
+
+  const token = authHeader.substring(7) // Remove "Bearer "
+
+  // 2. Verify JWT via Clerk
+  const clerkClient = createClerkClient({ secretKey: env.CLERK_SECRET_KEY })
+  let clerkUser
+  try {
+    clerkUser = await clerkClient.verifyToken(token)
+  } catch (error) {
+    throw new Error('Invalid or expired token')
+  }
+
+  const clerkId = clerkUser.sub
+
+  // 3. Check KV cache for session metadata
+  const cacheKey = `session:${clerkId}`
+  const cachedSession = await env.KV.get(cacheKey, 'json')
+
+  if (cachedSession && cachedSession.expires_at > new Date().toISOString()) {
+    // Update last active timestamp
+    cachedSession.last_active_at = new Date().toISOString()
+    await env.KV.put(cacheKey, JSON.stringify(cachedSession), {
+      expirationTtl: 7 * 24 * 60 * 60 // 7 days
+    })
+    return cachedSession
+  }
+
+  // 4. Cache miss or expired - fetch from D1
+  const user = await env.DB.prepare(
+    'SELECT * FROM users WHERE clerk_id = ?'
+  ).bind(clerkId).first()
+
+  if (!user) {
+    throw new Error('User not found')
+  }
+
+  // 5. Build session object
+  const session = {
+    user_id: user.id,
+    clerk_id: clerkId,
+    email: user.email,
+    oauth_provider: user.oauth_provider,
+    oauth_id: user.oauth_id,
+    onboarding_complete: user.onboarding_complete === 1,
+    created_at: user.created_at,
+    last_active_at: new Date().toISOString(),
+    expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+  }
+
+  // 6. Cache in KV
+  await env.KV.put(cacheKey, JSON.stringify(session), {
+    expirationTtl: 7 * 24 * 60 * 60
+  })
+
+  return session
+}
+```
+
+**Performance Optimization:**
+- **KV Cache First:** Check KV before hitting D1 (sub-50ms latency)
+- **Cache Duration:** 7 days TTL (matches token lifetime)
+- **Last Active Update:** Update timestamp on each request (for analytics)
+
+### 3. Onboarding Gate
+
+**Middleware to enforce onboarding completion:**
+```typescript
+export async function checkOnboardingComplete(session: Session): Promise<boolean> {
+  if (!session.onboarding_complete) {
+    throw new OnboardingIncompleteError('User must complete onboarding')
+  }
+  return true
+}
+```
+
+**Protected Endpoints:**
+All endpoints **except** the following require `onboarding_complete = true`:
+- `POST /v1/auth/webhook`
+- `GET /v1/auth/session`
+- `POST /v1/auth/logout`
+- `POST /v1/onboarding/artists/*` (onboarding endpoints)
+
+**Behavior:**
+- If `onboarding_complete = false`: Return `403 FORBIDDEN` with message "Complete onboarding to access this feature"
+- Frontend redirects to `/onboarding/artists/step1` (D-006)
+
+### 4. Session Refresh
+
+**Automatic Refresh via Clerk SDK:**
+- Clerk SDK automatically refreshes tokens before expiration
+- No manual refresh needed in backend API
+- Frontend Clerk SDK handles refresh transparently
+
+**Manual Session Refresh Endpoint:**
+```http
+POST /v1/auth/refresh
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "token": "new_jwt_token",
+    "expires_at": "2025-11-22T12:00:00Z"
+  }
+}
+```
+
+**Use Case:** Useful for extending session when user actively using app
+
+### 5. Session Termination (Logout)
+
+**Flow:**
+```mermaid
+sequenceDiagram
+    participant Frontend
+    participant Clerk
+    participant Backend
+    participant KV
+
+    Frontend->>Clerk: clerk.signOut()
+    Clerk->>Clerk: Invalidate session
+    Clerk->>Frontend: Success
+    Frontend->>Backend: POST /v1/auth/logout
+    Backend->>KV: DELETE session:{user_id}
+    KV->>Backend: Success
+    Backend->>Frontend: 200 OK
+    Frontend->>Frontend: Clear localStorage
+    Frontend->>Frontend: Redirect to /login
+```
+
+**Steps:**
+1. User clicks "Logout"
+2. Frontend calls `clerk.signOut()` (invalidates Clerk session)
+3. Frontend calls `POST /v1/auth/logout`
+4. Backend deletes session metadata from KV
+5. Frontend clears localStorage
+6. Frontend redirects to login page
+
+**Endpoint:**
+```http
+POST /v1/auth/logout
+Authorization: Bearer <token>
+```
+
+**Note:** Endpoint is **idempotent** (always returns success, even if session doesn't exist)
+
+### 6. Session Expiration
+
+**Automatic Expiration:**
+- **JWT Token:** Expires after 7 days (Clerk-managed)
+- **KV Session:** TTL of 7 days (auto-deleted)
+- **Refresh Token:** 30 days (Clerk-managed, auto-refresh)
+
+**Expired Session Behavior:**
+- Backend returns `401 UNAUTHORIZED`
+- Frontend detects 401, calls `clerk.signOut()`
+- Frontend redirects to login page
+- User must re-authenticate via OAuth
+
+---
+
+## Security Considerations
+
+### JWT Signature Verification
+
+**Algorithm:** RS256 (RSA signature with SHA-256)
+
+**Verification Process:**
+1. Extract token from `Authorization: Bearer <token>` header
+2. Decode token header to get `kid` (key ID)
+3. Fetch Clerk's public keys from `https://<clerk-instance>/.well-known/jwks.json`
+4. Find matching public key by `kid`
+5. Verify signature using public key
+6. Validate `exp` (expiration), `iss` (issuer), `aud` (audience)
+7. If valid: Extract user claims
+8. If invalid: Throw `401 UNAUTHORIZED`
+
+**Caching Public Keys:**
+```typescript
+// Cache Clerk public keys for 1 hour
+const jwksCache = {
+  keys: null,
+  expiresAt: 0
+}
+
+async function getClerkPublicKeys(env: Env): Promise<JWK[]> {
+  const now = Date.now()
+  if (jwksCache.keys && now < jwksCache.expiresAt) {
+    return jwksCache.keys
+  }
+
+  const response = await fetch(`${env.CLERK_FRONTEND_API}/.well-known/jwks.json`)
+  const jwks = await response.json()
+
+  jwksCache.keys = jwks.keys
+  jwksCache.expiresAt = now + 3600 * 1000 // 1 hour
+
+  return jwks.keys
+}
+```
+
+### Token Storage
+
+**Frontend Storage:**
+- **Primary:** Browser `localStorage` (persistent across sessions)
+- **Fallback:** `sessionStorage` (cleared on tab close)
+- **Cookie:** `__clerk_session` (HttpOnly, Secure, SameSite)
+
+**Security Best Practices:**
+- ✅ Use HTTPS only (tokens never sent over HTTP)
+- ✅ HttpOnly cookies prevent XSS access
+- ✅ SameSite=Strict prevents CSRF
+- ✅ Tokens include `exp` claim (expiration)
+- ✅ Backend validates every request
+
+### Session Hijacking Prevention
+
+**Measures:**
+1. **Short-lived tokens:** 7-day expiration (re-auth required after)
+2. **HTTPS only:** Tokens never transmitted over insecure connections
+3. **No token in URL:** Always in header or HttpOnly cookie
+4. **IP tracking (optional):** Track session IP, alert on change
+5. **Device fingerprinting (future):** Detect suspicious device changes
+
+### Refresh Token Rotation
+
+**Clerk Automatic Rotation:**
+- Clerk automatically rotates refresh tokens on use
+- Old refresh tokens invalidated after single use
+- Prevents token reuse attacks
+
+---
+
+## Session Analytics
+
+### Tracking Metrics
+
+Session metadata stored in KV enables analytics:
+
+**Metrics Tracked:**
+- `created_at`: Session start time
+- `last_active_at`: Most recent API request
+- `expires_at`: Session expiration time
+
+**Analytics Queries:**
 ```sql
--- Users table (from architecture.md)
+-- Daily active users (from session activity)
+SELECT COUNT(DISTINCT user_id) AS dau
+FROM kv_session_logs
+WHERE last_active_at >= DATE('now', '-1 day')
+
+-- Average session duration
+SELECT AVG(JULIANDAY(expires_at) - JULIANDAY(created_at)) * 24 AS avg_hours
+FROM kv_session_logs
+WHERE expires_at IS NOT NULL
+```
+
+**Future Enhancement:** Log session activity to D1 for historical analytics
+
+---
+
+## Error Handling
+
+### Common Session Errors
+
+| Error | HTTP Status | Code | Description |
+|-------|------------|------|-------------|
+| Missing token | 401 | `UNAUTHORIZED` | No Authorization header |
+| Invalid token | 401 | `UNAUTHORIZED` | JWT signature verification failed |
+| Expired token | 401 | `UNAUTHORIZED` | Token `exp` claim in past |
+| User not found | 404 | `NOT_FOUND` | User deleted or doesn't exist |
+| Onboarding incomplete | 403 | `FORBIDDEN` | User must complete onboarding |
+
+### Error Response Format
+
+```json
+{
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Invalid or expired token",
+    "details": {
+      "reason": "JWT signature verification failed"
+    }
+  },
+  "meta": {
+    "timestamp": "2025-11-15T12:00:00Z"
+  }
+}
+```
+
+---
+
+## Implementation Checklist
+
+### Backend (Cloudflare Workers)
+
+- [ ] Install Clerk SDK: `npm install @clerk/backend`
+- [ ] Add Clerk environment variables to `wrangler.toml`
+  - `CLERK_SECRET_KEY`
+  - `CLERK_FRONTEND_API`
+- [ ] Implement `authenticateRequest()` middleware
+- [ ] Implement `checkOnboardingComplete()` middleware
+- [ ] Create session KV namespace: `umbrella-sessions`
+- [ ] Implement `POST /v1/auth/webhook` for Clerk events
+- [ ] Implement `GET /v1/auth/session` endpoint
+- [ ] Implement `POST /v1/auth/logout` endpoint
+- [ ] Implement `POST /v1/auth/refresh` endpoint
+- [ ] Add session validation to all protected endpoints
+
+### Frontend (React + Clerk SDK)
+
+- [ ] Install Clerk SDK: `npm install @clerk/clerk-react`
+- [ ] Configure Clerk provider in App.tsx
+- [ ] Add OAuth buttons (Apple, Google)
+- [ ] Implement sign-in redirect flow
+- [ ] Store session token in localStorage
+- [ ] Add token to all API requests (Authorization header)
+- [ ] Handle 401 errors (redirect to login)
+- [ ] Handle 403 errors (redirect to onboarding)
+- [ ] Implement logout flow
+- [ ] Auto-refresh tokens via Clerk SDK
+
+### Database (D1)
+
+- [ ] Ensure `users` table has `clerk_id` column
+- [ ] Add index on `clerk_id` for fast lookups
+- [ ] Add `onboarding_complete` boolean column
+- [ ] Migrate existing users (if any)
+
+### Testing
+
+- [ ] Test OAuth flow (Apple + Google)
+- [ ] Test JWT validation (valid, invalid, expired tokens)
+- [ ] Test session creation in KV
+- [ ] Test session cache hit/miss
+- [ ] Test onboarding gate (redirect when incomplete)
+- [ ] Test logout (KV deletion)
+- [ ] Test concurrent sessions (same user, multiple devices)
+- [ ] Load test session validation (5000 req/sec)
+
+---
+
+## Environment Configuration
+
+### Required Environment Variables
+
+**Backend (Cloudflare Workers):**
+```toml
+[env.production]
+CLERK_SECRET_KEY = "sk_live_..."
+CLERK_FRONTEND_API = "https://clerk.umbrella.app"
+CLERK_WEBHOOK_SECRET = "whsec_..."
+
+[env.staging]
+CLERK_SECRET_KEY = "sk_test_..."
+CLERK_FRONTEND_API = "https://clerk-staging.umbrella.app"
+CLERK_WEBHOOK_SECRET = "whsec_..."
+```
+
+**Frontend (React):**
+```env
+VITE_CLERK_PUBLISHABLE_KEY=pk_live_...
+VITE_API_BASE_URL=https://api.umbrella.app
+```
+
+### KV Namespace
+
+**Production:**
+```bash
+wrangler kv:namespace create "SESSIONS"
+# Returns: { binding = "SESSIONS", id = "..." }
+```
+
+**Add to wrangler.toml:**
+```toml
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "production_sessions_namespace_id"
+
+[[env.staging.kv_namespaces]]
+binding = "SESSIONS"
+id = "staging_sessions_namespace_id"
+```
+
+---
+
+## Monitoring & Alerts
+
+### Session Metrics to Track
+
+1. **Session Creation Rate**
+   - Alert if < 10 sessions/hour (sign-in broken?)
+   - Alert if > 1000 sessions/hour (attack?)
+
+2. **Token Validation Failures**
+   - Alert if error rate > 5% for 5 minutes
+   - Indicates Clerk outage or token issues
+
+3. **KV Cache Hit Rate**
+   - Target: >95% hit rate
+   - Alert if < 90% (performance degradation)
+
+4. **Average Session Duration**
+   - Baseline: ~2-3 days (users logging in every few days)
+   - Alert if drops below 1 day (users logging out frequently)
+
+### Logging
+
+**Structured Logs:**
+```json
+{
+  "level": "info",
+  "event": "session_created",
+  "user_id": "uuid_v4",
+  "clerk_id": "clerk_user_id",
+  "oauth_provider": "apple",
+  "timestamp": "2025-11-15T12:00:00Z"
+}
+```
+
+**Events to Log:**
+- `session_created`: New session after OAuth
+- `session_validated`: Successful token validation
+- `session_expired`: Token expiration
+- `session_terminated`: User logout
+- `token_invalid`: JWT validation failure
+- `onboarding_incomplete`: User blocked by onboarding gate
+
+---
+
+## FAQ
+
+### Q: Why use Clerk instead of custom JWT?
+
+**A:** Clerk provides:
+- Managed OAuth flows (Apple, Google)
+- Automatic token refresh
+- Webhook infrastructure for user events
+- Built-in session management
+- Lower development cost (no custom OAuth implementation)
+
+### Q: What happens if KV is down?
+
+**A:** Session validation falls back to D1:
+1. Attempt KV lookup
+2. If KV unavailable, query D1 directly
+3. Continue processing request (degraded performance but functional)
+4. Alert ops team if KV down > 5 minutes
+
+### Q: Can users have multiple concurrent sessions?
+
+**A:** Yes, users can:
+- Log in on desktop and mobile simultaneously
+- Each device has independent Clerk session
+- KV stores single session metadata per user (last active device overwrites)
+- **Future enhancement:** Store session per device (`session:{user_id}:{device_id}`)
+
+### Q: How do we handle session replay attacks?
+
+**A:** Protection mechanisms:
+- **JWT nonce:** Each token has unique `jti` claim
+- **Short expiration:** 7-day max lifetime
+- **Refresh rotation:** Clerk rotates refresh tokens on use
+- **HTTPS only:** Tokens never sent over insecure connections
+
+### Q: What if a user's email changes in OAuth provider?
+
+**A:** Clerk webhook flow:
+1. User changes email in Apple/Google account
+2. OAuth provider notifies Clerk
+3. Clerk triggers `user.updated` webhook
+4. Backend receives webhook, updates `users.email` in D1
+5. Session metadata in KV updated on next request
+
+---
+
+## Appendix A: Session Data Model
+
+### Database Schema
+
+```sql
+-- users table (D1)
 CREATE TABLE users (
   id TEXT PRIMARY KEY,
-  oauth_provider TEXT NOT NULL CHECK (oauth_provider IN ('apple', 'google')),
+  clerk_id TEXT NOT NULL UNIQUE,
+  oauth_provider TEXT NOT NULL CHECK(oauth_provider IN ('apple', 'google')),
   oauth_id TEXT NOT NULL,
   email TEXT NOT NULL,
-  onboarding_complete BOOLEAN DEFAULT 0,
+  onboarding_complete INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   UNIQUE(oauth_provider, oauth_id)
 );
 
-CREATE INDEX idx_users_oauth ON users(oauth_provider, oauth_id);
-
--- Artists table (from architecture.md - 40 attributes)
-CREATE TABLE artists (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES users(id),
-  -- Identity (from onboarding step 1)
-  stage_name TEXT NOT NULL,
-  legal_name TEXT,
-  pronouns TEXT,
-  location_city TEXT,
-  location_state TEXT,
-  location_country TEXT,
-  -- Bio & Story (step 2)
-  bio TEXT,
-  story TEXT,
-  tagline TEXT,
-  -- Creative Profile (step 3)
-  primary_genre TEXT,
-  secondary_genres TEXT,  -- JSON array
-  influences TEXT,  -- JSON array
-  performance_types TEXT,  -- JSON array ['solo', 'band', 'dj']
-  equipment TEXT,
-  -- Rates & Availability (step 4)
-  base_rate_flat INTEGER,
-  base_rate_hourly INTEGER,
-  rates_negotiable BOOLEAN,
-  travel_radius_miles INTEGER,
-  available_weekdays BOOLEAN,
-  available_weekends BOOLEAN,
-  advance_booking_weeks INTEGER,
-  -- Quick Questions (step 5)
-  years_performing INTEGER,
-  biggest_gig TEXT,
-  dream_collaboration TEXT,
-  -- Social & Portfolio
-  website_url TEXT,
-  instagram_handle TEXT,
-  tiktok_handle TEXT,
-  youtube_url TEXT,
-  spotify_url TEXT,
-  apple_music_url TEXT,
-  soundcloud_url TEXT,
-  -- Verification & Metadata
-  verified BOOLEAN DEFAULT 0,
-  avatar_url TEXT,
-  banner_url TEXT,
-  avg_rating REAL DEFAULT 0,
-  total_reviews INTEGER DEFAULT 0,
-  total_gigs INTEGER DEFAULT 0,
-  total_earnings INTEGER DEFAULT 0,
-  profile_views INTEGER DEFAULT 0,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
-);
-
-CREATE INDEX idx_artists_user_id ON artists(user_id);
-CREATE INDEX idx_artists_verified ON artists(verified);
-CREATE INDEX idx_artists_genre ON artists(primary_genre);
-CREATE INDEX idx_artists_location ON artists(location_city, location_state);
+-- Index for session validation
+CREATE INDEX idx_users_clerk_id ON users(clerk_id);
 ```
 
-### 2. Migration 0002: Portfolio & Marketplace (`db/migrations/0002_tracks_gigs.sql`)
-```sql
--- Tracks table (from architecture.md)
-CREATE TABLE tracks (
-  id TEXT PRIMARY KEY,
-  artist_id TEXT NOT NULL REFERENCES artists(id),
-  title TEXT NOT NULL,
-  duration_seconds INTEGER,
-  file_url TEXT NOT NULL,  -- R2 URL
-  cover_art_url TEXT,
-  genre TEXT,
-  release_year INTEGER,
-  spotify_url TEXT,
-  apple_music_url TEXT,
-  display_order INTEGER DEFAULT 0,
-  plays INTEGER DEFAULT 0,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
-);
+### KV Schema
 
-CREATE INDEX idx_tracks_artist_id ON tracks(artist_id);
-CREATE INDEX idx_tracks_order ON tracks(artist_id, display_order);
+**Key:** `session:{clerk_id}`
 
--- Gigs table (from architecture.md)
-CREATE TABLE gigs (
-  id TEXT PRIMARY KEY,
-  venue_id TEXT NOT NULL REFERENCES users(id),
-  title TEXT NOT NULL,
-  description TEXT,
-  venue_name TEXT NOT NULL,
-  location_city TEXT NOT NULL,
-  location_state TEXT NOT NULL,
-  location_address TEXT,
-  date TEXT NOT NULL,  -- ISO date
-  start_time TEXT,
-  end_time TEXT,
-  genre TEXT,
-  payment_amount INTEGER,
-  payment_type TEXT CHECK (payment_type IN ('flat', 'hourly', 'negotiable')),
-  urgency_flag BOOLEAN DEFAULT 0,  -- <7 days = urgent
-  status TEXT DEFAULT 'open' CHECK (status IN ('open', 'filled', 'cancelled')),
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
-);
+**Value:** JSON object (see "KV Store Schema" section above)
 
-CREATE INDEX idx_gigs_date ON gigs(date);
-CREATE INDEX idx_gigs_location ON gigs(location_city, location_state);
-CREATE INDEX idx_gigs_genre ON gigs(genre);
-CREATE INDEX idx_gigs_status ON gigs(status);
+**TTL:** 7 days (604800 seconds)
 
--- Gig Applications
-CREATE TABLE gig_applications (
-  id TEXT PRIMARY KEY,
-  gig_id TEXT NOT NULL REFERENCES gigs(id),
-  artist_id TEXT NOT NULL REFERENCES artists(id),
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'rejected')),
-  created_at TEXT NOT NULL,
-  UNIQUE(gig_id, artist_id)
-);
+---
 
-CREATE INDEX idx_applications_gig ON gig_applications(gig_id);
-CREATE INDEX idx_applications_artist ON gig_applications(artist_id);
-```
+## Appendix B: Clerk Webhook Payload Examples
 
-### 3. Migration 0003: Messaging (`db/migrations/0003_messaging.sql`)
-```sql
--- Conversations
-CREATE TABLE conversations (
-  id TEXT PRIMARY KEY,
-  participant_1_id TEXT NOT NULL REFERENCES users(id),
-  participant_2_id TEXT NOT NULL REFERENCES users(id),
-  last_message_at TEXT,
-  created_at TEXT NOT NULL,
-  UNIQUE(participant_1_id, participant_2_id)
-);
+### user.created
 
-CREATE INDEX idx_conversations_p1 ON conversations(participant_1_id);
-CREATE INDEX idx_conversations_p2 ON conversations(participant_2_id);
-
--- Messages
-CREATE TABLE messages (
-  id TEXT PRIMARY KEY,
-  conversation_id TEXT NOT NULL REFERENCES conversations(id),
-  sender_id TEXT NOT NULL REFERENCES users(id),
-  content TEXT NOT NULL CHECK (LENGTH(content) <= 2000),  -- D-043
-  read BOOLEAN DEFAULT 0,
-  created_at TEXT NOT NULL
-);
-
-CREATE INDEX idx_messages_conversation ON messages(conversation_id, created_at);
-CREATE INDEX idx_messages_sender ON messages(sender_id);
-```
-
-### 4. Migration 0004: Files & Reviews (`db/migrations/0004_files_reviews.sql`)
-```sql
--- Files (metadata only, blobs in R2)
-CREATE TABLE files (
-  id TEXT PRIMARY KEY,
-  artist_id TEXT NOT NULL REFERENCES artists(id),
-  filename TEXT NOT NULL,
-  file_size_bytes INTEGER NOT NULL,
-  mime_type TEXT NOT NULL,
-  r2_key TEXT NOT NULL,  -- R2 object key
-  category TEXT CHECK (category IN ('press_photo', 'music', 'video', 'document', 'other')),
-  created_at TEXT NOT NULL
-);
-
-CREATE INDEX idx_files_artist ON files(artist_id);
-CREATE INDEX idx_files_category ON files(artist_id, category);
-
--- Storage quota tracking
-CREATE TABLE storage_quotas (
-  artist_id TEXT PRIMARY KEY REFERENCES artists(id),
-  used_bytes INTEGER DEFAULT 0,
-  limit_bytes INTEGER DEFAULT 53687091200,  -- 50GB in bytes
-  updated_at TEXT NOT NULL
-);
-
--- Reviews
-CREATE TABLE reviews (
-  id TEXT PRIMARY KEY,
-  artist_id TEXT NOT NULL REFERENCES artists(id),
-  reviewer_user_id TEXT NOT NULL REFERENCES users(id),
-  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
-  comment TEXT,
-  gig_id TEXT REFERENCES gigs(id),  -- Optional link to gig
-  created_at TEXT NOT NULL,
-  UNIQUE(artist_id, reviewer_user_id, gig_id)
-);
-
-CREATE INDEX idx_reviews_artist ON reviews(artist_id);
-CREATE INDEX idx_reviews_rating ON reviews(artist_id, rating);
-```
-
-### 5. Migration 0005: Analytics & AI (`db/migrations/0005_analytics.sql`)
-```sql
--- Daily analytics (D-008: aggregated at midnight UTC)
-CREATE TABLE daily_metrics (
-  id TEXT PRIMARY KEY,
-  artist_id TEXT NOT NULL REFERENCES artists(id),
-  date TEXT NOT NULL,  -- YYYY-MM-DD
-  profile_views INTEGER DEFAULT 0,
-  gigs_completed INTEGER DEFAULT 0,
-  earnings INTEGER DEFAULT 0,
-  avg_rating REAL DEFAULT 0,
-  created_at TEXT NOT NULL,
-  UNIQUE(artist_id, date)
-);
-
-CREATE INDEX idx_metrics_artist_date ON daily_metrics(artist_id, date);
-
--- Violet AI usage tracking (D-062: 50 prompts/day limit)
-CREATE TABLE violet_usage (
-  id TEXT PRIMARY KEY,
-  artist_id TEXT NOT NULL REFERENCES artists(id),
-  date TEXT NOT NULL,  -- YYYY-MM-DD
-  prompt_count INTEGER DEFAULT 0,
-  created_at TEXT NOT NULL,
-  UNIQUE(artist_id, date)
-);
-
-CREATE INDEX idx_violet_usage ON violet_usage(artist_id, date);
-
--- Contact lists (for fan messaging)
-CREATE TABLE contact_lists (
-  id TEXT PRIMARY KEY,
-  artist_id TEXT NOT NULL REFERENCES artists(id),
-  name TEXT NOT NULL,
-  description TEXT,
-  created_at TEXT NOT NULL
-);
-
-CREATE TABLE contact_list_members (
-  id TEXT PRIMARY KEY,
-  list_id TEXT NOT NULL REFERENCES contact_lists(id),
-  email TEXT,
-  phone TEXT,
-  opted_in BOOLEAN DEFAULT 1,
-  created_at TEXT NOT NULL
-);
-
-CREATE INDEX idx_contacts_list ON contact_list_members(list_id);
-```
-
-### 6. TypeScript Models (`api/models/*.ts`)
-
-**ADAPT** `user.ts` from inspiration:
-```typescript
-export interface User {
-  id: string;
-  oauth_provider: 'apple' | 'google';
-  oauth_id: string;
-  email: string;
-  onboarding_complete: boolean;
-  created_at: string;
-  updated_at: string;
+```json
+{
+  "data": {
+    "id": "user_2abc...",
+    "email_addresses": [
+      {
+        "email_address": "artist@example.com",
+        "verification": { "status": "verified" }
+      }
+    ],
+    "external_accounts": [
+      {
+        "provider": "oauth_apple",
+        "email_address": "artist@example.com",
+        "approved_scopes": "email name",
+        "label": null,
+        "id": "eac_2abc..."
+      }
+    ],
+    "first_name": "John",
+    "last_name": "Smith",
+    "profile_image_url": "https://img.clerk.com/...",
+    "created_at": 1733587200000,
+    "updated_at": 1733587200000
+  },
+  "event_attributes": { ... },
+  "object": "event",
+  "type": "user.created"
 }
 ```
 
-**CREATE NEW** `artist.ts`:
-```typescript
-// Full Artist interface with all 40 attributes from architecture.md
-export interface Artist {
-  id: string;
-  user_id: string;
-  // Identity
-  stage_name: string;
-  legal_name?: string;
-  // ... all other fields from schema
+### user.updated
+
+```json
+{
+  "data": {
+    "id": "user_2abc...",
+    "email_addresses": [
+      {
+        "email_address": "newemail@example.com",
+        "verification": { "status": "verified" }
+      }
+    ],
+    "updated_at": 1733673600000
+  },
+  "object": "event",
+  "type": "user.updated"
 }
-
-// Helper functions
-export function calculateAverageRating(artist: Artist): number
-export function isProfileComplete(artist: Artist): boolean
 ```
 
-**CREATE NEW** models for: `track.ts`, `gig.ts`, `message.ts`, `conversation.ts`, `file.ts`, `review.ts`, `analytics.ts`
+### user.deleted
 
-Each model should include:
-- Interface definition
-- Helper functions (CRUD operations, validations)
-- Type guards
-
-## Documentation Required
-Create `/docs/database-schema.md`:
-
-```markdown
-# Database Schema & Data Models
-
-## Completed
-- [x] 5 migration files created
-- [x] 15+ tables defined
-- [x] All indexes from architecture.md
-- [x] TypeScript models for all entities
-- [x] Foreign key constraints
-- [x] Check constraints for enums
-
-## Tables Created
-
-### Core Entities (0001)
-- users - OAuth users
-- artists - Artist profiles (40 attributes)
-
-### Portfolio & Marketplace (0002)
-- tracks - Music portfolio
-- gigs - Venue opportunities
-- gig_applications - Artist applications
-
-### Communication (0003)
-- conversations - Message threads
-- messages - Individual messages (2000 char limit)
-
-### Assets & Feedback (0004)
-- files - File metadata (R2 references)
-- storage_quotas - 50GB tracking
-- reviews - Artist reviews (1-5 stars)
-
-### Analytics & AI (0005)
-- daily_metrics - Daily aggregated stats
-- violet_usage - AI prompt tracking (50/day)
-- contact_lists - Fan segments
-- contact_list_members - Fan contacts
-
-## Key Constraints
-- Users: Unique per oauth_provider + oauth_id
-- Artists: One per user_id
-- Gig Applications: One per gig + artist
-- Messages: Max 2000 characters (D-043)
-- Reviews: Unique per artist + reviewer + gig
-- Ratings: 1-5 only
-
-## Indexes Created
-25+ indexes for optimal query performance:
-- OAuth lookups
-- Location searches
-- Genre filtering
-- Date ranges
-- Message threads
-- File categories
-
-## Next Steps (Implementation)
-1. Run migrations in development:
-   ```bash
-   wrangler d1 migrations apply umbrella-dev-db --local
-   ```
-2. Create service layer for each model
-3. Add CRUD endpoints in API
-4. Implement business logic (reviews, analytics, quotas)
-
-## Testing Migrations
-```bash
-# Apply locally
-wrangler d1 migrations apply umbrella-dev-db --local
-
-# Verify tables
-wrangler d1 execute umbrella-dev-db --local \
-  --command "SELECT name FROM sqlite_master WHERE type='table'"
-
-# Check schema
-wrangler d1 execute umbrella-dev-db --local \
-  --command "PRAGMA table_info(artists)"
-```
-
-## Data Model Decisions
-- JSON arrays for multi-value fields (genres, influences)
-- Separate tables for relationships (gig_applications, reviews)
-- Storage tracking at artist level (not global)
-- Daily metrics pre-aggregated (not real-time)
-- Soft deletes not implemented (hard deletes only)
-
-## Foreign Key Cascade Rules
-- ON DELETE CASCADE: reviews, gig_applications, files
-- ON DELETE SET NULL: gigs (if venue deleted, gig remains)
-- No cascades: analytics (preserve historical data)
-```
-
-## File Boundaries (DO NOT TOUCH)
-❌ Do NOT create any files in:
-- `api/*` except `api/models/`
-- `src/*` (Session 2)
-- `.github/*` (Session 4)
-
-✅ Only create files in:
-- `db/migrations/`
-- `api/models/`
-- `/docs/database-schema.md`
-
-## Success Criteria
-- [ ] 5 migration files created
-- [ ] All tables match architecture.md exactly
-- [ ] TypeScript models compile without errors
-- [ ] Can apply migrations with `wrangler d1 migrations apply --local`
-- [ ] Documentation complete
+```json
+{
+  "data": {
+    "id": "user_2abc...",
+    "deleted": true
+  },
+  "object": "event",
+  "type": "user.deleted"
+}
 ```
 
 ---
 
-## **Session 4: DevOps & Build Configuration**
-**Branch:** `infra/devops-build-config`  
-**Owner:** CI/CD, configs, scripts
-
-### **Files to Reference**
-```
-inspiration/app.leger.run/
-├── .github/workflows/*.yml
-├── scripts/build-worker.js
-├── vite.config.ts
-├── tsconfig.json
-├── tailwind.config.cjs
-├── eslint.config.js
-├── package.json
-└── [other configs]
-```
-
-### **Files to Create**
-```
-umbrella/
-├── .github/workflows/
-│   ├── pr-checks.yml              # NEW - Run on PRs
-│   ├── deploy-preview.yml         # NEW - Deploy preview env
-│   ├── deploy-staging.yml         # NEW - Deploy to staging
-│   ├── deploy-production.yml      # NEW - Deploy to prod
-│   ├── claude-code.yml            # COPIED
-│   └── commitlint.yml             # NEW
-├── scripts/
-│   ├── build-worker.js            # COPIED
-│   └── setup-cloudflare.sh        # NEW - Bootstrap script
-├── vite.config.ts                 # COPIED + ADAPTED
-├── tsconfig.json                  # COPIED
-├── tsconfig.node.json             # COPIED
-├── tailwind.config.cjs            # COPIED
-├── postcss.config.js              # COPIED
-├── eslint.config.js               # COPIED
-├── .prettierrc                    # COPIED
-├── .gitignore                     # NEW
-├── package.json                   # ADAPTED - Umbrella deps
-└── README.md                      # NEW
-```
-
-### **System Prompt for Session 4**
-
-```markdown
-# Session 4: DevOps & Build Configuration
-
-## Context
-Set up all build tooling, CI/CD pipelines, and project configuration for Umbrella.
-
-## Your Mission
-Create GitHub workflows, build scripts, and all configuration files.
-
-## Reference Materials
-1. **COPY:** `/inspiration/app.leger.run/.github/workflows/*.yml`
-2. **COPY:** `/inspiration/app.leger.run/scripts/build-worker.js`
-3. **COPY:** All config files from inspiration root
-4. **MUST READ:** Project root - `architecture.md`, `eng-spec.md`
-
-## Tasks
-
-### 1. GitHub Workflows (`.github/workflows/`)
-
-**CREATE** `pr-checks.yml`:
-```yaml
-name: PR Checks
-on:
-  pull_request:
-    branches: [dev, staging, main]
-jobs:
-  lint-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run type-check
-      - run: npm run test
-```
-
-**CREATE** `deploy-preview.yml`:
-```yaml
-name: Deploy Preview
-on:
-  pull_request:
-    types: [opened, synchronize]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm ci
-      - run: npm run build
-      - run: npx wrangler deploy --env preview
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-```
-
-**CREATE** `deploy-staging.yml`:
-```yaml
-name: Deploy Staging
-on:
-  push:
-    branches: [staging]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm ci
-      - run: npm run build
-      - run: npx wrangler deploy --env staging
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-```
-
-**CREATE** `deploy-production.yml`:
-```yaml
-name: Deploy Production
-on:
-  push:
-    branches: [main]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm ci
-      - run: npm run build
-      - run: npx wrangler deploy --env production
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-```
-
-**COPY** `claude-code.yml` from inspiration
-
-**CREATE** `commitlint.yml`:
-```yaml
-name: Commitlint
-on: [pull_request]
-jobs:
-  commitlint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: wagoid/commitlint-github-action@v5
-```
-
-### 2. Build Scripts (`scripts/`)
-
-**COPY DIRECTLY** `build-worker.js` from inspiration
-
-**CREATE** `setup-cloudflare.sh`:
-```bash
-#!/bin/bash
-# Bootstrap script for Cloudflare resources
-
-echo "Creating D1 database..."
-wrangler d1 create umbrella-dev-db
-
-echo "Creating KV namespace..."
-wrangler kv:namespace create KV --preview
-
-echo "Creating R2 bucket..."
-wrangler r2 bucket create umbrella-dev-media
-
-echo "Done! Update wrangler.toml with the IDs above."
-```
-
-### 3. Vite Config (`vite.config.ts`)
-
-**ADAPT** from inspiration:
-```typescript
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
-
-export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  server: {
-    proxy: {
-      '/v1': {
-        target: 'http://localhost:8787',  // Worker dev server
-        changeOrigin: true,
-      },
-    },
-  },
-})
-```
-
-### 4. TypeScript Configs
-
-**COPY DIRECTLY:**
-- `tsconfig.json`
-- `tsconfig.node.json`
-
-### 5. Styling Configs
-
-**COPY DIRECTLY:**
-- `tailwind.config.cjs`
-- `postcss.config.js`
-
-### 6. Code Quality Configs
-
-**COPY DIRECTLY:**
-- `eslint.config.js`
-- `.prettierrc`
-
-### 7. Package.json
-
-**ADAPT** from inspiration:
-```json
-{
-  "name": "umbrella-app",
-  "version": "0.1.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "dev:worker": "wrangler dev api/index.ts",
-    "build": "tsc && vite build",
-    "build:worker": "node scripts/build-worker.js",
-    "preview": "vite preview",
-    "lint": "eslint .",
-    "format": "prettier --write .",
-    "type-check": "tsc --noEmit",
-    "migrate": "wrangler d1 migrations apply umbrella-dev-db --local",
-    "deploy": "npm run build && wrangler deploy"
-  },
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "@radix-ui/react-*": "...",
-    "lucide-react": "^0.263.1",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.0.0",
-    "tailwind-merge": "^2.0.0"
-  },
-  "devDependencies": {
-    "@cloudflare/workers-types": "^4.20231025.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@vitejs/plugin-react": "^4.2.0",
-    "autoprefixer": "^10.4.16",
-    "eslint": "^8.55.0",
-    "postcss": "^8.4.32",
-    "prettier": "^3.1.0",
-    "tailwindcss": "^3.3.6",
-    "typescript": "^5.3.3",
-    "vite": "^5.0.8",
-    "wrangler": "^3.22.1"
-  }
-}
-```
-
-### 8. Git Configuration
-
-**CREATE** `.gitignore`:
-```
-# Dependencies
-node_modules/
-.pnp
-.pnp.js
-
-# Build
-dist/
-.wrangler/
-.dev.vars
-
-# Logs
-*.log
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Env
-.env
-.env.local
-.env.*.local
-```
-
-### 9. README
-
-**CREATE** `README.md`:
-```markdown
-# Umbrella MVP
-
-Artist marketplace connecting musicians with venues.
-
-## Quick Start
-
-### Prerequisites
-- Node.js 20+
-- Cloudflare account
-- Wrangler CLI
-
-### Setup
-```bash
-# Install dependencies
-npm install
-
-# Bootstrap Cloudflare resources
-./scripts/setup-cloudflare.sh
-
-# Update wrangler.toml with resource IDs
-
-# Run migrations
-npm run migrate
-
-# Start dev servers (separate terminals)
-npm run dev           # Frontend (port 5173)
-npm run dev:worker    # Backend (port 8787)
-```
-
-### Development
-```bash
-npm run dev           # Start frontend
-npm run lint          # Check code
-npm run format        # Format code
-npm run type-check    # Check types
-```
-
-### Deployment
-```bash
-git push origin dev       # Deploys preview
-git push origin staging   # Deploys staging
-git push origin main      # Deploys production
-```
-
-## Architecture
-- Frontend: React + Vite + Tailwind + shadcn/ui
-- Backend: Cloudflare Workers
-- Database: D1 (SQLite)
-- Storage: R2 (objects) + KV (cache)
-- Auth: Cloudflare Access (Apple/Google OAuth)
-
-## Documentation
-- `/docs/backend-api-setup.md` - API infrastructure
-- `/docs/ui-foundation.md` - Frontend components
-- `/docs/database-schema.md` - Database schema
-- `/docs/devops-build-config.md` - This document
-
-## Contributing
-1. Create feature branch from `dev`
-2. Follow conventional commits (`feat:`, `fix:`, `docs:`)
-3. Open PR against `dev`
-4. CI runs tests + deploys preview
-5. Merge after approval
-
-## Stack
-- TypeScript
-- React 18
-- Cloudflare Workers
-- D1 (SQLite)
-- R2 (S3-compatible storage)
-- KV (key-value cache)
-- Tailwind CSS
-- shadcn/ui components
-```
-
-## Documentation Required
-Create `/docs/devops-build-config.md`:
-
-```markdown
-# DevOps & Build Configuration
-
-## Completed
-- [x] 6 GitHub workflows
-- [x] Build scripts
-- [x] Vite configuration
-- [x] TypeScript configuration
-- [x] Tailwind + PostCSS
-- [x] ESLint + Prettier
-- [x] Package.json with all dependencies
-- [x] Git configuration
-- [x] README documentation
-
-## GitHub Workflows
-
-### PR Checks (`pr-checks.yml`)
-Runs on all PRs:
-- Linting (ESLint)
-- Type checking (TypeScript)
-- Tests (future: add vitest)
-- Format checking (Prettier)
-
-### Deploy Preview (`deploy-preview.yml`)
-- Triggers on PR open/update
-- Deploys to preview environment
-- Adds preview URL to PR comments
-
-### Deploy Staging (`deploy-staging.yml`)
-- Triggers on push to `staging` branch
-- Deploys to umbrella-staging.workers.dev
-- Runs against staging D1/KV/R2
-
-### Deploy Production (`deploy-production.yml`)
-- Triggers on push to `main` branch
-- Deploys to umbrella.app
-- Runs against production D1/KV/R2
-- Requires manual approval (add protection rule)
-
-### Claude Code (`claude-code.yml`)
-- Auto-labels PRs created by Claude Code
-- Runs additional validation
-- Posts progress updates
-
-### Commitlint (`commitlint.yml`)
-- Enforces conventional commits
-- Blocks PRs with invalid commit messages
-
-## Build Scripts
-
-### `scripts/build-worker.js`
-Bundles Worker code with esbuild:
-- Resolves TypeScript
-- Bundles dependencies
-- Outputs to `dist/worker.js`
-
-### `scripts/setup-cloudflare.sh`
-Bootstraps Cloudflare resources:
-- Creates D1 database
-- Creates KV namespace
-- Creates R2 bucket
-- Prints IDs for wrangler.toml
-
-## Configuration Files
-
-### Vite (`vite.config.ts`)
-- React plugin
-- Path aliases (`@/*` → `./src/*`)
-- Proxy `/v1/*` to Worker (dev only)
-
-### TypeScript (`tsconfig.json`)
-- Strict mode enabled
-- Path aliases configured
-- React JSX transform
-- ES2022 target
-
-### Tailwind (`tailwind.config.cjs`)
-- Content paths for purging
-- Custom theme colors
-- shadcn/ui presets
-
-### ESLint (`eslint.config.js`)
-- TypeScript rules
-- React rules
-- Import sorting
-- Prettier integration
-
-### Prettier (`.prettierrc`)
-- Single quotes
-- 2-space indent
-- Semicolons
-- Trailing commas
-
-## Package Scripts
-
-```json
-{
-  "dev": "vite",                    // Frontend dev server
-  "dev:worker": "wrangler dev",     // Worker dev server
-  "build": "vite build",            // Build frontend
-  "build:worker": "build script",   // Build worker
-  "lint": "eslint .",               // Lint code
-  "format": "prettier --write .",   // Format code
-  "type-check": "tsc --noEmit",     // Check types
-  "migrate": "wrangler d1 ...",     // Run migrations
-  "deploy": "build + wrangler"      // Deploy both
-}
-```
-
-## Dependencies
-
-### Production
-- React 18 + React DOM
-- All Radix UI components (shadcn/ui)
-- lucide-react (icons)
-- class-variance-authority (CVA)
-- clsx + tailwind-merge
-
-### Development
-- Vite 5
-- TypeScript 5
-- Wrangler 3
-- Tailwind CSS 3
-- ESLint + Prettier
-- Cloudflare Workers types
-
-## Environment Variables
-
-Required secrets (set with `wrangler secret put`):
-- `CLAUDE_API_KEY` - Anthropic API key
-- `RESEND_API_KEY` - Resend email API
-- `TWILIO_ACCOUNT_SID` - Twilio account
-- `TWILIO_AUTH_TOKEN` - Twilio auth
-- `TWILIO_PHONE_NUMBER` - Twilio phone
-- `JWT_SECRET` - Session signing
-
-## Git Workflow
-
-### Branching
-```
-main (production)
-  ↑
-staging (pre-production)
-  ↑
-dev (development)
-  ↑
-feature/* (feature branches)
-```
-
-### Commit Convention
-```
-feat: Add artist onboarding
-fix: Resolve auth token validation
-docs: Update API documentation
-chore: Upgrade dependencies
-refactor: Simplify gig filtering
-test: Add marketplace tests
-```
-
-## Next Steps
-1. Add Vitest for testing
-2. Add Storybook for component development
-3. Set up Sentry error tracking
-4. Add performance monitoring
-5. Configure branch protection rules
-6. Set up secret management (GitHub Actions)
-
-## Testing Workflows
-
-```bash
-# Trigger PR checks manually
-git push origin feature/my-feature
-
-# Test build locally
-npm run build
-npm run build:worker
-
-# Test deploy (to preview)
-npx wrangler deploy --env preview
-```
-
-## Troubleshooting
-
-### Build Fails
-- Check TypeScript errors: `npm run type-check`
-- Check for missing dependencies: `npm ci`
-
-### Deploy Fails
-- Verify CLOUDFLARE_API_TOKEN secret is set
-- Check wrangler.toml has correct resource IDs
-- Verify migrations applied: `npm run migrate`
-
-### Dev Server Issues
-- Check ports 5173 (Vite) and 8787 (Worker) are free
-- Verify `.dev.vars` has required keys
-- Check D1 database created locally
-```
-
-## File Boundaries (DO NOT TOUCH)
-❌ Do NOT create any files in:
-- `api/*` except scripts if needed (Session 1)
-- `src/*` (Session 2)
-- `db/migrations/` (Session 3)
-
-✅ Only create files in:
-- `.github/workflows/`
-- `scripts/`
-- Root config files (vite, typescript, tailwind, etc.)
-- `.gitignore`
-- `README.md`
-- `/docs/devops-build-config.md`
-
-## Success Criteria
-- [ ] All workflows pass validation
-- [ ] Can run `npm install` successfully
-- [ ] Can run `npm run build` successfully
-- [ ] All config files valid (no syntax errors)
-- [ ] README complete
-- [ ] Documentation complete
-```
+## Version History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0 | 2025-11-15 | Initial session management documentation |
 
 ---
 
-## **Execution Instructions**
+**Document Status:** ✅ Ready for Development
 
-1. **Run all 4 sessions in parallel** (separate terminals/machines)
-2. **Each session creates a PR to `dev` branch:**
-   - `infra/backend-api-auth` → Session 1
-   - `infra/ui-components-hooks` → Session 2
-   - `infra/database-models` → Session 3
-   - `infra/devops-build-config` → Session 4
+**Related Documents:**
+- `docs/API_CONTRACT.md` - API endpoint specifications
+- `docs/database-schema.md` - Database schema and models
+- `docs/AUTH.md` - Authentication flow details
 
-3. **File boundaries ensure no conflicts**
-4. **After all 4 PRs merge:**
-   ```bash
-   # Test the complete infrastructure
-   npm install
-   npm run migrate
-   npm run dev        # Terminal 1
-   npm run dev:worker # Terminal 2
-   
-   # Should see:
-   # - React app at localhost:5173
-   # - Worker at localhost:8787
-   # - No build errors
-   ```
+**Next Steps:**
+1. Configure Clerk application
+2. Implement backend session middleware
+3. Integrate Clerk SDK in frontend
+4. Test OAuth flows (Apple + Google)
+5. Set up session monitoring
 
-5. **Next phase:** Start building domain features (onboarding, marketplace, etc.)
-
-Each session is fully independent and creates production-ready infrastructure that later sessions can build upon. The `/docs/*.md` files created by each session guide the next phase of development.
+**Questions or Issues:** Contact technical lead or create issue in project repo.
