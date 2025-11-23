@@ -264,6 +264,7 @@ export class MockD1Database implements D1Database {
     this.tables.set('files', new Map())
     this.tables.set('analytics_daily', new Map())
     this.tables.set('violet_prompts', new Map())
+    this.tables.set('violet_usage', new Map())
   }
 
   prepare(query: string): D1PreparedStatement {
@@ -387,6 +388,63 @@ export class MockD1Database implements D1Database {
       }
     }
 
+    // Violet usage (AI service usage tracking)
+    if (query.includes('from violet_usage')) {
+      const usage = this.tables.get('violet_usage')!
+
+      // COUNT queries for daily limit checks
+      if (query.includes('count(*)')) {
+        if (query.includes('where artist_id') && query.includes('date')) {
+          // Daily usage count
+          const [artistId, date] = values
+          const count = Array.from(usage.values()).filter(
+            (u) => u.artist_id === artistId && u.date === date
+          ).length
+          return mode === 'all' ? [{ count }] : { count }
+        }
+      }
+
+      // SUM queries for token usage
+      if (query.includes('sum(') && query.includes('response_tokens')) {
+        const artistId = values[0]
+        const cutoffDate = values[1]
+        const records = Array.from(usage.values()).filter(
+          (u) => u.artist_id === artistId && u.date >= cutoffDate
+        )
+        const total_tokens = records.reduce((sum, r) => sum + (r.response_tokens || 0), 0)
+        return mode === 'all' ? [{ total_tokens }] : { total_tokens }
+      }
+
+      // GROUP BY queries for feature breakdown
+      if (query.includes('group by') && query.includes('feature_used')) {
+        const artistId = values[0]
+        const cutoffDate = values[1]
+        const records = Array.from(usage.values()).filter(
+          (u) => u.artist_id === artistId && u.date >= cutoffDate
+        )
+
+        // Aggregate by feature
+        const byFeature: Record<string, number> = {}
+        records.forEach((r) => {
+          byFeature[r.feature_used] = (byFeature[r.feature_used] || 0) + 1
+        })
+
+        const results = Object.entries(byFeature).map(([feature_used, count]) => ({
+          feature_used,
+          count,
+        }))
+
+        return mode === 'all' ? results : results[0] || null
+      }
+
+      // Simple WHERE queries
+      if (query.includes('where artist_id')) {
+        const artistId = values[0]
+        const results = Array.from(usage.values()).filter((u) => u.artist_id === artistId)
+        return mode === 'all' ? results : results[0] || null
+      }
+    }
+
     return mode === 'all' ? [] : null
   }
 
@@ -448,6 +506,22 @@ export class MockD1Database implements D1Database {
         prompt: values[2],
         response: values[3],
         created_at: values[4],
+      })
+      return { changes: 1 }
+    }
+
+    if (query.includes('into violet_usage')) {
+      const usage = this.tables.get('violet_usage')!
+      const id = values[0]
+      usage.set(id, {
+        id,
+        artist_id: values[1],
+        date: values[2],
+        prompt_count: values[3],
+        feature_used: values[4],
+        prompt_text: values[5],
+        response_tokens: values[6],
+        created_at: values[7],
       })
       return { changes: 1 }
     }

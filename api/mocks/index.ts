@@ -11,7 +11,12 @@ import { MockR2Service, createMockR2Service } from './r2'
 // Real service imports (when available in M10)
 // import { ResendEmailService, createResendService } from '../services/resend'
 // import { TwilioSMSService, createTwilioService } from '../services/twilio'
-// import { ClaudeAPIService, createClaudeService } from '../services/claude'
+import { ClaudeAPIService, createClaudeService } from '../services/claude'
+
+/**
+ * Union type for AI service (supports both mock and real)
+ */
+type AIService = MockClaudeService | ClaudeAPIService
 
 /**
  * Environment interface for type safety
@@ -23,6 +28,7 @@ export interface Env {
   TWILIO_AUTH_TOKEN?: string
   TWILIO_FROM_PHONE?: string
   ANTHROPIC_API_KEY?: string
+  CLAUDE_API_KEY?: string // Alternative name for Claude API key
   DB?: D1Database
   BUCKET?: R2Bucket
   KV?: KVNamespace
@@ -80,22 +86,33 @@ export function getSMSService(env: Env): MockTwilioService {
 /**
  * Get AI service (mock or real based on environment)
  * @param env - Environment variables
- * @returns AI service instance
+ * @returns AI service instance (mock or real)
  */
-export function getAIService(env: Env): MockClaudeService {
+export function getAIService(env: Env): AIService {
   const useMocks = env.USE_MOCKS === 'true' || env.USE_MOCKS === undefined
 
-  if (useMocks || !env.ANTHROPIC_API_KEY || !env.DB) {
-    console.log('[SERVICE FACTORY] Using mock Claude AI service')
-    return createMockClaudeService()
+  // Check API key (support both ANTHROPIC_API_KEY and CLAUDE_API_KEY)
+  const apiKey = env.ANTHROPIC_API_KEY || env.CLAUDE_API_KEY
+
+  // Check if we should use real service
+  const shouldUseReal = !useMocks && apiKey && env.DB
+
+  if (shouldUseReal) {
+    try {
+      console.log('[SERVICE FACTORY] Using real Claude AI service')
+      // CRITICAL: Set useRealAPI to true to enable real API calls
+      return createClaudeService(apiKey!, env.DB!, true)
+    } catch (error) {
+      console.error(
+        '[SERVICE FACTORY] Failed to initialize real AI service, falling back to mock:',
+        error
+      )
+      return createMockClaudeService()
+    }
   }
 
-  // Real service implementation (M10)
-  // console.log('[SERVICE FACTORY] Using real Claude AI service')
-  // return createClaudeService(env.ANTHROPIC_API_KEY, env.DB, true)
-
-  // Default to mock until M10
-  console.log('[SERVICE FACTORY] Using mock Claude AI service (real service not yet implemented)')
+  // Default to mock for development/preview or if real service unavailable
+  console.log('[SERVICE FACTORY] Using mock Claude AI service')
   return createMockClaudeService()
 }
 
@@ -144,12 +161,16 @@ export function getServiceStatus(env: Env): {
 } {
   const mockMode = isMockMode(env)
 
+  // Check if real AI service would be used (support both API key names)
+  const apiKey = env.ANTHROPIC_API_KEY || env.CLAUDE_API_KEY
+  const aiService = !mockMode && apiKey && env.DB ? 'real' : 'mock'
+
   return {
     mockMode,
     services: {
       email: mockMode || !env.RESEND_API_KEY ? 'mock' : 'real',
       sms: mockMode || !env.TWILIO_ACCOUNT_SID ? 'mock' : 'real',
-      ai: mockMode || !env.ANTHROPIC_API_KEY ? 'mock' : 'real',
+      ai: aiService,
       storage: mockMode || !env.BUCKET ? 'mock' : 'real',
     },
   }
