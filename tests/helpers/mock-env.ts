@@ -267,6 +267,8 @@ export class MockD1Database implements D1Database {
     this.tables.set('email_delivery_log', new Map())
     this.tables.set('email_delivery_queue', new Map())
     this.tables.set('unsubscribe_list', new Map())
+    this.tables.set('sms_delivery_log', new Map())
+    this.tables.set('sms_delivery_queue', new Map())
   }
 
   prepare(query: string): D1PreparedStatement {
@@ -415,6 +417,56 @@ export class MockD1Database implements D1Database {
       }
     }
 
+    // SMS delivery log
+    if (query.includes('from sms_delivery_log')) {
+      const logs = this.tables.get('sms_delivery_log')!
+
+      if (query.includes('where artist_id') && query.includes('created_at >=')) {
+        const [artistId, cutoffDate] = values
+        const results = Array.from(logs.values()).filter(
+          (log) => log.artistId === artistId && log.createdAt >= cutoffDate
+        )
+
+        // Handle COUNT queries
+        if (query.includes('count(*)')) {
+          const totalSent = results.length
+          const successCount = results.filter((log) => log.status === 'success').length
+          const failureCount = results.filter((log) =>
+            log.status === 'failed' || log.status === 'undelivered'
+          ).length
+
+          return mode === 'all'
+            ? [{ total_sent: totalSent, success_count: successCount, failure_count: failureCount }]
+            : { total_sent: totalSent, success_count: successCount, failure_count: failureCount }
+        }
+
+        return mode === 'all' ? results : results[0] || null
+      }
+
+      if (mode === 'all' && !query.includes('where')) {
+        return Array.from(logs.values())
+      }
+    }
+
+    // SMS delivery queue
+    if (query.includes('from sms_delivery_queue')) {
+      const queue = this.tables.get('sms_delivery_queue')!
+
+      if (query.includes('where status') && query.includes('order by created_at')) {
+        const results = Array.from(queue.values())
+          .filter((item) => item.status === values[0])
+          .filter((item) => !values[1] || !item.nextRetryAt || item.nextRetryAt <= values[1])
+          .sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''))
+          .slice(0, query.includes('limit') ? 100 : undefined)
+
+        return mode === 'all' ? results : results[0] || null
+      }
+
+      if (mode === 'all' && !query.includes('where')) {
+        return Array.from(queue.values())
+      }
+    }
+
     return mode === 'all' ? [] : null
   }
 
@@ -544,6 +596,45 @@ export class MockD1Database implements D1Database {
       return { changes: 1 }
     }
 
+    // SMS delivery log
+    if (query.includes('into sms_delivery_log')) {
+      const logs = this.tables.get('sms_delivery_log')!
+      const id = values[0]
+      logs.set(id, {
+        id,
+        toPhone: values[1],
+        messageType: values[2],
+        status: values[3],
+        errorMessage: values[4],
+        externalId: values[5],
+        artistId: values[6],
+        createdAt: values[7],
+      })
+      return { changes: 1 }
+    }
+
+    // SMS delivery queue
+    if (query.includes('into sms_delivery_queue')) {
+      const queue = this.tables.get('sms_delivery_queue')!
+      const id = values[0]
+      queue.set(id, {
+        id,
+        toPhone: values[1],
+        fromPhone: values[2],
+        message: values[3],
+        messageType: values[4],
+        retryCount: values[5],
+        maxRetries: values[6],
+        nextRetryAt: values[7],
+        status: values[8],
+        artistId: values[9],
+        createdAt: values[10],
+        updatedAt: values[11],
+        lastError: null,
+      })
+      return { changes: 1 }
+    }
+
     return { changes: 1 }
   }
 
@@ -599,6 +690,42 @@ export class MockD1Database implements D1Database {
 
         // Update last error
         if (query.includes('last_error') && !query.includes('retry_count')) {
+          item.status = values[0]
+          item.lastError = values[1]
+          item.updatedAt = values[2] || now
+        }
+
+        queue.set(itemId, item)
+        return { changes: 1 }
+      }
+    }
+
+    // SMS delivery queue updates
+    if (query.includes('update sms_delivery_queue')) {
+      const queue = this.tables.get('sms_delivery_queue')!
+      const itemId = values[values.length - 1]
+      const item = queue.get(itemId)
+
+      if (item) {
+        const now = new Date().toISOString()
+
+        // Update status
+        if (query.includes('set status') && !query.includes('retry_count')) {
+          item.status = values[0]
+          item.updatedAt = values[1] || now
+        }
+
+        // Update retry count and next retry time
+        if (query.includes('retry_count')) {
+          item.retryCount = values[0]
+          item.nextRetryAt = values[1]
+          item.lastError = values[2]
+          item.status = values[3]
+          item.updatedAt = values[4] || now
+        }
+
+        // Update last error
+        if (query.includes('last_error') && !query.includes('retry_count') && !query.includes('set status')) {
           item.status = values[0]
           item.lastError = values[1]
           item.updatedAt = values[2] || now
