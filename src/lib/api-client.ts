@@ -79,6 +79,11 @@ class APIClient {
       return MOCK_DASHBOARD_METRICS as unknown as T
     }
     
+    // Return empty arrays for unsupported list endpoints to prevent crashes
+    if (endpoint.includes('/reviews') || endpoint.includes('/tracks') || endpoint.includes('/lists')) {
+      return [] as unknown as T
+    }
+
     if (endpoint.includes('/gigs')) {
       if (endpoint.includes('/gigs/')) {
         return MOCK_GIGS[0] as unknown as T
