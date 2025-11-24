@@ -1,6 +1,12 @@
-import { HelpCircle } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { HelpCircle } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface PermissionScopeRowProps {
   name: string
@@ -22,8 +28,8 @@ export function PermissionScopeRow({
   disabled = false,
 }: PermissionScopeRowProps) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center py-3 border-b last:border-b-0">
-      <div className="flex-1 space-y-1 mb-2 sm:mb-0">
+    <div className="flex flex-col border-b py-3 last:border-b-0 sm:flex-row sm:items-center">
+      <div className="mb-2 flex-1 space-y-1 sm:mb-0">
         <div className="flex items-center gap-1.5">
           <h4 className="text-sm font-medium">{name}</h4>
           {helpText && (

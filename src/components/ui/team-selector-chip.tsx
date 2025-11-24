@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button"
-import { X } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from '@/components/ui/button'
+import { X } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 interface Team {
   id: string
@@ -25,12 +25,15 @@ export function TeamSelectorChip({ team, onRemove, disabled = false }: TeamSelec
       style={{ borderColor: team.color ? `${team.color}50` : undefined }}
     >
       <Avatar className="h-5 w-5">
-        <AvatarImage src={team.avatar || "/placeholder.svg"} alt={team.name} />
-        <AvatarFallback style={{ backgroundColor: team.color || "#e2e8f0" }} className="text-[10px] text-white">
+        <AvatarImage src={team.avatar || '/placeholder.svg'} alt={team.name} />
+        <AvatarFallback
+          style={{ backgroundColor: team.color || '#e2e8f0' }}
+          className="text-[10px] text-white"
+        >
           {team.name
-            .split(" ")
+            .split(' ')
             .map((word) => word[0])
-            .join("")
+            .join('')
             .toUpperCase()
             .substring(0, 2)}
         </AvatarFallback>

@@ -62,13 +62,7 @@ export const listConversations: RouteHandler = async (ctx) => {
       }>()
 
     if (!conversations.results || conversations.results.length === 0) {
-      return successResponse(
-        {
-          conversations: [],
-        },
-        200,
-        ctx.requestId
-      )
+      return successResponse([], 200, ctx.requestId)
     }
 
     // Get all unique participant IDs
@@ -151,13 +145,7 @@ export const listConversations: RouteHandler = async (ctx) => {
       }
     })
 
-    return successResponse(
-      {
-        conversations: formattedConversations,
-      },
-      200,
-      ctx.requestId
-    )
+    return successResponse(formattedConversations, 200, ctx.requestId)
   } catch (error) {
     return errorResponse(
       ErrorCodes.DATABASE_ERROR,

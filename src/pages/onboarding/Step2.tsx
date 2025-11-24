@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSession } from '@clerk/clerk-react'
+import { apiClient } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -83,9 +84,7 @@ export default function Step2() {
    * Count filled social links
    */
   const countFilledLinks = (): number => {
-    return Object.values(socialLinks).filter(
-      (link) => link && link.trim().length > 0
-    ).length
+    return Object.values(socialLinks).filter((link) => link && link.trim().length > 0).length
   }
 
   /**
@@ -128,10 +127,12 @@ export default function Step2() {
 
     // Validate handles
     if (socialLinks.instagram_handle && !isValidHandle(socialLinks.instagram_handle)) {
-      newErrors.instagram_handle = 'Invalid Instagram handle (no @ symbol, alphanumeric, dots, underscores only)'
+      newErrors.instagram_handle =
+        'Invalid Instagram handle (no @ symbol, alphanumeric, dots, underscores only)'
     }
     if (socialLinks.tiktok_handle && !isValidHandle(socialLinks.tiktok_handle)) {
-      newErrors.tiktok_handle = 'Invalid TikTok handle (no @ symbol, alphanumeric, dots, underscores only)'
+      newErrors.tiktok_handle =
+        'Invalid TikTok handle (no @ symbol, alphanumeric, dots, underscores only)'
     }
 
     // Validate character limits for qualitative answers
@@ -174,35 +175,30 @@ export default function Step2() {
         ...answers,
       }
 
-      const response = await fetch('/v1/onboarding/artists/step2', {
+      // Use apiClient for consistent request handling (auth, logging, errors)
+      await apiClient.request('/onboarding/artists/step2', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify(requestBody),
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        // Handle validation errors from API
-        if (data.error && data.error.code === 'VALIDATION_ERROR') {
-          const apiErrors = JSON.parse(data.error.message)
-          setErrors(apiErrors)
-        } else {
-          throw new Error(data.error?.message || 'Failed to submit step 2')
-        }
-        return
-      }
 
       // Success - navigate to step 3
       navigate('/onboarding/artists/step3')
     } catch (error) {
       console.error('Error submitting step 2:', error)
-      setErrors({
-        general: error instanceof Error ? error.message : 'An error occurred. Please try again.',
-      })
+      const message =
+        error instanceof Error ? error.message : 'An error occurred. Please try again.'
+
+      // Handle "Step 1 must be completed first" error specifically
+      if (message.includes('Step 1 must be completed first')) {
+        setErrors({
+          general: 'Please complete Step 1 first. Redirecting...',
+        })
+        setTimeout(() => navigate('/onboarding/artists/step1'), 2000)
+      } else {
+        setErrors({
+          general: message,
+        })
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -216,14 +212,14 @@ export default function Step2() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-2xl space-y-8">
         {/* Progress Indicator */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold mb-2">Onboarding</h1>
+          <h1 className="mb-2 text-3xl font-bold">Onboarding</h1>
           <p className="text-muted-foreground">Step 2 of 5</p>
-          <div className="mt-4 w-full bg-secondary rounded-full h-2">
-            <div className="bg-primary h-2 rounded-full" style={{ width: '40%' }} />
+          <div className="mt-4 h-2 w-full rounded-full bg-secondary">
+            <div className="h-2 rounded-full bg-primary" style={{ width: '40%' }} />
           </div>
         </div>
 
@@ -231,17 +227,17 @@ export default function Step2() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div>
-              <h2 className="text-2xl font-semibold mb-2">Connect Your Social Links</h2>
-              <p className="text-sm text-muted-foreground mb-4">
+              <h2 className="mb-2 text-2xl font-semibold">Connect Your Social Links</h2>
+              <p className="mb-4 text-sm text-muted-foreground">
                 Add at least 3 social media links to help people find and connect with you
               </p>
               {errors.social_links && (
-                <p className="text-sm text-destructive mb-4">{errors.social_links}</p>
+                <p className="mb-4 text-sm text-destructive">{errors.social_links}</p>
               )}
             </div>
 
             {/* Social Links Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {/* Instagram */}
               <div className="space-y-2">
                 <Label htmlFor="instagram">Instagram Handle</Label>
@@ -284,9 +280,7 @@ export default function Step2() {
                   type="url"
                   placeholder="https://open.spotify.com/artist/..."
                   value={socialLinks.spotify_url}
-                  onChange={(e) =>
-                    setSocialLinks({ ...socialLinks, spotify_url: e.target.value })
-                  }
+                  onChange={(e) => setSocialLinks({ ...socialLinks, spotify_url: e.target.value })}
                 />
                 {errors.spotify_url && (
                   <p className="text-xs text-destructive">{errors.spotify_url}</p>
@@ -318,9 +312,7 @@ export default function Step2() {
                   type="url"
                   placeholder="https://youtube.com/@username"
                   value={socialLinks.youtube_url}
-                  onChange={(e) =>
-                    setSocialLinks({ ...socialLinks, youtube_url: e.target.value })
-                  }
+                  onChange={(e) => setSocialLinks({ ...socialLinks, youtube_url: e.target.value })}
                 />
                 {errors.youtube_url && (
                   <p className="text-xs text-destructive">{errors.youtube_url}</p>
@@ -352,9 +344,7 @@ export default function Step2() {
                   type="url"
                   placeholder="https://facebook.com/username"
                   value={socialLinks.facebook_url}
-                  onChange={(e) =>
-                    setSocialLinks({ ...socialLinks, facebook_url: e.target.value })
-                  }
+                  onChange={(e) => setSocialLinks({ ...socialLinks, facebook_url: e.target.value })}
                 />
                 {errors.facebook_url && (
                   <p className="text-xs text-destructive">{errors.facebook_url}</p>
@@ -369,9 +359,7 @@ export default function Step2() {
                   type="url"
                   placeholder="https://twitter.com/username"
                   value={socialLinks.twitter_url}
-                  onChange={(e) =>
-                    setSocialLinks({ ...socialLinks, twitter_url: e.target.value })
-                  }
+                  onChange={(e) => setSocialLinks({ ...socialLinks, twitter_url: e.target.value })}
                 />
                 {errors.twitter_url && (
                   <p className="text-xs text-destructive">{errors.twitter_url}</p>
@@ -386,9 +374,7 @@ export default function Step2() {
                   type="url"
                   placeholder="https://username.bandcamp.com"
                   value={socialLinks.bandcamp_url}
-                  onChange={(e) =>
-                    setSocialLinks({ ...socialLinks, bandcamp_url: e.target.value })
-                  }
+                  onChange={(e) => setSocialLinks({ ...socialLinks, bandcamp_url: e.target.value })}
                 />
                 {errors.bandcamp_url && (
                   <p className="text-xs text-destructive">{errors.bandcamp_url}</p>
@@ -403,9 +389,7 @@ export default function Step2() {
                   type="url"
                   placeholder="https://yourwebsite.com"
                   value={socialLinks.website_url}
-                  onChange={(e) =>
-                    setSocialLinks({ ...socialLinks, website_url: e.target.value })
-                  }
+                  onChange={(e) => setSocialLinks({ ...socialLinks, website_url: e.target.value })}
                 />
                 {errors.website_url && (
                   <p className="text-xs text-destructive">{errors.website_url}</p>
@@ -420,24 +404,20 @@ export default function Step2() {
           </div>
 
           {/* Qualitative Questions */}
-          <div className="space-y-4 pt-4 border-t">
-            <h2 className="text-2xl font-semibold mb-2">Tell Us Your Story</h2>
-            <p className="text-sm text-muted-foreground mb-4">
+          <div className="space-y-4 border-t pt-4">
+            <h2 className="mb-2 text-2xl font-semibold">Tell Us Your Story</h2>
+            <p className="mb-4 text-sm text-muted-foreground">
               Help us understand your creative journey
             </p>
 
             {/* Tasks to Outsource */}
             <div className="space-y-2">
-              <Label htmlFor="tasks-outsource">
-                What tasks would you outsource if you could?
-              </Label>
+              <Label htmlFor="tasks-outsource">What tasks would you outsource if you could?</Label>
               <Textarea
                 id="tasks-outsource"
                 placeholder="e.g., Booking, social media management, mixing and mastering..."
                 value={answers.tasks_outsource}
-                onChange={(e) =>
-                  setAnswers({ ...answers, tasks_outsource: e.target.value })
-                }
+                onChange={(e) => setAnswers({ ...answers, tasks_outsource: e.target.value })}
                 rows={3}
                 maxLength={500}
               />
@@ -449,16 +429,12 @@ export default function Step2() {
 
             {/* Sound Uniqueness */}
             <div className="space-y-2">
-              <Label htmlFor="sound-uniqueness">
-                What makes your sound unique?
-              </Label>
+              <Label htmlFor="sound-uniqueness">What makes your sound unique?</Label>
               <Textarea
                 id="sound-uniqueness"
                 placeholder="Describe what sets your music apart..."
                 value={answers.sound_uniqueness}
-                onChange={(e) =>
-                  setAnswers({ ...answers, sound_uniqueness: e.target.value })
-                }
+                onChange={(e) => setAnswers({ ...answers, sound_uniqueness: e.target.value })}
                 rows={3}
                 maxLength={500}
               />
@@ -470,16 +446,12 @@ export default function Step2() {
 
             {/* Dream Venue */}
             <div className="space-y-2">
-              <Label htmlFor="dream-venue">
-                What's your dream performance venue?
-              </Label>
+              <Label htmlFor="dream-venue">What's your dream performance venue?</Label>
               <Textarea
                 id="dream-venue"
                 placeholder="e.g., Red Rocks Amphitheatre, Madison Square Garden..."
                 value={answers.dream_venue}
-                onChange={(e) =>
-                  setAnswers({ ...answers, dream_venue: e.target.value })
-                }
+                onChange={(e) => setAnswers({ ...answers, dream_venue: e.target.value })}
                 rows={2}
                 maxLength={200}
               />
@@ -492,7 +464,7 @@ export default function Step2() {
 
           {/* General Error */}
           {errors.general && (
-            <div className="p-4 bg-destructive/10 border border-destructive rounded-md">
+            <div className="rounded-md border border-destructive bg-destructive/10 p-4">
               <p className="text-sm text-destructive">{errors.general}</p>
             </div>
           )}
@@ -508,11 +480,7 @@ export default function Step2() {
             >
               Back
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1"
-            >
+            <Button type="submit" disabled={isSubmitting} className="flex-1">
               {isSubmitting ? 'Saving...' : 'Next'}
             </Button>
           </div>

@@ -47,6 +47,10 @@ export function MockAuthProvider({ children }: { children: ReactNode }) {
     console.log('Demo Mode: Sign out (no-op)')
   }
 
+  const checkSession = async () => {
+    console.log('Demo Mode: Check session (no-op)')
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -55,6 +59,7 @@ export function MockAuthProvider({ children }: { children: ReactNode }) {
         signInWithApple,
         signInWithGoogle,
         signOut,
+        checkSession,
         clerkUser: mockClerkUser,
       }}
     >

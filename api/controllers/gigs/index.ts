@@ -115,6 +115,7 @@ export const listGigs: RouteHandler = async (ctx) => {
         start_time: gig.start_time,
         end_time: gig.end_time,
         genre: gig.genre,
+        genre_tags: gig.genre ? [gig.genre] : [], // Map single genre to tags array for frontend compatibility
         capacity: gig.capacity,
         filled_slots: gig.filled_slots,
         capacity_filled_percentage: capacityFilled,
@@ -126,15 +127,15 @@ export const listGigs: RouteHandler = async (ctx) => {
     })
 
     // Return response with gigs and pagination metadata
+    // Frontend expects: { data, total, page, limit, has_more }
+    const page = Math.floor(offset / limit) + 1
     return successResponse(
       {
-        gigs: gigsWithUrgency,
-        total_count: totalCount,
-        pagination: {
-          limit,
-          offset,
-          has_more: offset + gigs.length < totalCount,
-        },
+        data: gigsWithUrgency,
+        total: totalCount,
+        page,
+        limit,
+        has_more: offset + gigs.length < totalCount,
       },
       200,
       ctx.requestId
@@ -280,8 +281,24 @@ export const getGig: RouteHandler = async (ctx) => {
 }
 
 /**
- * Create new gig
+ * Create new gig (Venue Owners only)
  * POST /v1/gigs
+ *
+ * Request body:
+ * - title: string (required)
+ * - description: string (optional)
+ * - venue_name: string (required)
+ * - location_city: string (required)
+ * - location_state: string (required)
+ * - location_address: string (optional)
+ * - location_zip: string (optional)
+ * - date: ISO date string (required)
+ * - start_time: HH:MM (optional)
+ * - end_time: HH:MM (optional)
+ * - genre: string (optional)
+ * - capacity: number (optional)
+ * - payment_amount: number (optional)
+ * - payment_type: 'flat' | 'hourly' | 'negotiable' (optional)
  */
 export const createGig: RouteHandler = async (ctx) => {
   if (!ctx.userId) {
@@ -294,15 +311,86 @@ export const createGig: RouteHandler = async (ctx) => {
     )
   }
 
-  // TODO: Implement gig creation
-  return successResponse(
-    {
-      message: 'Gig created successfully',
-      id: 'new-gig-id',
-    },
-    201,
-    ctx.requestId
-  )
+  try {
+    const { generateUUIDv4 } = await import('../../utils/uuid')
+    const body = await ctx.request.json() as any
+
+    // Validate required fields
+    if (!body.title || !body.venue_name || !body.location_city || !body.location_state || !body.date) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'Missing required fields: title, venue_name, location_city, location_state, date',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Validate payment_type if provided
+    if (body.payment_type && !['flat', 'hourly', 'negotiable'].includes(body.payment_type)) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'Invalid payment_type. Must be one of: flat, hourly, negotiable',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    const gigId = generateUUIDv4()
+    const now = new Date().toISOString()
+
+    // Insert gig into database
+    await ctx.env.DB.prepare(`
+      INSERT INTO gigs (
+        id, venue_id, title, description, venue_name,
+        location_city, location_state, location_address, location_zip,
+        date, start_time, end_time, genre, capacity, filled_slots,
+        payment_amount, payment_type, status, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, 'open', ?, ?)
+    `).bind(
+      gigId,
+      ctx.userId,
+      body.title,
+      body.description || null,
+      body.venue_name,
+      body.location_city,
+      body.location_state,
+      body.location_address || null,
+      body.location_zip || null,
+      body.date,
+      body.start_time || null,
+      body.end_time || null,
+      body.genre || null,
+      body.capacity || null,
+      body.payment_amount || null,
+      body.payment_type || 'negotiable',
+      now,
+      now
+    ).run()
+
+    return successResponse(
+      {
+        message: 'Gig created successfully',
+        id: gigId,
+        title: body.title,
+        date: body.date,
+        location: `${body.location_city}, ${body.location_state}`,
+        status: 'open',
+      },
+      201,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error creating gig:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to create gig',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
 }
 
 /**
@@ -583,7 +671,413 @@ export const applyToGig: RouteHandler = async (ctx) => {
 }
 
 /**
- * Get my gig applications
+ * Update gig (Venue Owners only - own gigs)
+ * PUT /v1/gigs/:id
+ */
+export const updateGig: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  const { id } = ctx.params
+
+  try {
+    const body = await ctx.request.json() as any
+
+    // Verify gig belongs to this user
+    const existingGig = await ctx.env.DB.prepare(
+      'SELECT id FROM gigs WHERE id = ? AND venue_id = ?'
+    ).bind(id, ctx.userId).first()
+
+    if (!existingGig) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Gig not found or you do not have permission to edit it',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Build dynamic UPDATE query
+    const updates: string[] = []
+    const values: any[] = []
+
+    if (body.title !== undefined) {
+      updates.push('title = ?')
+      values.push(body.title)
+    }
+    if (body.description !== undefined) {
+      updates.push('description = ?')
+      values.push(body.description)
+    }
+    if (body.venue_name !== undefined) {
+      updates.push('venue_name = ?')
+      values.push(body.venue_name)
+    }
+    if (body.location_city !== undefined) {
+      updates.push('location_city = ?')
+      values.push(body.location_city)
+    }
+    if (body.location_state !== undefined) {
+      updates.push('location_state = ?')
+      values.push(body.location_state)
+    }
+    if (body.location_address !== undefined) {
+      updates.push('location_address = ?')
+      values.push(body.location_address)
+    }
+    if (body.location_zip !== undefined) {
+      updates.push('location_zip = ?')
+      values.push(body.location_zip)
+    }
+    if (body.date !== undefined) {
+      updates.push('date = ?')
+      values.push(body.date)
+    }
+    if (body.start_time !== undefined) {
+      updates.push('start_time = ?')
+      values.push(body.start_time)
+    }
+    if (body.end_time !== undefined) {
+      updates.push('end_time = ?')
+      values.push(body.end_time)
+    }
+    if (body.genre !== undefined) {
+      updates.push('genre = ?')
+      values.push(body.genre)
+    }
+    if (body.capacity !== undefined) {
+      updates.push('capacity = ?')
+      values.push(body.capacity)
+    }
+    if (body.payment_amount !== undefined) {
+      updates.push('payment_amount = ?')
+      values.push(body.payment_amount)
+    }
+    if (body.payment_type !== undefined) {
+      updates.push('payment_type = ?')
+      values.push(body.payment_type)
+    }
+
+    // Always update updated_at
+    updates.push('updated_at = ?')
+    values.push(new Date().toISOString())
+
+    if (updates.length > 0) {
+      values.push(id, ctx.userId)
+      await ctx.env.DB.prepare(`
+        UPDATE gigs
+        SET ${updates.join(', ')}
+        WHERE id = ? AND venue_id = ?
+      `).bind(...values).run()
+    }
+
+    return successResponse(
+      { message: 'Gig updated successfully', id },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error updating gig:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to update gig',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
+ * Delete/Cancel gig (Venue Owners only - own gigs)
+ * DELETE /v1/gigs/:id
+ */
+export const deleteGig: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  const { id } = ctx.params
+
+  try {
+    // Verify gig belongs to this user
+    const existingGig = await ctx.env.DB.prepare(
+      'SELECT id, status FROM gigs WHERE id = ? AND venue_id = ?'
+    ).bind(id, ctx.userId).first<any>()
+
+    if (!existingGig) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Gig not found or you do not have permission to delete it',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Update status to 'cancelled' instead of deleting (preserve data)
+    await ctx.env.DB.prepare(
+      'UPDATE gigs SET status = ?, updated_at = ? WHERE id = ?'
+    ).bind('cancelled', new Date().toISOString(), id).run()
+
+    return successResponse(
+      { message: 'Gig cancelled successfully', id },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error deleting gig:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to delete gig',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
+ * Get my posted gigs (Venue Owners)
+ * GET /v1/gigs/mine
+ */
+export const getMyGigs: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    const result = await ctx.env.DB.prepare(`
+      SELECT * FROM gigs
+      WHERE venue_id = ?
+      ORDER BY date DESC, created_at DESC
+    `).bind(ctx.userId).all()
+
+    const gigs = (result.results || []).map((gig: any) => ({
+      id: gig.id,
+      title: gig.title,
+      description: gig.description,
+      venue_name: gig.venue_name,
+      location: `${gig.location_city}, ${gig.location_state}`,
+      date: gig.date,
+      start_time: gig.start_time,
+      end_time: gig.end_time,
+      genre: gig.genre,
+      capacity: gig.capacity,
+      filled_slots: gig.filled_slots,
+      payment_amount: gig.payment_amount,
+      payment_type: gig.payment_type,
+      status: gig.status,
+      created_at: gig.created_at,
+      updated_at: gig.updated_at,
+    }))
+
+    return successResponse({ gigs }, 200, ctx.requestId)
+  } catch (error) {
+    console.error('Error fetching my gigs:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to fetch gigs',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
+ * Get applications for a specific gig (Venue Owners only - own gigs)
+ * GET /v1/gigs/:id/applications
+ */
+export const getGigApplications: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  const { id } = ctx.params
+
+  try {
+    // Verify gig belongs to this user
+    const gig = await ctx.env.DB.prepare(
+      'SELECT id FROM gigs WHERE id = ? AND venue_id = ?'
+    ).bind(id, ctx.userId).first()
+
+    if (!gig) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Gig not found or you do not have permission to view applications',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Fetch all applications for this gig with artist details
+    const result = await ctx.env.DB.prepare(`
+      SELECT
+        ga.id,
+        ga.status,
+        ga.applied_at,
+        a.id as artist_id,
+        a.stage_name,
+        a.bio,
+        a.base_rate_flat,
+        a.base_rate_hourly,
+        a.website_url,
+        a.avatar_url,
+        a.avg_rating,
+        a.total_gigs
+      FROM gig_applications ga
+      JOIN artists a ON ga.artist_id = a.id
+      WHERE ga.gig_id = ?
+      ORDER BY ga.applied_at DESC
+    `).bind(id).all()
+
+    const applications = (result.results || []).map((app: any) => ({
+      id: app.id,
+      status: app.status,
+      applied_at: app.applied_at,
+      artist: {
+        id: app.artist_id,
+        stage_name: app.stage_name,
+        bio: app.bio,
+        base_rate_flat: app.base_rate_flat,
+        base_rate_hourly: app.base_rate_hourly,
+        website_url: app.website_url,
+        avatar_url: app.avatar_url,
+        avg_rating: app.avg_rating,
+        total_gigs: app.total_gigs,
+      },
+    }))
+
+    return successResponse({ applications }, 200, ctx.requestId)
+  } catch (error) {
+    console.error('Error fetching gig applications:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to fetch applications',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
+ * Update application status (Venue Owners - accept/reject)
+ * PUT /v1/gigs/:id/applications/:appId
+ *
+ * Request body:
+ * - status: 'accepted' | 'rejected'
+ */
+export const updateApplicationStatus: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  const { id: gigId, appId } = ctx.params
+
+  try {
+    const body = await ctx.request.json() as any
+
+    // Validate status
+    if (!body.status || !['accepted', 'rejected'].includes(body.status)) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'Status must be either "accepted" or "rejected"',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Verify gig belongs to this user
+    const gig = await ctx.env.DB.prepare(
+      'SELECT id FROM gigs WHERE id = ? AND venue_id = ?'
+    ).bind(gigId, ctx.userId).first()
+
+    if (!gig) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Gig not found or you do not have permission',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Update application status
+    const result = await ctx.env.DB.prepare(
+      'UPDATE gig_applications SET status = ? WHERE id = ? AND gig_id = ?'
+    ).bind(body.status, appId, gigId).run()
+
+    if (result.meta.changes === 0) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Application not found',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // TODO: Send notification email/SMS to artist about status change
+
+    return successResponse(
+      {
+        message: `Application ${body.status} successfully`,
+        applicationId: appId,
+        status: body.status,
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error updating application status:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to update application status',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
+ * Get my gig applications (Artists)
  * GET /v1/gigs/applications
  */
 export const getMyApplications: RouteHandler = async (ctx) => {
@@ -597,18 +1091,74 @@ export const getMyApplications: RouteHandler = async (ctx) => {
     )
   }
 
-  // TODO: Implement application listing
-  return successResponse(
-    {
-      applications: [],
-    },
-    200,
-    ctx.requestId
-  )
+  try {
+    // Get artist ID from user_id
+    const artist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE user_id = ?'
+    ).bind(ctx.userId).first<{ id: string }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist profile not found. Please complete onboarding.',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Fetch all applications with gig details
+    const result = await ctx.env.DB.prepare(`
+      SELECT
+        ga.id,
+        ga.status,
+        ga.applied_at,
+        g.id as gig_id,
+        g.title,
+        g.venue_name,
+        g.location_city,
+        g.location_state,
+        g.date,
+        g.start_time,
+        g.payment_amount,
+        g.status as gig_status
+      FROM gig_applications ga
+      JOIN gigs g ON ga.gig_id = g.id
+      WHERE ga.artist_id = ?
+      ORDER BY ga.applied_at DESC
+    `).bind(artist.id).all()
+
+    const applications = (result.results || []).map((app: any) => ({
+      id: app.id,
+      status: app.status,
+      applied_at: app.applied_at,
+      gig: {
+        id: app.gig_id,
+        title: app.title,
+        venue_name: app.venue_name,
+        location: `${app.location_city}, ${app.location_state}`,
+        date: app.date,
+        start_time: app.start_time,
+        payment_amount: app.payment_amount,
+        status: app.gig_status,
+      },
+    }))
+
+    return successResponse({ applications }, 200, ctx.requestId)
+  } catch (error) {
+    console.error('Error fetching my applications:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to fetch applications',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
 }
 
 /**
- * Withdraw gig application
+ * Withdraw gig application (Artists)
  * DELETE /v1/gigs/:id/apply
  */
 export const withdrawApplication: RouteHandler = async (ctx) => {
@@ -622,15 +1172,55 @@ export const withdrawApplication: RouteHandler = async (ctx) => {
     )
   }
 
-  const { id } = ctx.params
+  const { id: gigId } = ctx.params
 
-  // TODO: Implement application withdrawal
-  return successResponse(
-    {
-      message: 'Application withdrawn successfully',
-      gigId: id,
-    },
-    200,
-    ctx.requestId
-  )
+  try {
+    // Get artist ID from user_id
+    const artist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE user_id = ?'
+    ).bind(ctx.userId).first<{ id: string }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist profile not found. Please complete onboarding.',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Delete the application
+    const result = await ctx.env.DB.prepare(
+      'DELETE FROM gig_applications WHERE gig_id = ? AND artist_id = ?'
+    ).bind(gigId, artist.id).run()
+
+    if (result.meta.changes === 0) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Application not found or already withdrawn',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    return successResponse(
+      {
+        message: 'Application withdrawn successfully',
+        gigId,
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error withdrawing application:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to withdraw application',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
 }

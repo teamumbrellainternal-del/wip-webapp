@@ -6,7 +6,11 @@ interface ConditionalFieldProps {
   show?: boolean
 }
 
-export function ConditionalField({ children, condition = true, show = true }: ConditionalFieldProps) {
+export function ConditionalField({
+  children,
+  condition = true,
+  show = true,
+}: ConditionalFieldProps) {
   if (!condition || !show) return null
   return <>{children}</>
 }

@@ -28,11 +28,11 @@ export default function LoadingState({
     <div className={containerClasses}>
       <div className="text-center">
         <div
-          className={`animate-spin rounded-full ${sizeClasses[size]} border-primary mx-auto mb-4`}
+          className={`animate-spin rounded-full ${sizeClasses[size]} mx-auto mb-4 border-primary`}
           role="status"
           aria-label="Loading"
         />
-        <p className="text-muted-foreground text-sm">{message}</p>
+        <p className="text-sm text-muted-foreground">{message}</p>
       </div>
     </div>
   )
@@ -71,7 +71,7 @@ export function LoadingSkeleton({
       {Array.from({ length: lines }).map((_, i) => (
         <div
           key={i}
-          className="h-4 bg-muted rounded animate-pulse"
+          className="h-4 animate-pulse rounded bg-muted"
           style={{ width: `${100 - i * 10}%` }}
         />
       ))}
@@ -92,14 +92,14 @@ export function LoadingOverlay({
   if (!visible) return null
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10 rounded-lg">
+    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/80 backdrop-blur-sm">
       <div className="text-center">
         <div
-          className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"
+          className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-primary"
           role="status"
           aria-label="Loading"
         />
-        <p className="text-muted-foreground text-sm">{message}</p>
+        <p className="text-sm text-muted-foreground">{message}</p>
       </div>
     </div>
   )
@@ -121,7 +121,7 @@ export function ButtonSpinner({
   return (
     <>
       {loading && (
-        <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent mr-2" />
+        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
       )}
       {loading ? loadingText : children}
     </>
@@ -145,16 +145,16 @@ export function ProgressBar({
   return (
     <div className="w-full">
       {message && (
-        <div className="flex justify-between items-center mb-2">
+        <div className="mb-2 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">{message}</p>
           {showPercentage && (
             <span className="text-sm font-medium">{Math.round(clampedProgress)}%</span>
           )}
         </div>
       )}
-      <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
         <div
-          className="bg-primary h-full transition-all duration-300 ease-out"
+          className="h-full bg-primary transition-all duration-300 ease-out"
           style={{ width: `${clampedProgress}%` }}
           role="progressbar"
           aria-valuenow={clampedProgress}

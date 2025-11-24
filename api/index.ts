@@ -91,7 +91,7 @@ function setupRouter(): Router {
   router.get('/v1/health', async (ctx) => handleHealthCheck(ctx.env))
 
   // Auth routes
-  router.post('/v1/auth/webhook', async (ctx) => handleClerkWebhook(ctx.request, ctx.env))
+  router.post('/v1/auth/webhook', async (ctx) => handleClerkWebhook(ctx.request, ctx.env, ctx.requestId))
   router.get('/v1/auth/session', async (ctx) => handleSessionCheck(ctx.request, ctx.env))
   router.post('/v1/auth/logout', async (ctx) => handleLogout(ctx.request, ctx.env))
   router.post('/v1/auth/refresh', async (ctx) => handleSessionRefresh(ctx.request, ctx.env))
@@ -127,6 +127,10 @@ function setupRouter(): Router {
 
   // New Artist Onboarding routes (incremental D1-based approach)
   router.post('/v1/onboarding/artists/step1', onboardingController.submitArtistStep1, [authMiddleware])
+  router.post('/v1/onboarding/artists/step2', onboardingController.submitArtistStep2, [authMiddleware])
+  router.post('/v1/onboarding/artists/step3', onboardingController.submitArtistStep3, [authMiddleware])
+  router.post('/v1/onboarding/artists/step4', onboardingController.submitArtistStep4, [authMiddleware])
+  router.post('/v1/onboarding/artists/step5', onboardingController.submitArtistStep5, [authMiddleware])
 
   // Tracks routes
   router.get('/v1/tracks', tracksController.listTracks, [authMiddleware])
@@ -144,12 +148,17 @@ function setupRouter(): Router {
   router.get('/v1/reviews/invite/:token', reviewsController.getReviewByToken) // Public (for pre-filling form)
 
   // Gigs routes
-  router.get('/v1/gigs', gigsController.listGigs, [authMiddleware]) // Requires auth (task-5.1)
-  router.get('/v1/gigs/applications', gigsController.getMyApplications, [authMiddleware])
-  router.get('/v1/gigs/:id', gigsController.getGig, [authMiddleware]) // Auth required (task-5.2)
-  router.post('/v1/gigs', gigsController.createGig, [authMiddleware])
-  router.post('/v1/gigs/:id/apply', gigsController.applyToGig, [authMiddleware])
-  router.delete('/v1/gigs/:id/apply', gigsController.withdrawApplication, [authMiddleware])
+  router.get('/v1/gigs', gigsController.listGigs, [authMiddleware]) // Browse marketplace
+  router.post('/v1/gigs', gigsController.createGig, [authMiddleware]) // Create gig (venue owners)
+  router.get('/v1/gigs/mine', gigsController.getMyGigs, [authMiddleware]) // My posted gigs (venue owners)
+  router.get('/v1/gigs/applications', gigsController.getMyApplications, [authMiddleware]) // My applications (artists)
+  router.get('/v1/gigs/:id', gigsController.getGig, [authMiddleware]) // View gig details
+  router.put('/v1/gigs/:id', gigsController.updateGig, [authMiddleware]) // Update gig (venue owners)
+  router.delete('/v1/gigs/:id', gigsController.deleteGig, [authMiddleware]) // Cancel gig (venue owners)
+  router.get('/v1/gigs/:id/applications', gigsController.getGigApplications, [authMiddleware]) // View applications (venue owners)
+  router.put('/v1/gigs/:id/applications/:appId', gigsController.updateApplicationStatus, [authMiddleware]) // Accept/reject (venue owners)
+  router.post('/v1/gigs/:id/apply', gigsController.applyToGig, [authMiddleware]) // Apply to gig (artists)
+  router.delete('/v1/gigs/:id/apply', gigsController.withdrawApplication, [authMiddleware]) // Withdraw application (artists)
 
   // Artists routes
   router.get('/v1/artists', artistsController.discoverArtists, [authMiddleware]) // Auth required for distance calculation (task-5.4)
@@ -193,12 +202,19 @@ function setupRouter(): Router {
 
   // Analytics routes (auth required)
   router.get('/v1/analytics', analyticsController.getAnalytics, [authMiddleware])
+  router.get('/v1/analytics/dashboard', analyticsController.getDashboard, [authMiddleware])
   router.get('/v1/analytics/profile-views', analyticsController.getProfileViews, [authMiddleware])
   router.get('/v1/analytics/gigs', analyticsController.getGigAnalytics, [authMiddleware])
   router.get('/v1/analytics/messages', analyticsController.getMessageAnalytics, [authMiddleware])
   router.get('/v1/analytics/violet', analyticsController.getVioletAnalytics, [authMiddleware])
   router.get('/v1/analytics/storage', analyticsController.getStorageAnalytics, [authMiddleware])
   router.get('/v1/analytics/spotlight', analyticsController.getSpotlightArtists) // Public (task-4.4)
+  router.get('/v1/analytics/goals', analyticsController.getGoals, [authMiddleware])
+  router.post('/v1/analytics/goals', analyticsController.createGoal, [authMiddleware])
+  router.put('/v1/analytics/goals/:id', analyticsController.updateGoal, [authMiddleware])
+  router.delete('/v1/analytics/goals/:id', analyticsController.deleteGoal, [authMiddleware])
+  router.get('/v1/analytics/achievements', analyticsController.getAchievements, [authMiddleware])
+  router.get('/v1/analytics/performance', analyticsController.getPerformance, [authMiddleware])
 
   // Broadcast routes (auth required)
   router.get('/v1/broadcasts', broadcastController.listBroadcasts, [authMiddleware])

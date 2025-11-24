@@ -1,11 +1,12 @@
-import type React from "react"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { FormDescription } from "@/components/ui/form"
-import { cn } from "@/lib/utils"
+import type React from 'react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { FormDescription } from '@/components/ui/form'
+import { cn } from '@/lib/utils'
 
-interface OverrideableFieldProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value' | 'defaultValue'> {
+interface OverrideableFieldProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value' | 'defaultValue'> {
   label: string
   description?: string
   defaultValue: string
@@ -28,7 +29,7 @@ export function OverrideableField({
   id,
   ...props
 }: OverrideableFieldProps) {
-  const fieldId = id || label.toLowerCase().replace(/\s+/g, "-")
+  const fieldId = id || label.toLowerCase().replace(/\s+/g, '-')
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value)
@@ -47,7 +48,7 @@ export function OverrideableField({
         id={fieldId}
         value={overridden ? value : defaultValue}
         onChange={handleInputChange}
-        className={cn(!overridden && "bg-muted text-muted-foreground", className)}
+        className={cn(!overridden && 'bg-muted text-muted-foreground', className)}
         readOnly={!overridden}
         {...props}
       />

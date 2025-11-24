@@ -1,12 +1,17 @@
-import { ChevronDown, ChevronRight, Settings } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
+import { ChevronDown, ChevronRight, Settings } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Badge } from '@/components/ui/badge'
 
 interface Environment {
   id: string
   name: string
-  type: "production" | "preview" | "development"
+  type: 'production' | 'preview' | 'development'
 }
 
 interface EnvironmentBreadcrumbProps {
@@ -22,14 +27,14 @@ export function EnvironmentBreadcrumb({
   onEnvironmentChange,
   onSettingsClick,
 }: EnvironmentBreadcrumbProps) {
-  const getBadgeVariant = (type: Environment["type"]) => {
+  const getBadgeVariant = (type: Environment['type']) => {
     switch (type) {
-      case "production":
-        return "default"
-      case "preview":
-        return "secondary"
-      case "development":
-        return "outline"
+      case 'production':
+        return 'default'
+      case 'preview':
+        return 'secondary'
+      case 'development':
+        return 'outline'
     }
   }
 

@@ -1,6 +1,6 @@
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { FormDescription } from "@/components/ui/form"
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { FormDescription } from '@/components/ui/form'
 
 interface ToggleFieldProps {
   label: string
@@ -11,8 +11,15 @@ interface ToggleFieldProps {
   id?: string
 }
 
-export function ToggleField({ label, description, checked, onCheckedChange, disabled, id }: ToggleFieldProps) {
-  const fieldId = id || label.toLowerCase().replace(/\s+/g, "-")
+export function ToggleField({
+  label,
+  description,
+  checked,
+  onCheckedChange,
+  disabled,
+  id,
+}: ToggleFieldProps) {
+  const fieldId = id || label.toLowerCase().replace(/\s+/g, '-')
 
   return (
     <div className="space-y-2">
@@ -21,7 +28,12 @@ export function ToggleField({ label, description, checked, onCheckedChange, disa
           <Label htmlFor={fieldId}>{label}</Label>
           {description && <FormDescription>{description}</FormDescription>}
         </div>
-        <Switch id={fieldId} checked={checked} onCheckedChange={onCheckedChange} disabled={disabled} />
+        <Switch
+          id={fieldId}
+          checked={checked}
+          onCheckedChange={onCheckedChange}
+          disabled={disabled}
+        />
       </div>
     </div>
   )

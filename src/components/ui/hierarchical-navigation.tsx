@@ -1,11 +1,11 @@
-import { useState } from "react"
-import { cn } from "@/lib/utils"
-import { ChevronDown, ChevronRight, CheckCircle, AlertCircle, Circle } from "lucide-react"
+import { useState } from 'react'
+import { cn } from '@/lib/utils'
+import { ChevronDown, ChevronRight, CheckCircle, AlertCircle, Circle } from 'lucide-react'
 
 interface NavigationItem {
   id: string
   label: string
-  status?: "complete" | "error" | "incomplete"
+  status?: 'complete' | 'error' | 'incomplete'
   children?: NavigationItem[]
 }
 
@@ -16,7 +16,12 @@ interface HierarchicalNavigationProps {
   className?: string
 }
 
-export function HierarchicalNavigation({ items, activeItemId, onItemClick, className }: HierarchicalNavigationProps) {
+export function HierarchicalNavigation({
+  items,
+  activeItemId,
+  onItemClick,
+  className,
+}: HierarchicalNavigationProps) {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(() => {
     // Initialize with all parent sections of the active item expanded
     const expanded: Record<string, boolean> = {}
@@ -47,13 +52,13 @@ export function HierarchicalNavigation({ items, activeItemId, onItemClick, class
     }))
   }
 
-  const renderStatusIcon = (status?: NavigationItem["status"]) => {
+  const renderStatusIcon = (status?: NavigationItem['status']) => {
     switch (status) {
-      case "complete":
+      case 'complete':
         return <CheckCircle className="h-4 w-4 text-green-500" />
-      case "error":
+      case 'error':
         return <AlertCircle className="h-4 w-4 text-destructive" />
-      case "incomplete":
+      case 'incomplete':
         return <Circle className="h-4 w-4 text-muted-foreground" />
       default:
         return null
@@ -69,9 +74,9 @@ export function HierarchicalNavigation({ items, activeItemId, onItemClick, class
       <li key={item.id}>
         <div
           className={cn(
-            "flex items-center py-1.5 px-3 rounded-md text-sm",
-            isActive ? "bg-muted font-medium" : "hover:bg-muted/50 cursor-pointer",
-            depth > 0 && "ml-4",
+            'flex items-center rounded-md px-3 py-1.5 text-sm',
+            isActive ? 'bg-muted font-medium' : 'cursor-pointer hover:bg-muted/50',
+            depth > 0 && 'ml-4'
           )}
           onClick={() => {
             if (hasChildren) {
@@ -83,7 +88,7 @@ export function HierarchicalNavigation({ items, activeItemId, onItemClick, class
           {hasChildren && (
             <button
               type="button"
-              className="mr-1 p-0.5 rounded-sm hover:bg-muted-foreground/10"
+              className="mr-1 rounded-sm p-0.5 hover:bg-muted-foreground/10"
               onClick={(e) => {
                 e.stopPropagation()
                 toggleSection(item.id)
@@ -108,7 +113,7 @@ export function HierarchicalNavigation({ items, activeItemId, onItemClick, class
   }
 
   return (
-    <nav className={cn("w-full", className)}>
+    <nav className={cn('w-full', className)}>
       <ul className="space-y-1">{items.map((item) => renderItem(item))}</ul>
     </nav>
   )

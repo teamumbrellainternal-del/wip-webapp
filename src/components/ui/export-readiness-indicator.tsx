@@ -20,7 +20,7 @@ export function ExportReadinessIndicator({
   warnings = [],
   suggestions = [],
   onExport,
-  className
+  className,
 }: ExportReadinessIndicatorProps) {
   const hasErrors = errors.length > 0
   const hasWarnings = warnings.length > 0
@@ -32,7 +32,7 @@ export function ExportReadinessIndicator({
         title: 'Not Ready for Export',
         description: `Fix ${errors.length} error${errors.length !== 1 ? 's' : ''} before exporting`,
         variant: 'destructive' as const,
-        canExport: false
+        canExport: false,
       }
     }
 
@@ -42,7 +42,7 @@ export function ExportReadinessIndicator({
         title: 'Ready with Warnings',
         description: `${warnings.length} warning${warnings.length !== 1 ? 's' : ''} found - review before production use`,
         variant: 'default' as const,
-        canExport: true
+        canExport: true,
       }
     }
 
@@ -51,7 +51,7 @@ export function ExportReadinessIndicator({
       title: 'Ready for Export',
       description: 'Configuration validated successfully',
       variant: 'default' as const,
-      canExport: true
+      canExport: true,
     }
   }
 
@@ -59,30 +59,36 @@ export function ExportReadinessIndicator({
 
   return (
     <div className={cn('space-y-3', className)}>
-      <Alert 
+      <Alert
         variant={status.variant}
         className={cn(
-          status.variant === 'default' && !hasWarnings && 'border-green-600 bg-green-50 dark:bg-green-950/20',
-          status.variant === 'default' && hasWarnings && 'border-yellow-600 bg-yellow-50 dark:bg-yellow-950/20'
+          status.variant === 'default' &&
+            !hasWarnings &&
+            'border-green-600 bg-green-50 dark:bg-green-950/20',
+          status.variant === 'default' &&
+            hasWarnings &&
+            'border-yellow-600 bg-yellow-50 dark:bg-yellow-950/20'
         )}
       >
         <div className="flex items-start gap-3">
-          <div className={cn(
-            'mt-0.5',
-            hasErrors && 'text-red-600',
-            hasWarnings && !hasErrors && 'text-yellow-600',
-            !hasErrors && !hasWarnings && 'text-green-600'
-          )}>
+          <div
+            className={cn(
+              'mt-0.5',
+              hasErrors && 'text-red-600',
+              hasWarnings && !hasErrors && 'text-yellow-600',
+              !hasErrors && !hasWarnings && 'text-green-600'
+            )}
+          >
             {status.icon}
           </div>
           <div className="flex-1">
             <AlertTitle className="mb-1">{status.title}</AlertTitle>
             <AlertDescription>{status.description}</AlertDescription>
-            
+
             {hasErrors && (
               <div className="mt-3 space-y-1">
                 <p className="text-sm font-medium text-red-600">Critical Issues:</p>
-                <ul className="list-disc list-inside space-y-1">
+                <ul className="list-inside list-disc space-y-1">
                   {errors.slice(0, 3).map((error, index) => (
                     <li key={index} className="text-sm text-muted-foreground">
                       {error.field && <span className="font-medium">{error.field}: </span>}
@@ -97,11 +103,11 @@ export function ExportReadinessIndicator({
                 </ul>
               </div>
             )}
-            
+
             {!hasErrors && hasWarnings && (
               <div className="mt-3 space-y-1">
                 <p className="text-sm font-medium text-yellow-600">Warnings:</p>
-                <ul className="list-disc list-inside space-y-1">
+                <ul className="list-inside list-disc space-y-1">
                   {warnings.slice(0, 3).map((warning, index) => (
                     <li key={index} className="text-sm text-muted-foreground">
                       {warning.field && <span className="font-medium">{warning.field}: </span>}
@@ -120,7 +126,7 @@ export function ExportReadinessIndicator({
             {suggestions.length > 0 && (
               <div className="mt-3 space-y-1">
                 <p className="text-sm font-medium text-blue-600">Suggestions:</p>
-                <ul className="list-disc list-inside space-y-1">
+                <ul className="list-inside list-disc space-y-1">
                   {suggestions.slice(0, 2).map((suggestion, index) => (
                     <li key={index} className="text-sm text-muted-foreground">
                       {suggestion.message}
@@ -140,7 +146,7 @@ export function ExportReadinessIndicator({
           className="w-full"
           variant={hasWarnings ? 'outline' : 'default'}
         >
-          <FileDown className="h-4 w-4 mr-2" />
+          <FileDown className="mr-2 h-4 w-4" />
           {status.canExport ? 'Export Configuration' : 'Fix Errors to Export'}
         </Button>
       )}

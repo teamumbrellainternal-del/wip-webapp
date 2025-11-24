@@ -10,9 +10,9 @@ export default function TermsPage() {
         description="Read Umbrella's Terms of Service. Learn about user accounts, service description, acceptable use, and more."
         url="/terms"
       />
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto max-w-4xl px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold tracking-tight mb-2">Terms of Service</h1>
+          <h1 className="mb-2 text-4xl font-bold tracking-tight">Terms of Service</h1>
           <p className="text-muted-foreground">Last updated: November 17, 2025</p>
         </div>
 
@@ -37,13 +37,15 @@ export default function TermsPage() {
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
                 To access certain features of the Service, you must register for an account. You are
-                responsible for maintaining the confidentiality of your account credentials and for all
-                activities that occur under your account. You agree to:
+                responsible for maintaining the confidentiality of your account credentials and for
+                all activities that occur under your account. You agree to:
               </p>
               <ul>
                 <li>Provide accurate, current, and complete information during registration</li>
                 <li>Maintain and promptly update your account information</li>
-                <li>Maintain the security of your password and accept all risks of unauthorized access</li>
+                <li>
+                  Maintain the security of your password and accept all risks of unauthorized access
+                </li>
                 <li>Notify us immediately if you discover or suspect any security breaches</li>
               </ul>
             </CardContent>
@@ -68,14 +70,14 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                You retain all rights to content you upload to the Service. By uploading content, you
-                grant Umbrella a worldwide, non-exclusive, royalty-free license to use, reproduce,
-                distribute, and display your content solely for the purpose of operating and providing
-                the Service.
+                You retain all rights to content you upload to the Service. By uploading content,
+                you grant Umbrella a worldwide, non-exclusive, royalty-free license to use,
+                reproduce, distribute, and display your content solely for the purpose of operating
+                and providing the Service.
               </p>
               <p>
-                You represent and warrant that you own or have the necessary rights to all content you
-                upload and that such content does not violate any third-party rights.
+                You represent and warrant that you own or have the necessary rights to all content
+                you upload and that such content does not violate any third-party rights.
               </p>
             </CardContent>
           </Card>
@@ -105,9 +107,10 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                We reserve the right to suspend or terminate your account at any time, with or without
-                notice, for conduct that we believe violates these Terms of Service or is harmful to
-                other users, us, or third parties, or for any other reason at our sole discretion.
+                We reserve the right to suspend or terminate your account at any time, with or
+                without notice, for conduct that we believe violates these Terms of Service or is
+                harmful to other users, us, or third parties, or for any other reason at our sole
+                discretion.
               </p>
               <p>
                 You may terminate your account at any time through the account settings page. Upon
@@ -136,10 +139,10 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                TO THE MAXIMUM EXTENT PERMITTED BY LAW, UMBRELLA SHALL NOT BE LIABLE FOR ANY INDIRECT,
-                INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR
-                REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA, USE, GOODWILL,
-                OR OTHER INTANGIBLE LOSSES.
+                TO THE MAXIMUM EXTENT PERMITTED BY LAW, UMBRELLA SHALL NOT BE LIABLE FOR ANY
+                INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF
+                PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA,
+                USE, GOODWILL, OR OTHER INTANGIBLE LOSSES.
               </p>
             </CardContent>
           </Card>
@@ -150,9 +153,10 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                These Terms of Service shall be governed by and construed in accordance with the laws
-                of the United States, without regard to its conflict of law provisions. Any disputes
-                arising from these terms shall be resolved in the courts of the United States.
+                These Terms of Service shall be governed by and construed in accordance with the
+                laws of the United States, without regard to its conflict of law provisions. Any
+                disputes arising from these terms shall be resolved in the courts of the United
+                States.
               </p>
             </CardContent>
           </Card>
@@ -163,15 +167,15 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                We reserve the right to modify these Terms of Service at any time. We will notify users
-                of any material changes by posting a notice on the Service or by email. Your continued
-                use of the Service after such modifications constitutes your acceptance of the updated
-                terms.
+                We reserve the right to modify these Terms of Service at any time. We will notify
+                users of any material changes by posting a notice on the Service or by email. Your
+                continued use of the Service after such modifications constitutes your acceptance of
+                the updated terms.
               </p>
             </CardContent>
           </Card>
 
-          <div className="mt-8 p-6 bg-muted rounded-lg">
+          <div className="mt-8 rounded-lg bg-muted p-6">
             <p className="text-sm text-muted-foreground">
               If you have any questions about these Terms of Service, please contact us at{' '}
               <a href="mailto:legal@umbrella.app" className="text-primary hover:underline">

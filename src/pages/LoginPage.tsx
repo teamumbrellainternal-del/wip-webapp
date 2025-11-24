@@ -26,9 +26,9 @@ export default function LoginPage() {
 
   if (DEMO_MODE) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 p-4 dark:from-slate-950 dark:to-purple-950">
         <div className="w-full max-w-md space-y-6 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-600 mb-2">
+          <div className="mb-2 inline-flex h-16 w-16 items-center justify-center rounded-full bg-purple-600">
             <span className="text-2xl font-bold text-white">U</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Demo Mode</h1>
@@ -43,9 +43,9 @@ export default function LoginPage() {
   // Show nothing while checking auth state
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950">
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-600 mb-4 animate-pulse">
+          <div className="mb-4 inline-flex h-16 w-16 animate-pulse items-center justify-center rounded-full bg-purple-600">
             <span className="text-2xl font-bold text-white">U</span>
           </div>
         </div>
@@ -66,50 +66,52 @@ export default function LoginPage() {
         url="/auth"
         noIndex={true}
       />
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 dark:from-slate-950 dark:to-purple-950 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 p-4 dark:from-slate-950 dark:to-purple-950">
         <div className="w-full max-w-md space-y-8">
-        {/* Logo & Title */}
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-600 mb-4">
-            <span className="text-2xl font-bold text-white">U</span>
+          {/* Logo & Title */}
+          <div className="text-center">
+            <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-purple-600">
+              <span className="text-2xl font-bold text-white">U</span>
+            </div>
+            <h1 className="text-4xl font-bold tracking-tight">Umbrella</h1>
+            <p className="mt-2 text-muted-foreground">Your all-in-one platform for artists</p>
           </div>
-          <h1 className="text-4xl font-bold tracking-tight">Umbrella</h1>
-          <p className="text-muted-foreground mt-2">Your all-in-one platform for artists</p>
-        </div>
 
-        {/* Clerk Sign In Component */}
-        <SignIn
-          appearance={{
-            elements: {
-              rootBox: 'mx-auto w-full',
-              card: 'shadow-2xl rounded-xl border-0',
-              headerTitle: 'text-2xl font-bold',
-              headerSubtitle: 'text-muted-foreground',
-              socialButtonsBlockButton: 'bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 border-2 transition-all duration-200',
-              socialButtonsBlockButtonText: 'font-medium',
-              formButtonPrimary: 'bg-purple-600 hover:bg-purple-700 text-white',
-              footerActionLink: 'text-purple-600 hover:text-purple-700',
-              identityPreviewText: 'text-sm',
-              formFieldLabel: 'font-medium',
-              formFieldInput: 'rounded-lg',
-              dividerLine: 'bg-gray-200 dark:bg-gray-700',
-              dividerText: 'text-gray-500 dark:text-gray-400',
-            },
-            layout: {
-              socialButtonsPlacement: 'top',
-              socialButtonsVariant: 'blockButton',
-            },
-          }}
-          signUpUrl="/auth"
-          redirectUrl="/onboarding/role-selection"
-          routing="path"
-          path="/auth"
-        />
+          {/* Clerk Sign In Component */}
+          <SignIn
+            appearance={{
+              elements: {
+                rootBox: 'mx-auto w-full',
+                card: 'shadow-2xl rounded-xl border-0',
+                headerTitle: 'text-2xl font-bold',
+                headerSubtitle: 'text-muted-foreground',
+                socialButtonsBlockButton:
+                  'bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 border-2 transition-all duration-200',
+                socialButtonsBlockButtonText: 'font-medium',
+                formButtonPrimary: 'bg-purple-600 hover:bg-purple-700 text-white',
+                footerActionLink: 'text-purple-600 hover:text-purple-700',
+                identityPreviewText: 'text-sm',
+                formFieldLabel: 'font-medium',
+                formFieldInput: 'rounded-lg',
+                dividerLine: 'bg-gray-200 dark:bg-gray-700',
+                dividerText: 'text-gray-500 dark:text-gray-400',
+              },
+              layout: {
+                socialButtonsPlacement: 'top',
+                socialButtonsVariant: 'blockButton',
+              },
+            }}
+            // Updated to use forceRedirectUrl per Clerk deprecation warning
+            // And ensure signup is not circularly routed
+            forceRedirectUrl="/auth/sso-callback"
+            routing="path"
+            path="/auth"
+          />
 
-        {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground">
-          By signing in, you agree to our Terms of Service and Privacy Policy
-        </p>
+          {/* Footer */}
+          <p className="text-center text-xs text-muted-foreground">
+            By signing in, you agree to our Terms of Service and Privacy Policy
+          </p>
         </div>
       </div>
     </>

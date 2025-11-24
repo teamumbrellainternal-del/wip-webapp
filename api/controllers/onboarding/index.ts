@@ -721,14 +721,341 @@ export const submitStep5: RouteHandler = async (ctx) => {
 }
 
 /**
+ * Submit Artist Onboarding Step 3: Creative Profile Tags
+ * POST /v1/onboarding/artists/step3
+ * Required: artist_type, primary_genre (if not set in step 1)
+ * Optional: secondary_genres, influences, equipment, daw, platforms, etc.
+ *
+ * This endpoint updates the artist record directly in D1 (incremental approach)
+ */
+export const submitArtistStep3: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    const body = await ctx.request.json()
+
+    // Validate step 3 data
+    const validation = validateStep3(body)
+    if (!validation.valid) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        JSON.stringify(validation.errors),
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    const now = new Date().toISOString()
+
+    // Check if artist record exists for this user
+    const existingArtist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE user_id = ?'
+    )
+      .bind(ctx.userId)
+      .first<{ id: string }>()
+
+    if (!existingArtist) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'Step 2 must be completed first',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Serialize array fields
+    const artistType = body.artist_type ? serializeArrayField(body.artist_type) : null
+    const equipment = body.equipment ? serializeArrayField(body.equipment) : null
+    const daw = body.daw ? serializeArrayField(body.daw) : null
+    // Note: primary_genre and secondary_genres handled in step 1, but user might update here if we add inputs
+    // For now we only focus on new fields introduced in Step 3
+
+    // Update existing artist record with step 3 data
+    await ctx.env.DB.prepare(
+      `UPDATE artists SET
+        artist_type = ?,
+        equipment = ?,
+        daw = ?,
+        step_3_complete = 1,
+        updated_at = ?
+      WHERE user_id = ?`
+    )
+      .bind(
+        artistType,
+        equipment,
+        daw,
+        now,
+        ctx.userId
+      )
+      .run()
+
+    // Fetch updated artist profile
+    const artist = await ctx.env.DB.prepare(
+      'SELECT * FROM artists WHERE user_id = ?'
+    )
+      .bind(ctx.userId)
+      .first()
+
+    return successResponse(
+      {
+        message: 'Step 3 completed successfully',
+        artist,
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error submitting artist step 3:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to submit step 3',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
+ * Submit Artist Onboarding Step 4: Your Numbers
+ * POST /v1/onboarding/artists/step4
+ * Required: base_rate_hourly, base_rate_flat, etc.
+ *
+ * This endpoint updates the artist record directly in D1 (incremental approach)
+ */
+export const submitArtistStep4: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    const body = await ctx.request.json()
+
+    // Validate step 4 data
+    const validation = validateStep4(body)
+    if (!validation.valid) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        JSON.stringify(validation.errors),
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    const now = new Date().toISOString()
+
+    // Check if artist record exists for this user
+    const existingArtist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE user_id = ?'
+    )
+      .bind(ctx.userId)
+      .first<{ id: string }>()
+
+    if (!existingArtist) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'Step 3 must be completed first',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Serialize array fields
+    const availableDates = body.available_dates ? serializeArrayField(body.available_dates) : null
+
+    // Update existing artist record with step 4 data
+    await ctx.env.DB.prepare(
+      `UPDATE artists SET
+        largest_show_capacity = ?,
+        base_rate_flat = ?,
+        base_rate_hourly = ?,
+        time_split_creative = ?,
+        time_split_logistics = ?,
+        available_dates = ?,
+        step_4_complete = 1,
+        updated_at = ?
+      WHERE user_id = ?`
+    )
+      .bind(
+        body.largest_show_capacity || 0,
+        body.base_rate_flat || 0,
+        body.base_rate_hourly || 0,
+        body.time_split_creative || 50,
+        body.time_split_logistics || 50,
+        availableDates,
+        now,
+        ctx.userId
+      )
+      .run()
+
+    // Fetch updated artist profile
+    const artist = await ctx.env.DB.prepare(
+      'SELECT * FROM artists WHERE user_id = ?'
+    )
+      .bind(ctx.userId)
+      .first()
+
+    return successResponse(
+      {
+        message: 'Step 4 completed successfully',
+        artist,
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error submitting artist step 4:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to submit step 4',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
  * Submit step 5 for artists: Quick Questions
  * POST /v1/onboarding/artists/step5
- * This is the final step - creates the artist profile in D1 with transaction safety
- * Returns artist profile with redirect to dashboard
+ * This is the final step - updates the artist profile in D1 and marks onboarding as complete
  */
 export const submitArtistStep5: RouteHandler = async (ctx) => {
-  // Delegate to the main submitStep5 implementation
-  return submitStep5(ctx)
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    const body = await ctx.request.json()
+
+    // Validate step 5 data
+    const validation = validateStep5(body)
+    if (!validation.valid) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        JSON.stringify(validation.errors),
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    const now = new Date().toISOString()
+
+    // Check if artist record exists for this user
+    const existingArtist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE user_id = ?'
+    )
+      .bind(ctx.userId)
+      .first<{ id: string }>()
+
+    if (!existingArtist) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'Step 4 must be completed first',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Update existing artist record with step 5 data
+    await ctx.env.DB.prepare(
+      `UPDATE artists SET
+        currently_making_music = ?,
+        confident_online_presence = ?,
+        struggles_creative_niche = ?,
+        knows_where_find_gigs = ?,
+        paid_fairly_performing = ?,
+        understands_royalties = ?,
+        step_5_complete = 1,
+        updated_at = ?
+      WHERE user_id = ?`
+    )
+      .bind(
+        body.currently_making_music ? 1 : 0,
+        body.confident_online_presence ? 1 : 0,
+        body.struggles_creative_niche ? 1 : 0,
+        body.knows_where_find_gigs ? 1 : 0,
+        body.paid_fairly_performing ? 1 : 0,
+        body.understands_royalties ? 1 : 0,
+        now,
+        ctx.userId
+      )
+      .run()
+
+    // Update user's onboarding_complete flag
+    await ctx.env.DB.prepare('UPDATE users SET onboarding_complete = 1, updated_at = ? WHERE id = ?')
+      .bind(now, ctx.userId)
+      .run()
+
+    // Initialize storage quota for artist if not exists
+    const existingQuota = await ctx.env.DB.prepare(
+      'SELECT artist_id FROM storage_quotas WHERE artist_id = ?'
+    )
+      .bind(existingArtist.id)
+      .first()
+
+    if (!existingQuota) {
+      await ctx.env.DB.prepare(
+        'INSERT INTO storage_quotas (artist_id, used_bytes, limit_bytes, updated_at) VALUES (?, 0, 53687091200, ?)'
+      )
+        .bind(existingArtist.id, now)
+        .run()
+    }
+
+    // Fetch updated artist profile
+    const artist = await ctx.env.DB.prepare(
+      'SELECT * FROM artists WHERE user_id = ?'
+    )
+      .bind(ctx.userId)
+      .first()
+
+    return successResponse(
+      {
+        message: 'Onboarding completed successfully',
+        step_completed: 5,
+        complete: true,
+        artistId: existingArtist.id,
+        artist,
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error submitting artist step 5:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to submit step 5',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
 }
 
 /**
@@ -899,6 +1226,133 @@ export const submitArtistStep1: RouteHandler = async (ctx) => {
     return errorResponse(
       ErrorCodes.DATABASE_ERROR,
       'Failed to submit step 1',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
+ * Submit Artist Onboarding Step 2: Links & Your Story
+ * POST /v1/onboarding/artists/step2
+ * Required: Minimum 3 social links
+ * Optional: bio, story, tagline, etc.
+ *
+ * This endpoint creates or updates the artist record directly in D1 (incremental approach)
+ */
+export const submitArtistStep2: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    const body = await ctx.request.json()
+
+    // Validate step 2 data
+    const validation = validateStep2(body)
+    if (!validation.valid) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        JSON.stringify(validation.errors),
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    const now = new Date().toISOString()
+
+    // Check if artist record exists for this user
+    const existingArtist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE user_id = ?'
+    )
+      .bind(ctx.userId)
+      .first<{ id: string }>()
+
+    if (!existingArtist) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'Step 1 must be completed first',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Sanitize social media handles
+    if (body.instagram_handle) {
+      body.instagram_handle = sanitizeHandle(body.instagram_handle)
+    }
+    if (body.tiktok_handle) {
+      body.tiktok_handle = sanitizeHandle(body.tiktok_handle)
+    }
+
+    // Update existing artist record with step 2 data
+    await ctx.env.DB.prepare(
+      `UPDATE artists SET
+        website_url = ?,
+        instagram_handle = ?,
+        facebook_url = ?,
+        youtube_url = ?,
+        soundcloud_url = ?,
+        spotify_url = ?,
+        apple_music_url = ?,
+        tiktok_handle = ?,
+        twitter_url = ?,
+        bandcamp_url = ?,
+        tasks_outsource = ?,
+        sound_uniqueness = ?,
+        dream_venue = ?,
+        step_2_complete = 1,
+        updated_at = ?
+      WHERE user_id = ?`
+    )
+      .bind(
+        body.website_url || null,
+        body.instagram_handle || null,
+        body.facebook_url || null,
+        body.youtube_url || null,
+        body.soundcloud_url || null,
+        body.spotify_url || null,
+        body.apple_music_url || null,
+        body.tiktok_handle || null,
+        body.twitter_url || null,
+        body.bandcamp_url || null,
+        body.tasks_outsource || null,
+        body.sound_uniqueness || null,
+        body.dream_venue || null,
+        now,
+        ctx.userId
+      )
+      .run()
+
+    // Fetch updated artist profile
+    const artist = await ctx.env.DB.prepare(
+      'SELECT * FROM artists WHERE user_id = ?'
+    )
+      .bind(ctx.userId)
+      .first()
+
+    return successResponse(
+      {
+        message: 'Step 2 completed successfully',
+        artist,
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error submitting artist step 2:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to submit step 2',
       500,
       undefined,
       ctx.requestId

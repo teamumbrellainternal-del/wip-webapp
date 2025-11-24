@@ -1,0 +1,7 @@
+# Cursor Rules
+
+# Documentation Files
+NEVER create markdown files (.md) unless explicitly requested by the user.
+Do not create testing checklists, notes, or temporary documentation files.
+Provide instructions directly in the conversation instead of saving files.
+Only create .md files if the user explicitly asks for documentation to be saved.

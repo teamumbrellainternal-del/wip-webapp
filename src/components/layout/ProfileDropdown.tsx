@@ -10,6 +10,8 @@
 
 import { Link, useNavigate } from 'react-router-dom'
 import { User, Settings, LogOut } from 'lucide-react'
+import { useClerk } from '@clerk/clerk-react'
+import { apiClient } from '@/lib/api-client'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,6 +23,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+// Check if demo mode is enabled
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
+
 // Mock user data (replace with real data from auth context)
 const mockUser = {
   id: '1',
@@ -31,15 +36,48 @@ const mockUser = {
   verified: true,
 }
 
-export function ProfileDropdown() {
+// Production version that uses Clerk
+function ProfileDropdownProduction() {
   const navigate = useNavigate()
+  const clerk = useClerk()
 
-  const handleLogout = () => {
-    // TODO: Implement logout logic when auth flow is complete
-    console.log('Logout clicked')
-    navigate('/auth')
+  const handleLogout = async () => {
+    try {
+      await apiClient.logout()
+    } catch (error) {
+      console.error('Error during logout:', error)
+    } finally {
+      localStorage.removeItem('umbrella_session')
+      if (clerk) {
+        await clerk.signOut()
+      }
+      navigate('/auth')
+    }
   }
 
+  return <ProfileDropdownContent onLogout={handleLogout} />
+}
+
+// Demo version that doesn't use Clerk
+function ProfileDropdownDemo() {
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    try {
+      await apiClient.logout()
+    } catch (error) {
+      console.error('Error during logout:', error)
+    } finally {
+      localStorage.removeItem('umbrella_session')
+      navigate('/auth')
+    }
+  }
+
+  return <ProfileDropdownContent onLogout={handleLogout} />
+}
+
+// Shared content component
+function ProfileDropdownContent({ onLogout }: { onLogout: () => void }) {
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -68,9 +106,7 @@ export function ProfileDropdown() {
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{mockUser.full_name}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {mockUser.email}
-            </p>
+            <p className="text-xs leading-none text-muted-foreground">{mockUser.email}</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -87,11 +123,19 @@ export function ProfileDropdown() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+        <DropdownMenuItem onClick={onLogout} className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           Logout
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
+}
+
+export function ProfileDropdown() {
+  // Conditionally render based on demo mode
+  if (DEMO_MODE) {
+    return <ProfileDropdownDemo />
+  }
+  return <ProfileDropdownProduction />
 }

@@ -1,12 +1,18 @@
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
 
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { FormDescription } from "@/components/ui/form"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ConditionalField } from "../form/wrappers/conditional-field"
-import { HelpCircle } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { FormDescription } from '@/components/ui/form'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { ConditionalField } from '../form/wrappers/conditional-field'
+import { HelpCircle } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface ProtectionModeSelectorProps {
   enabled: boolean
@@ -62,7 +68,9 @@ export function ProtectionModeSelector({
               <SelectItem value="jwt">JWT</SelectItem>
             </SelectContent>
           </Select>
-          <FormDescription>Choose how users will authenticate to access your deployment.</FormDescription>
+          <FormDescription>
+            Choose how users will authenticate to access your deployment.
+          </FormDescription>
         </div>
       </ConditionalField>
     </div>

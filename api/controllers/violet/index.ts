@@ -31,7 +31,9 @@ export const sendPrompt: RouteHandler = async (ctx) => {
   try {
     // Parse request body
     const body = await ctx.request.json().catch(() => ({}))
-    const { user_prompt, context } = body
+    const { context } = body
+    // Support both user_prompt and prompt keys for frontend compatibility
+    const user_prompt = body.user_prompt || body.prompt
 
     // Validate required fields
     if (!user_prompt || typeof user_prompt !== 'string') {

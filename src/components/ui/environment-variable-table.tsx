@@ -1,15 +1,22 @@
-import { useState } from "react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Eye, EyeOff, Edit, Trash } from "lucide-react"
+import { useState } from 'react'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
+import { MoreHorizontal, Eye, EyeOff, Edit, Trash } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
+} from '@/components/ui/dropdown-menu'
+import { Badge } from '@/components/ui/badge'
 
 export interface EnvironmentVariable {
   id: string
@@ -27,7 +34,12 @@ interface EnvironmentVariableTableProps {
   onDetach?: (variable: EnvironmentVariable) => void
 }
 
-export function EnvironmentVariableTable({ variables, onEdit, onDelete, onDetach }: EnvironmentVariableTableProps) {
+export function EnvironmentVariableTable({
+  variables,
+  onEdit,
+  onDelete,
+  onDetach,
+}: EnvironmentVariableTableProps) {
   const [showValues, setShowValues] = useState<Record<string, boolean>>({})
 
   const toggleValueVisibility = (id: string) => {
@@ -63,7 +75,7 @@ export function EnvironmentVariableTable({ variables, onEdit, onDelete, onDetach
                   {variable.isSensitive ? (
                     <div className="flex items-center space-x-2">
                       <span className="font-mono text-sm">
-                        {showValues[variable.id] ? variable.value : "••••••••••••••••"}
+                        {showValues[variable.id] ? variable.value : '••••••••••••••••'}
                       </span>
                       <Button
                         variant="ghost"
@@ -71,7 +83,11 @@ export function EnvironmentVariableTable({ variables, onEdit, onDelete, onDetach
                         onClick={() => toggleValueVisibility(variable.id)}
                         className="h-6 w-6"
                       >
-                        {showValues[variable.id] ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                        {showValues[variable.id] ? (
+                          <EyeOff className="h-3.5 w-3.5" />
+                        ) : (
+                          <Eye className="h-3.5 w-3.5" />
+                        )}
                       </Button>
                     </div>
                   ) : (
