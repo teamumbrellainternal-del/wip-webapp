@@ -42,6 +42,19 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy --env preview
 
+      - name: Set Worker Secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "${{ secrets.CLERK_SECRET_KEY }}" | npx wrangler secret put CLERK_SECRET_KEY --env preview
+          echo "${{ secrets.CLERK_WEBHOOK_SECRET }}" | npx wrangler secret put CLERK_WEBHOOK_SECRET --env preview
+          echo "${{ secrets.CLAUDE_API_KEY }}" | npx wrangler secret put CLAUDE_API_KEY --env preview
+          echo "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --env preview
+          echo "${{ secrets.TWILIO_ACCOUNT_SID }}" | npx wrangler secret put TWILIO_ACCOUNT_SID --env preview
+          echo "${{ secrets.TWILIO_AUTH_TOKEN }}" | npx wrangler secret put TWILIO_AUTH_TOKEN --env preview
+          echo "${{ secrets.TWILIO_PHONE_NUMBER }}" | npx wrangler secret put TWILIO_PHONE_NUMBER --env preview
+
       - name: Comment preview URL
         uses: actions/github-script@v7
         env:
