@@ -115,6 +115,7 @@ export const listGigs: RouteHandler = async (ctx) => {
         start_time: gig.start_time,
         end_time: gig.end_time,
         genre: gig.genre,
+        genre_tags: gig.genre ? [gig.genre] : [], // Map single genre to tags array for frontend compatibility
         capacity: gig.capacity,
         filled_slots: gig.filled_slots,
         capacity_filled_percentage: capacityFilled,

@@ -5,7 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 
 # Environment variables
 [vars]
-USE_MOCKS = "true"  # Use mock services for development (set to "false" in M10 for real services)
+USE_MOCKS = "false"  # Use mock services for development (set to "false" in M10 for real services)
 ENVIRONMENT = "development"  # Environment name (development, staging, production)
 
 # =============================================================================

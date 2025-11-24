@@ -301,11 +301,8 @@ function generateArtists(users: User[]): Artist[] {
   // Only create artists for users who completed onboarding
   const completedUsers = users.filter(u => u.onboarding_complete)
 
-  // Generate 20 artists (may need additional users if only 7 completed onboarding)
-  // For seed data, we'll create up to 20 from the 7 completed users, with some reuse
-
-  for (let i = 0; i < 20; i++) {
-    const user = completedUsers[i % completedUsers.length]
+  // Generate artists - one for each completed user
+  for (const user of completedUsers) {
     const firstName = randomChoice(FIRST_NAMES)
     const lastName = randomChoice(LAST_NAMES)
     const location = randomChoice(CITIES)
@@ -317,6 +314,10 @@ function generateArtists(users: User[]): Artist[] {
     const avgRating = parseFloat((3.5 + Math.random() * 1.5).toFixed(1))
     const totalReviews = randomInt(0, 25)
     const totalGigs = randomInt(5, 100)
+
+    // Set verified based on user index to ensure deterministic verification
+    // (Using a simple property of the user object for deterministic behavior)
+    const isVerified = completedUsers.indexOf(user) < 5
 
     artists.push({
       id: generateId('artist'),
@@ -340,7 +341,7 @@ function generateArtists(users: User[]): Artist[] {
       base_rate_hourly: randomInt(100, 300),
       rates_negotiable: Math.random() > 0.3,
       currently_making_music: Math.random() > 0.2,
-      verified: i < 5, // First 5 artists are verified
+      verified: isVerified,
       avatar_url: `https://storage.umbrella.app/profiles/${generateId('avatar')}/avatar.jpg`,
       avg_rating: avgRating,
       total_reviews: totalReviews,

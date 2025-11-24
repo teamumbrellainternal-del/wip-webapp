@@ -10,6 +10,7 @@
 
 import { Link, useNavigate } from 'react-router-dom'
 import { User, Settings, LogOut } from 'lucide-react'
+import { useClerk } from '@clerk/clerk-react'
 import { apiClient } from '@/lib/api-client'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -38,9 +39,6 @@ const mockUser = {
 // Production version that uses Clerk
 function ProfileDropdownProduction() {
   const navigate = useNavigate()
-  // Dynamic import to avoid loading Clerk in demo mode
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { useClerk } = require('@clerk/clerk-react')
   const clerk = useClerk()
 
   const handleLogout = async () => {

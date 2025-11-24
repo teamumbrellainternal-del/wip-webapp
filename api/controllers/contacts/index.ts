@@ -69,10 +69,7 @@ export const getContactLists: RouteHandler = async (ctx) => {
     )
 
     return successResponse(
-      {
-        lists: listsWithCounts,
-        count: listsWithCounts.length,
-      },
+      listsWithCounts, // Return array directly to match frontend expectation (ContactList[])
       200,
       ctx.requestId
     )

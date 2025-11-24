@@ -12,7 +12,10 @@ import {
   MOCK_ARTISTS, 
   MOCK_CONVERSATIONS, 
   MOCK_MESSAGES, 
-  MOCK_DASHBOARD_METRICS 
+  MOCK_DASHBOARD_METRICS,
+  MOCK_PERFORMANCE_DATA,
+  MOCK_GOALS,
+  MOCK_ACHIEVEMENTS
 } from './mock-data'
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
@@ -69,7 +72,7 @@ class APIClient {
   /**
    * Handle Mock Requests for Demo Mode
    */
-  private async handleMockRequest<T>(endpoint: string): Promise<T> {
+  private async handleMockRequest<T>(endpoint: string, options?: RequestInit): Promise<T> {
     console.log(`[Demo Mode] Mocking request to: ${endpoint}`)
     
     // Simulate network delay
@@ -78,13 +81,49 @@ class APIClient {
     if (endpoint.includes('/analytics/dashboard')) {
       return MOCK_DASHBOARD_METRICS as unknown as T
     }
+
+    if (endpoint.includes('/analytics/performance')) {
+      return MOCK_PERFORMANCE_DATA as unknown as T
+    }
+
+    if (endpoint.includes('/analytics/goals')) {
+      return MOCK_GOALS as unknown as T
+    }
+
+    if (endpoint.includes('/analytics/achievements')) {
+      return MOCK_ACHIEVEMENTS as unknown as T
+    }
+
+    if (endpoint.includes('/analytics')) {
+      // Other analytics endpoints -> return arrays
+      return [] as unknown as T
+    }
+    
+    if (endpoint.includes('/files')) {
+      // File usage, list -> return empty array or usage object
+      if (endpoint.includes('/usage')) {
+        return { used: 1024 * 1024 * 150, limit: 1024 * 1024 * 1024 * 5 } as unknown as T // 150MB used, 5GB limit
+      }
+      return [] as unknown as T
+    }
+    
+    if (endpoint.includes('/journal')) {
+      return { entries: [], count: 0 } as unknown as T
+    }
+    
+    if (endpoint.includes('/violet')) {
+      if (endpoint.includes('/usage')) {
+        return { prompts_used_today: 5, prompts_limit: 50, reset_at: new Date().toISOString() } as unknown as T
+      }
+      return { response: "I'm Violet, your AI assistant (Demo Mode)." } as unknown as T
+    }
     
     // Return empty arrays/objects for unsupported list/action endpoints to prevent crashes
     if (endpoint.includes('/reviews') || endpoint.includes('/tracks') || endpoint.includes('/lists')) {
       return [] as unknown as T
     }
     
-    if (endpoint.includes('/apply') || endpoint.includes('/follow') || endpoint.includes('/unfollow')) {
+    if (endpoint.includes('/apply') || endpoint.includes('/follow') || endpoint.includes('/unfollow') || endpoint.includes('/read')) {
       return { success: true } as unknown as T
     }
 
@@ -116,9 +155,22 @@ class APIClient {
     }
 
     if (endpoint.includes('/conversations')) {
-      if (endpoint.includes('/messages') || endpoint.includes('/new')) {
+      if (endpoint.includes('/messages')) {
         return MOCK_MESSAGES as unknown as T
       }
+      // Handle creating a new conversation
+      if (options?.method === 'POST') {
+        return MOCK_CONVERSATIONS[0] as unknown as T
+      }
+      
+      // Handle getting a single conversation by ID
+      // Check if endpoint ends with an ID (not just /conversations)
+      const parts = endpoint.split('/')
+      const lastPart = parts[parts.length - 1]
+      if (lastPart !== 'conversations' && !lastPart.includes('?')) {
+        return MOCK_CONVERSATIONS[0] as unknown as T
+      }
+
       return MOCK_CONVERSATIONS as unknown as T
     }
 
@@ -136,7 +188,7 @@ class APIClient {
   async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     // Demo Mode Interception
     if (DEMO_MODE) {
-      return this.handleMockRequest<T>(endpoint)
+      return this.handleMockRequest<T>(endpoint, options)
     }
 
     // Check if offline before making request

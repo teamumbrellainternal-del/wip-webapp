@@ -1,4 +1,4 @@
-import { Artist, Gig, Conversation, Message, DashboardMetrics, UserProfile } from '@/types'
+import { Artist, Gig, Conversation, Message, DashboardMetrics, UserProfile, PerformanceData, Goal, Achievement } from '@/types'
 
 /**
  * Mock data for Demo Mode
@@ -161,4 +161,105 @@ export const MOCK_USER_PROFILE: UserProfile = {
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString()
 }
+
+export const MOCK_PERFORMANCE_DATA: PerformanceData = {
+  period: 'monthly',
+  earnings: [
+    { date: '2023-01-01', value: 800 },
+    { date: '2023-02-01', value: 950 },
+    { date: '2023-03-01', value: 1100 },
+    { date: '2023-04-01', value: 900 },
+    { date: '2023-05-01', value: 1200 },
+    { date: '2023-06-01', value: 1500 },
+    { date: '2023-07-01', value: 1400 },
+    { date: '2023-08-01', value: 1600 },
+    { date: '2023-09-01', value: 1800 },
+    { date: '2023-10-01', value: 1750 },
+    { date: '2023-11-01', value: 1900 },
+    { date: '2023-12-01', value: 2100 }
+  ],
+  gigs: [
+    { date: '2023-01-01', value: 2 },
+    { date: '2023-02-01', value: 3 },
+    { date: '2023-03-01', value: 4 },
+    { date: '2023-04-01', value: 3 },
+    { date: '2023-05-01', value: 5 },
+    { date: '2023-06-01', value: 6 },
+    { date: '2023-07-01', value: 5 },
+    { date: '2023-08-01', value: 7 },
+    { date: '2023-09-01', value: 8 },
+    { date: '2023-10-01', value: 7 },
+    { date: '2023-11-01', value: 9 },
+    { date: '2023-12-01', value: 10 }
+  ],
+  profile_views: [
+    { date: '2023-01-01', value: 50 },
+    { date: '2023-02-01', value: 65 },
+    { date: '2023-03-01', value: 80 },
+    { date: '2023-04-01', value: 75 },
+    { date: '2023-05-01', value: 100 },
+    { date: '2023-06-01', value: 150 },
+    { date: '2023-07-01', value: 180 },
+    { date: '2023-08-01', value: 220 },
+    { date: '2023-09-01', value: 250 },
+    { date: '2023-10-01', value: 280 },
+    { date: '2023-11-01', value: 320 },
+    { date: '2023-12-01', value: 400 }
+  ]
+}
+
+export const MOCK_GOALS: Goal[] = [
+  {
+    id: 'goal-1',
+    title: 'Reach $3000 monthly earnings',
+    description: 'Increase gig bookings and rate to hit monthly target',
+    target_value: 3000,
+    current_value: 2100,
+    unit: 'USD',
+    deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'active',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'goal-2',
+    title: 'Perform 50 gigs',
+    description: 'Total gigs completed this year',
+    target_value: 50,
+    current_value: 45,
+    unit: 'gigs',
+    status: 'active',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'goal-3',
+    title: 'Reach 1000 followers',
+    target_value: 1000,
+    current_value: 1250,
+    unit: 'followers',
+    status: 'completed',
+    created_at: new Date().toISOString()
+  }
+]
+
+export const MOCK_ACHIEVEMENTS: Achievement[] = [
+  {
+    id: 'ach-1',
+    title: 'Rising Star',
+    description: 'Complete your first 10 gigs',
+    unlocked_at: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 'ach-2',
+    title: 'Local Favorite',
+    description: 'Get 5 five-star reviews',
+    unlocked_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 'ach-3',
+    title: 'Road Warrior',
+    description: 'Perform in 3 different cities',
+    progress_current: 2,
+    progress_target: 3
+  }
+]
 
