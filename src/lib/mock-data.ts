@@ -1,4 +1,14 @@
-import { Artist, Gig, Conversation, Message, DashboardMetrics, UserProfile, PerformanceData, Goal, Achievement } from '@/types'
+import {
+  Artist,
+  Gig,
+  Conversation,
+  Message,
+  DashboardMetrics,
+  UserProfile,
+  PerformanceData,
+  Goal,
+  Achievement,
+} from '@/types'
 
 /**
  * Mock data for Demo Mode
@@ -28,14 +38,15 @@ export const MOCK_ARTIST: Artist = {
   rating_avg: 4.8,
   review_count: 12,
   follower_count: 1250,
-  gigs_completed: 45
+  gigs_completed: 45,
 }
 
 export const MOCK_GIGS: Gig[] = [
   {
     id: 'gig-1',
     title: 'Summer Rooftop Party',
-    description: 'Looking for an energetic DJ for our annual summer rooftop party. Must be able to play a mix of house and top 40.',
+    description:
+      'Looking for an energetic DJ for our annual summer rooftop party. Must be able to play a mix of house and top 40.',
     venue_name: 'Sky High Lounge',
     venue_id: 'venue-1',
     location: 'Los Angeles, CA',
@@ -49,7 +60,7 @@ export const MOCK_GIGS: Gig[] = [
     urgency_flag: false,
     status: 'open',
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
   },
   {
     id: 'gig-2',
@@ -68,8 +79,8 @@ export const MOCK_GIGS: Gig[] = [
     urgency_flag: true,
     status: 'open',
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }
+    updated_at: new Date().toISOString(),
+  },
 ]
 
 export const MOCK_ARTISTS: Artist[] = [
@@ -83,7 +94,7 @@ export const MOCK_ARTISTS: Artist[] = [
     bio: 'Indie rock band playing original songs and covers.',
     avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Band',
     social_links: {
-      website: 'https://band.example.com'
+      website: 'https://band.example.com',
     },
     verified: true,
     created_at: new Date().toISOString(),
@@ -91,8 +102,8 @@ export const MOCK_ARTISTS: Artist[] = [
     rating_avg: 4.5,
     review_count: 8,
     follower_count: 800,
-    gigs_completed: 20
-  }
+    gigs_completed: 20,
+  },
 ]
 
 export const MOCK_CONVERSATIONS: Conversation[] = [
@@ -103,20 +114,20 @@ export const MOCK_CONVERSATIONS: Conversation[] = [
         id: 'venue-1',
         name: 'Sky High Lounge',
         avatar_url: 'https://api.dicebear.com/7.x/initials/svg?seed=SH',
-        role: 'venue'
+        role: 'venue',
       },
       {
         id: 'demo-artist-1',
         name: 'DJ Demo',
         avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo',
-        role: 'artist'
-      }
+        role: 'artist',
+      },
     ],
     context_type: 'venue',
     last_message_preview: 'Hey, are you available for the rooftop party?',
     unread_count: 1,
-    updated_at: new Date().toISOString()
-  }
+    updated_at: new Date().toISOString(),
+  },
 ]
 
 export const MOCK_MESSAGES: Message[] = [
@@ -127,26 +138,26 @@ export const MOCK_MESSAGES: Message[] = [
     sender_id: 'venue-1',
     sender_name: 'Sky High Lounge',
     timestamp: new Date().toISOString(),
-    read_status: false
-  }
+    read_status: false,
+  },
 ]
 
 export const MOCK_DASHBOARD_METRICS: DashboardMetrics = {
   earnings: {
     current_month: 1200,
-    percentage_change: 15
+    percentage_change: 15,
   },
   gigs_booked: {
     count: 3,
-    timeframe: 'this month'
+    timeframe: 'this month',
   },
   profile_views: {
     count: 125,
-    percentage_change: 12
+    percentage_change: 12,
   },
   opportunities: [],
   messages: [],
-  endorsements: []
+  endorsements: [],
 }
 
 export const MOCK_USER_PROFILE: UserProfile = {
@@ -159,7 +170,7 @@ export const MOCK_USER_PROFILE: UserProfile = {
   profile_completion_percentage: 85,
   verified: true,
   created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString()
+  updated_at: new Date().toISOString(),
 }
 
 export const MOCK_PERFORMANCE_DATA: PerformanceData = {
@@ -176,7 +187,7 @@ export const MOCK_PERFORMANCE_DATA: PerformanceData = {
     { date: '2023-09-01', value: 1800 },
     { date: '2023-10-01', value: 1750 },
     { date: '2023-11-01', value: 1900 },
-    { date: '2023-12-01', value: 2100 }
+    { date: '2023-12-01', value: 2100 },
   ],
   gigs: [
     { date: '2023-01-01', value: 2 },
@@ -190,7 +201,7 @@ export const MOCK_PERFORMANCE_DATA: PerformanceData = {
     { date: '2023-09-01', value: 8 },
     { date: '2023-10-01', value: 7 },
     { date: '2023-11-01', value: 9 },
-    { date: '2023-12-01', value: 10 }
+    { date: '2023-12-01', value: 10 },
   ],
   profile_views: [
     { date: '2023-01-01', value: 50 },
@@ -204,8 +215,8 @@ export const MOCK_PERFORMANCE_DATA: PerformanceData = {
     { date: '2023-09-01', value: 250 },
     { date: '2023-10-01', value: 280 },
     { date: '2023-11-01', value: 320 },
-    { date: '2023-12-01', value: 400 }
-  ]
+    { date: '2023-12-01', value: 400 },
+  ],
 }
 
 export const MOCK_GOALS: Goal[] = [
@@ -218,7 +229,7 @@ export const MOCK_GOALS: Goal[] = [
     unit: 'USD',
     deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     status: 'active',
-    created_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
   },
   {
     id: 'goal-2',
@@ -228,7 +239,7 @@ export const MOCK_GOALS: Goal[] = [
     current_value: 45,
     unit: 'gigs',
     status: 'active',
-    created_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
   },
   {
     id: 'goal-3',
@@ -237,8 +248,8 @@ export const MOCK_GOALS: Goal[] = [
     current_value: 1250,
     unit: 'followers',
     status: 'completed',
-    created_at: new Date().toISOString()
-  }
+    created_at: new Date().toISOString(),
+  },
 ]
 
 export const MOCK_ACHIEVEMENTS: Achievement[] = [
@@ -246,20 +257,19 @@ export const MOCK_ACHIEVEMENTS: Achievement[] = [
     id: 'ach-1',
     title: 'Rising Star',
     description: 'Complete your first 10 gigs',
-    unlocked_at: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+    unlocked_at: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'ach-2',
     title: 'Local Favorite',
     description: 'Get 5 five-star reviews',
-    unlocked_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+    unlocked_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'ach-3',
     title: 'Road Warrior',
     description: 'Perform in 3 different cities',
     progress_current: 2,
-    progress_target: 3
-  }
+    progress_target: 3,
+  },
 ]
-

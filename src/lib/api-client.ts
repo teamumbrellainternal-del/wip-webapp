@@ -6,16 +6,16 @@
 import type { UserProfile, Artist, Gig, Conversation, Message } from '@/types'
 import { getSession, clearSession } from '@/lib/session'
 import { triggerSessionTimeout } from '@/contexts/SessionTimeoutContext'
-import { 
-  MOCK_ARTIST, 
-  MOCK_GIGS, 
-  MOCK_ARTISTS, 
-  MOCK_CONVERSATIONS, 
-  MOCK_MESSAGES, 
+import {
+  MOCK_ARTIST,
+  MOCK_GIGS,
+  MOCK_ARTISTS,
+  MOCK_CONVERSATIONS,
+  MOCK_MESSAGES,
   MOCK_DASHBOARD_METRICS,
   MOCK_PERFORMANCE_DATA,
   MOCK_GOALS,
-  MOCK_ACHIEVEMENTS
+  MOCK_ACHIEVEMENTS,
 } from './mock-data'
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
@@ -74,9 +74,9 @@ class APIClient {
    */
   private async handleMockRequest<T>(endpoint: string, options?: RequestInit): Promise<T> {
     console.log(`[Demo Mode] Mocking request to: ${endpoint}`)
-    
+
     // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     if (endpoint.includes('/analytics/dashboard')) {
       return MOCK_DASHBOARD_METRICS as unknown as T
@@ -98,7 +98,7 @@ class APIClient {
       // Other analytics endpoints -> return arrays
       return [] as unknown as T
     }
-    
+
     if (endpoint.includes('/files')) {
       // File usage, list -> return empty array or usage object
       if (endpoint.includes('/usage')) {
@@ -106,24 +106,37 @@ class APIClient {
       }
       return [] as unknown as T
     }
-    
+
     if (endpoint.includes('/journal')) {
       return { entries: [], count: 0 } as unknown as T
     }
-    
+
     if (endpoint.includes('/violet')) {
       if (endpoint.includes('/usage')) {
-        return { prompts_used_today: 5, prompts_limit: 50, reset_at: new Date().toISOString() } as unknown as T
+        return {
+          prompts_used_today: 5,
+          prompts_limit: 50,
+          reset_at: new Date().toISOString(),
+        } as unknown as T
       }
       return { response: "I'm Violet, your AI assistant (Demo Mode)." } as unknown as T
     }
-    
+
     // Return empty arrays/objects for unsupported list/action endpoints to prevent crashes
-    if (endpoint.includes('/reviews') || endpoint.includes('/tracks') || endpoint.includes('/lists')) {
+    if (
+      endpoint.includes('/reviews') ||
+      endpoint.includes('/tracks') ||
+      endpoint.includes('/lists')
+    ) {
       return [] as unknown as T
     }
-    
-    if (endpoint.includes('/apply') || endpoint.includes('/follow') || endpoint.includes('/unfollow') || endpoint.includes('/read')) {
+
+    if (
+      endpoint.includes('/apply') ||
+      endpoint.includes('/follow') ||
+      endpoint.includes('/unfollow') ||
+      endpoint.includes('/read')
+    ) {
       return { success: true } as unknown as T
     }
 
@@ -137,7 +150,7 @@ class APIClient {
         total: MOCK_GIGS.length,
         page: 1,
         limit: 20,
-        has_more: false
+        has_more: false,
       } as unknown as T
     }
 
@@ -150,7 +163,7 @@ class APIClient {
         total: MOCK_ARTISTS.length,
         page: 1,
         limit: 20,
-        has_more: false
+        has_more: false,
       } as unknown as T
     }
 
@@ -162,7 +175,7 @@ class APIClient {
       if (options?.method === 'POST') {
         return MOCK_CONVERSATIONS[0] as unknown as T
       }
-      
+
       // Handle getting a single conversation by ID
       // Check if endpoint ends with an ID (not just /conversations)
       const parts = endpoint.split('/')
