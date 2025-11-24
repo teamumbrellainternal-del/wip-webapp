@@ -16,6 +16,7 @@ interface AuthContextType {
   signInWithApple: () => Promise<void>
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
+  checkSession: () => Promise<void>
   clerkUser: any // Clerk user object
 }
 
@@ -165,7 +166,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoading, signInWithApple, signInWithGoogle, signOut, clerkUser }}
+      value={{
+        user,
+        isLoading,
+        signInWithApple,
+        signInWithGoogle,
+        signOut,
+        clerkUser,
+        checkSession: fetchUserProfile,
+      }}
     >
       {children}
     </AuthContext.Provider>

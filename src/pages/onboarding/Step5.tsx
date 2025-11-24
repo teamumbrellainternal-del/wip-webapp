@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
+import { useAuth } from '@/contexts/AuthContext'
 import { apiClient } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -27,6 +28,7 @@ interface Step5FormData {
 
 export default function OnboardingStep5() {
   const navigate = useNavigate()
+  const { checkSession } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -51,6 +53,9 @@ export default function OnboardingStep5() {
         method: 'POST',
         body: JSON.stringify(data),
       })
+
+      // Refresh session to update onboarding status in context
+      await checkSession()
 
       // Navigate to dashboard on success - onboarding complete!
       navigate('/dashboard', { replace: true })

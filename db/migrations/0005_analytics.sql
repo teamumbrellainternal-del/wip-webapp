@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS journal_entries (
   artist_id TEXT NOT NULL REFERENCES artists(id) ON DELETE CASCADE,
   title TEXT,
   content TEXT, -- JSON blocks (text, video, audio, images)
-  entry_type TEXT CHECK (entry_type IN ('text', 'video', 'mixed')),
+  entry_type TEXT CHECK (entry_type IN ('song_idea', 'set_plan', 'general_note')),
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );

@@ -356,9 +356,7 @@ export const getArtistTracks: RouteHandler = async (ctx) => {
 
   // TODO: Implement track listing
   return successResponse(
-    {
-      tracks: [],
-    },
+    [], // Return array directly to match frontend expectation (Track[])
     200,
     ctx.requestId
   )
@@ -383,11 +381,7 @@ export const getArtistReviews: RouteHandler = async (ctx) => {
 
   // TODO: Implement review listing
   return successResponse(
-    {
-      reviews: [],
-      averageRating: 0,
-      totalCount: 0,
-    },
+    [], // Return array directly to match frontend expectation (Review[])
     200,
     ctx.requestId
   )
