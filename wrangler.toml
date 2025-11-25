@@ -97,8 +97,8 @@ AUTHORIZED_ORIGINS = "https://umbrella-api-preview.teamumbrellainternal.workers.
 
 [[env.preview.d1_databases]]
 binding = "DB"
-database_name = "umbrella-dev-db"
-database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
+database_name = "umbrella-preview-db"
+database_id = "a76b9fb2-1ce5-4cd2-9e24-6af2067d26e1"
 migrations_dir = "db/migrations"
 
 [[env.preview.kv_namespaces]]
@@ -149,8 +149,8 @@ AUTHORIZED_ORIGINS = "https://umbrella-api-staging.teamumbrellainternal.workers.
 
 [[env.staging.d1_databases]]
 binding = "DB"
-database_name = "umbrella-dev-db"
-database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
+database_name = "umbrella-staging-db"
+database_id = "876efd9c-d82c-4299-aeed-b19d096fb5b6"
 migrations_dir = "db/migrations"
 
 [[env.staging.kv_namespaces]]
@@ -177,10 +177,7 @@ AUTHORIZED_ORIGINS = "https://umbrella-prod.teamumbrellainternal.workers.dev"
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "umbrella-prod-db"
-# TODO: Replace with actual production database ID after creating via:
-# wrangler d1 create umbrella-prod-db --env production
-# Using dev database temporarily for initial deployment
-database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
+database_id = "3c48a6ee-b416-4375-8bca-950095a360c5"
 migrations_dir = "db/migrations"
 
 # Production KV namespace binding
