@@ -5,6 +5,7 @@
  */
 
 import type { Env } from '../index'
+import { isDevelopment } from '../config/environments'
 
 /**
  * Validation result interface
@@ -13,13 +14,6 @@ interface ValidationResult {
   valid: boolean
   missing: string[]
   warnings: string[]
-}
-
-/**
- * Check if running in development mode
- */
-function isDevelopment(env: Env): boolean {
-  return env.ENVIRONMENT === 'development' || env.ENVIRONMENT === 'dev'
 }
 
 /**

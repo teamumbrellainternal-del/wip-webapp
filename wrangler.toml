@@ -8,6 +8,8 @@ account_id = "8ff9aeb8363a42ebc3c4027348220080"
 [vars]
 USE_MOCKS = "false"  # Use mock services for development (set to "false" in M10 for real services)
 ENVIRONMENT = "development"  # Environment name (development, staging, production)
+# Comma-separated list of allowed origins for Clerk JWT verification
+AUTHORIZED_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173"
 
 # =============================================================================
 # EXTERNAL SERVICE API CONFIGURATION (Task 10.7)
@@ -91,6 +93,7 @@ name = "umbrella-api-preview"
 [env.preview.vars]
 USE_MOCKS = "false"
 ENVIRONMENT = "preview"
+AUTHORIZED_ORIGINS = "https://umbrella-api-preview.teamumbrellainternal.workers.dev"
 
 [[env.preview.d1_databases]]
 binding = "DB"
@@ -140,8 +143,9 @@ bucket_name = "umbrella-dev-media"
 name = "umbrella-api-staging"
 
 [env.staging.vars]
-USE_MOCKS = "true"
+USE_MOCKS = "false"
 ENVIRONMENT = "staging"
+AUTHORIZED_ORIGINS = "https://umbrella-api-staging.teamumbrellainternal.workers.dev"
 
 [[env.staging.d1_databases]]
 binding = "DB"
@@ -168,6 +172,7 @@ name = "umbrella-prod"
 #                   TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, CLAUDE_API_KEY
 USE_MOCKS = "false"  # Use real services in production (requires secrets)
 ENVIRONMENT = "production"
+AUTHORIZED_ORIGINS = "https://umbrella-prod.teamumbrellainternal.workers.dev"
 
 [[env.production.d1_databases]]
 binding = "DB"

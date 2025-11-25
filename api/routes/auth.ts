@@ -11,6 +11,7 @@ import { Webhook } from 'svix'
 import { createJWT } from '../utils/jwt'
 import { createClerkClient } from '@clerk/backend'
 import { logger } from '../utils/logger'
+import { isDevelopment, isPreview } from '../config/environments'
 
 /**
  * POST /v1/auth/webhook
@@ -130,9 +131,9 @@ async function handleUserCreated(userData: any, env: Env, requestId?: string): P
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     })
-    
+
     // ... (KV counter code remains same but could be logged too)
-    
+
     // Return 500 to tell Clerk to retry
     return errorResponse('internal_error', 'Failed to create user', 500)
   }
@@ -142,7 +143,7 @@ async function handleUserCreated(userData: any, env: Env, requestId?: string): P
 /**
  * Handle user.updated webhook event
  */
-async function handleUserUpdated(userData: any, env: Env): Promise<Response> {
+async function handleUserUpdated(userData: any, env: Env, requestId?: string): Promise<Response> {
   try {
     const clerkId = userData.id
     const email = userData.email_addresses?.[0]?.email_address || ''
@@ -192,7 +193,7 @@ async function handleUserUpdated(userData: any, env: Env): Promise<Response> {
 /**
  * Handle user.deleted webhook event
  */
-async function handleUserDeleted(userData: any, env: Env): Promise<Response> {
+async function handleUserDeleted(userData: any, env: Env, requestId?: string): Promise<Response> {
   try {
     const clerkId = userData.id
 
@@ -241,7 +242,7 @@ async function handleUserDeleted(userData: any, env: Env): Promise<Response> {
 /**
  * Handle session.created webhook event
  */
-async function handleSessionCreated(sessionData: any, env: Env): Promise<Response> {
+async function handleSessionCreated(sessionData: any, env: Env, requestId?: string): Promise<Response> {
   try {
     const userId = sessionData.user_id
 
@@ -434,14 +435,12 @@ export async function handleSessionCheck(request: Request, env: Env): Promise<Re
 
     try {
       // Method 1: Authenticate Request (Recommended)
+      const authorizedParties = env.AUTHORIZED_ORIGINS
+        ? env.AUTHORIZED_ORIGINS.split(',').map((url) => url.trim())
+        : []
+
       const requestState = await clerk.authenticateRequest(request, {
-        jwtKey: env.CLERK_JWT_KEY,
-        authorizedParties: [
-          'http://localhost:5173',
-          'http://127.0.0.1:5173',
-          'https://umbrella-api-preview.teamumbrellainternal.workers.dev',
-          'https://umbrella-prod.teamumbrellainternal.workers.dev',
-        ],
+        authorizedParties,
       })
 
       if (requestState.isSignedIn) {
@@ -458,18 +457,17 @@ export async function handleSessionCheck(request: Request, env: Env): Promise<Re
 
     // Method 2: Manual Token Decode (Dev/Preview Fallback if verify fails)
     // Only do this in development/preview to unblock the "Blank Dashboard" issue
-    const isDevOrPreview = env.ENVIRONMENT === 'development' || env.ENVIRONMENT === 'preview'
-    if (!clerkId && isDevOrPreview && token) {
+    if (!clerkId && (isDevelopment(env) || isPreview(env)) && token) {
       try {
         // Basic base64 decode to get the 'sub' claim (clerkId)
         // WARNING: This bypasses signature verification! Only for local dev unblocking.
         const base64Url = token.split('.')[1]
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
         const payload = JSON.parse(jsonPayload)
-        
+
         if (payload.sub) {
           console.log('⚠️ DEV MODE: Using manually decoded token for user:', payload.sub)
           clerkId = payload.sub
@@ -496,12 +494,12 @@ export async function handleSessionCheck(request: Request, env: Env): Promise<Re
     // If user authenticated with Clerk but not in D1 (e.g. webhook failed/local dev), sync them now
     if (!dbUser) {
       console.log(`User ${clerkId} not found in D1, attempting manual sync...`)
-      
+
       try {
         // Fetch user details from Clerk API
         const clerkUser = await clerk.users.getUser(clerkId)
         const email = clerkUser.emailAddresses[0]?.emailAddress || ''
-        
+
         // Determine provider
         let oauthProvider = 'google'
         const externalAccounts = clerkUser.externalAccounts || []
@@ -524,7 +522,7 @@ export async function handleSessionCheck(request: Request, env: Env): Promise<Re
 
         // Fetch the newly created user
         dbUser = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first()
-        
+
         console.log(`Manual sync successful: Created user ${userId} for Clerk ID ${clerkId}`)
       } catch (syncError) {
         console.error('Manual sync failed:', syncError)
