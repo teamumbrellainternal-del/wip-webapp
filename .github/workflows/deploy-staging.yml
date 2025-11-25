@@ -1,6 +1,9 @@
 name: Deploy to Staging
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -47,6 +50,7 @@ jobs:
   deploy:
     name: Deploy to Staging
     needs: test
+    environment: staging
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
