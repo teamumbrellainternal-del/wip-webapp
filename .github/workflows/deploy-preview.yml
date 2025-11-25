@@ -45,7 +45,9 @@ jobs:
       - name: Sync Worker Secrets
         run: |
           echo "${{ secrets.CLERK_SECRET_KEY }}" | npx wrangler secret put CLERK_SECRET_KEY --env preview
+          echo "${{ secrets.CLERK_PUBLISHABLE_KEY }}" | npx wrangler secret put CLERK_PUBLISHABLE_KEY --env preview
           echo "${{ secrets.CLERK_WEBHOOK_SECRET }}" | npx wrangler secret put CLERK_WEBHOOK_SECRET --env preview
+          echo "${{ secrets.JWT_SECRET }}" | npx wrangler secret put JWT_SECRET --env preview
           echo "${{ secrets.CLAUDE_API_KEY }}" | npx wrangler secret put CLAUDE_API_KEY --env preview
           echo "${{ secrets.RESEND_API_KEY }}" | npx wrangler secret put RESEND_API_KEY --env preview
           echo "${{ secrets.TWILIO_ACCOUNT_SID }}" | npx wrangler secret put TWILIO_ACCOUNT_SID --env preview
