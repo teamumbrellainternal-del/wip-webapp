@@ -2,6 +2,7 @@ name = "umbrella-api"
 main = "api/index.ts"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
+account_id = "8ff9aeb8363a42ebc3c4027348220080"
 
 # Environment variables
 [vars]
@@ -88,7 +89,7 @@ not_found_handling = "single-page-application"
 name = "umbrella-api-preview"
 
 [env.preview.vars]
-USE_MOCKS = "true"
+USE_MOCKS = "false"
 ENVIRONMENT = "preview"
 
 [[env.preview.d1_databases]]

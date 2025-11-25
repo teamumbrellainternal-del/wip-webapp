@@ -436,7 +436,12 @@ export async function handleSessionCheck(request: Request, env: Env): Promise<Re
       // Method 1: Authenticate Request (Recommended)
       const requestState = await clerk.authenticateRequest(request, {
         jwtKey: env.CLERK_JWT_KEY,
-        authorizedParties: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+        authorizedParties: [
+          'http://localhost:5173',
+          'http://127.0.0.1:5173',
+          'https://umbrella-api-preview.teamumbrellainternal.workers.dev',
+          'https://umbrella-prod.teamumbrellainternal.workers.dev',
+        ],
       })
 
       if (requestState.isSignedIn) {
@@ -451,9 +456,10 @@ export async function handleSessionCheck(request: Request, env: Env): Promise<Re
       console.warn('Clerk authentication failed, trying manual token decode for dev:', authError)
     }
 
-    // Method 2: Manual Token Decode (Dev Fallback if verify fails)
-    // Only do this in development to unblock the "Blank Dashboard" issue
-    if (!clerkId && env.ENVIRONMENT === 'development' && token) {
+    // Method 2: Manual Token Decode (Dev/Preview Fallback if verify fails)
+    // Only do this in development/preview to unblock the "Blank Dashboard" issue
+    const isDevOrPreview = env.ENVIRONMENT === 'development' || env.ENVIRONMENT === 'preview'
+    if (!clerkId && isDevOrPreview && token) {
       try {
         // Basic base64 decode to get the 'sub' claim (clerkId)
         // WARNING: This bypasses signature verification! Only for local dev unblocking.
