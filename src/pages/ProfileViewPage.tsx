@@ -239,9 +239,9 @@ export default function ProfileViewPage() {
               {/* Avatar */}
               <div className="relative -mt-20 md:-mt-24">
                 <Avatar className="h-32 w-32 border-4 border-background shadow-lg md:h-40 md:w-40">
-                  <AvatarImage src={artist.avatar_url || undefined} alt={artist.artist_name} />
+                  <AvatarImage src={artist.avatar_url || undefined} alt={artist.artist_name || 'Artist'} />
                   <AvatarFallback className="bg-purple-100 text-3xl text-purple-700">
-                    {artist.artist_name.charAt(0).toUpperCase()}
+                    {(artist.artist_name || 'A').charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 {artist.verified && (
@@ -256,16 +256,16 @@ export default function ProfileViewPage() {
                 <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div>
                     <div className="mb-1 flex flex-wrap items-center gap-2">
-                      <h1 className="text-2xl font-bold md:text-3xl">{artist.artist_name}</h1>
+                      <h1 className="text-2xl font-bold md:text-3xl">{artist.artist_name || 'Artist'}</h1>
                       {artist.verified && (
                         <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
                           Professional
                         </Badge>
                       )}
                     </div>
-                    {artist.artist_name && (
-                      <p className="mb-1 text-muted-foreground">@{artist.artist_name.toLowerCase().replace(/\s+/g, '')}</p>
-                    )}
+                    <p className="mb-1 text-muted-foreground">
+                      @{(artist.artist_name || 'artist').toLowerCase().replace(/\s+/g, '')}
+                    </p>
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <MapPin className="h-4 w-4" />
                       <span>{location}</span>
@@ -715,7 +715,7 @@ function ReviewCard({ review }: ReviewCardProps) {
           <Avatar className="h-12 w-12">
             <AvatarImage src={review.reviewer_avatar_url} alt={review.reviewer_name} />
             <AvatarFallback className="bg-purple-100 text-purple-700">
-              {review.reviewer_name.charAt(0).toUpperCase()}
+              {(review.reviewer_name || 'R').charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">

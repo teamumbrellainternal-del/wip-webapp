@@ -56,25 +56,25 @@ import { MetaTags } from '@/components/MetaTags'
 // Social platform icons
 const TikTokIcon = () => (
   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
   </svg>
 )
 
 const SpotifyIcon = () => (
   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
   </svg>
 )
 
 const AppleMusicIcon = () => (
   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026-.747.043-1.49.123-2.193.401-1.336.53-2.3 1.452-2.865 2.78-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.801.42.127.856.187 1.293.228.555.053 1.11.06 1.667.06h11.03a12.5 12.5 0 001.57-.1c.822-.106 1.596-.35 2.295-.81a5.046 5.046 0 001.88-2.207c.186-.42.293-.87.37-1.324.113-.675.138-1.358.137-2.04-.002-3.8 0-7.595-.003-11.393zm-6.423 3.99v5.712c0 .417-.058.827-.244 1.206-.29.59-.76.962-1.388 1.14-.35.1-.706.157-1.07.173-.95.042-1.8-.228-2.403-.96-.63-.767-.7-1.636-.37-2.526.348-.922 1.077-1.45 2.024-1.645.287-.06.58-.09.87-.124.453-.05.904-.1 1.35-.18.162-.028.322-.072.478-.138.07-.03.097-.082.097-.16-.003-1.58-.002-3.16-.002-4.74 0-.1-.031-.14-.136-.154-.542-.077-1.084-.16-1.627-.235-.918-.128-1.836-.253-2.755-.378-.024-.003-.05-.003-.083-.005-.01.097-.022.184-.022.272-.005 2.442-.004 4.885-.007 7.328 0 .413-.05.82-.23 1.194-.29.595-.77.974-1.407 1.148-.35.096-.706.15-1.065.166-.96.037-1.817-.24-2.418-.985-.618-.764-.682-1.625-.354-2.51.342-.923 1.074-1.457 2.028-1.656.29-.06.585-.093.878-.126.443-.05.887-.09 1.325-.173.182-.035.358-.088.528-.16.067-.03.096-.082.095-.156-.002-2.09-.002-4.18-.002-6.27 0-.048.003-.096.01-.143.01-.064.044-.09.11-.078.164.03.328.054.492.084l2.296.402c1.282.223 2.564.447 3.846.67.166.03.333.054.498.087.058.013.09.048.09.108.003.166.01.332.01.498v6.074z"/>
+    <path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026-.747.043-1.49.123-2.193.401-1.336.53-2.3 1.452-2.865 2.78-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.801.42.127.856.187 1.293.228.555.053 1.11.06 1.667.06h11.03a12.5 12.5 0 001.57-.1c.822-.106 1.596-.35 2.295-.81a5.046 5.046 0 001.88-2.207c.186-.42.293-.87.37-1.324.113-.675.138-1.358.137-2.04-.002-3.8 0-7.595-.003-11.393zm-6.423 3.99v5.712c0 .417-.058.827-.244 1.206-.29.59-.76.962-1.388 1.14-.35.1-.706.157-1.07.173-.95.042-1.8-.228-2.403-.96-.63-.767-.7-1.636-.37-2.526.348-.922 1.077-1.45 2.024-1.645.287-.06.58-.09.87-.124.453-.05.904-.1 1.35-.18.162-.028.322-.072.478-.138.07-.03.097-.082.097-.16-.003-1.58-.002-3.16-.002-4.74 0-.1-.031-.14-.136-.154-.542-.077-1.084-.16-1.627-.235-.918-.128-1.836-.253-2.755-.378-.024-.003-.05-.003-.083-.005-.01.097-.022.184-.022.272-.005 2.442-.004 4.885-.007 7.328 0 .413-.05.82-.23 1.194-.29.595-.77.974-1.407 1.148-.35.096-.706.15-1.065.166-.96.037-1.817-.24-2.418-.985-.618-.764-.682-1.625-.354-2.51.342-.923 1.074-1.457 2.028-1.656.29-.06.585-.093.878-.126.443-.05.887-.09 1.325-.173.182-.035.358-.088.528-.16.067-.03.096-.082.095-.156-.002-2.09-.002-4.18-.002-6.27 0-.048.003-.096.01-.143.01-.064.044-.09.11-.078.164.03.328.054.492.084l2.296.402c1.282.223 2.564.447 3.846.67.166.03.333.054.498.087.058.013.09.048.09.108.003.166.01.332.01.498v6.074z" />
   </svg>
 )
 
 const InstagramIcon = () => (
   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
   </svg>
 )
 
@@ -227,12 +227,12 @@ export default function ProfilePage() {
   return (
     <AppLayout>
       <MetaTags
-        title={artist.artist_name}
+        title={artist.artist_name || 'Artist Profile'}
         description={
           artist.bio ||
-          `${artist.artist_name} - Independent artist on Umbrella. ${artist.genres.join(', ')}. ${artist.gigs_completed} gigs completed.`
+          `${artist.artist_name || 'Artist'} - Independent artist on Umbrella. ${artist.genres?.join(', ') || 'Various genres'}. ${artist.gigs_completed || 0} gigs completed.`
         }
-        keywords={artist.genres}
+        keywords={artist.genres || []}
         url={`/artist/${id}`}
         type="profile"
       />
@@ -252,7 +252,7 @@ export default function ProfilePage() {
             >
               <ArrowLeft className="h-4 w-4" />
               Back to Dashboard
-          </Button>
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="secondary" size="icon" className="bg-white/90 hover:bg-white">
@@ -260,15 +260,15 @@ export default function ProfilePage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleShare}>
-                      <Share2 className="mr-2 h-4 w-4" />
-                      Share
-                    </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleShare}>
+                  <Share2 className="mr-2 h-4 w-4" />
+                  Share
+                </DropdownMenuItem>
                 {!isOwnProfile && (
-                    <DropdownMenuItem onClick={handleReport}>
-                      <Flag className="mr-2 h-4 w-4" />
-                      Report
-                    </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleReport}>
+                    <Flag className="mr-2 h-4 w-4" />
+                    Report
+                  </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
@@ -282,11 +282,11 @@ export default function ProfilePage() {
               {/* Avatar */}
               <div className="relative -mt-20 md:-mt-24">
                 <Avatar className="h-32 w-32 border-4 border-background shadow-lg md:h-40 md:w-40">
-                <AvatarImage src={artist.avatar_url} alt={artist.artist_name} />
+                  <AvatarImage src={artist.avatar_url} alt={artist.artist_name || 'Artist'} />
                   <AvatarFallback className="bg-purple-100 text-3xl text-purple-700">
-                  {artist.artist_name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+                    {(artist.artist_name || 'A').charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
                 {artist.verified && (
                   <div className="absolute -bottom-1 -right-1 rounded-full bg-blue-500 p-1.5">
                     <CheckCircle2 className="h-5 w-5 text-white" />
@@ -299,7 +299,7 @@ export default function ProfilePage() {
                 <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div>
                     <div className="mb-1 flex flex-wrap items-center gap-2">
-                      <h1 className="text-2xl font-bold md:text-3xl">{artist.artist_name}</h1>
+                      <h1 className="text-2xl font-bold md:text-3xl">{artist.artist_name || 'Artist'}</h1>
                       {artist.verified && (
                         <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
                           Professional
@@ -307,7 +307,7 @@ export default function ProfilePage() {
                       )}
                     </div>
                     <p className="mb-1 text-muted-foreground">
-                      @{artist.artist_name.toLowerCase().replace(/\s+/g, '')}
+                      @{(artist.artist_name || 'artist').toLowerCase().replace(/\s+/g, '')}
                     </p>
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <MapPin className="h-4 w-4" />
@@ -372,46 +372,46 @@ export default function ProfilePage() {
                 {/* Social Links */}
                 <div className="flex gap-3">
                   {artist.social_links?.tiktok && (
-                        <a
+                    <a
                       href={artist.social_links.tiktok}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex h-10 w-10 items-center justify-center rounded-full bg-muted transition-colors hover:bg-muted/80"
-                        >
+                    >
                       <TikTokIcon />
-                        </a>
-                    )}
+                    </a>
+                  )}
                   {artist.social_links?.spotify && (
-                        <a
+                    <a
                       href={artist.social_links.spotify}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex h-10 w-10 items-center justify-center rounded-full bg-muted transition-colors hover:bg-muted/80"
-                        >
+                    >
                       <SpotifyIcon />
-                        </a>
-                    )}
+                    </a>
+                  )}
                   {artist.social_links?.apple_music && (
-                        <a
+                    <a
                       href={artist.social_links.apple_music}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex h-10 w-10 items-center justify-center rounded-full bg-muted transition-colors hover:bg-muted/80"
-                        >
+                    >
                       <AppleMusicIcon />
-                        </a>
-                    )}
+                    </a>
+                  )}
                   {artist.social_links?.instagram && (
-                        <a
+                    <a
                       href={artist.social_links.instagram}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex h-10 w-10 items-center justify-center rounded-full bg-muted transition-colors hover:bg-muted/80"
-                        >
+                    >
                       <InstagramIcon />
-                        </a>
-                    )}
-                  </div>
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -419,7 +419,7 @@ export default function ProfilePage() {
 
         {/* Tabs Section */}
         <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-6 w-full justify-start bg-muted/50">
               <TabsTrigger value="overview" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
                 Overview
@@ -439,39 +439,39 @@ export default function ProfilePage() {
               <TabsTrigger value="opportunities" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
                 Opportunities
               </TabsTrigger>
-          </TabsList>
+            </TabsList>
 
-          {/* Tab 1: Overview */}
-          <TabsContent value="overview" className="space-y-6">
+            {/* Tab 1: Overview */}
+            <TabsContent value="overview" className="space-y-6">
               <div className="grid gap-6 lg:grid-cols-3">
                 {/* Left Column - Bio & Portfolio */}
                 <div className="lg:col-span-2 space-y-6">
                   {/* Bio Card */}
-            {artist.bio && (
+                  {artist.bio && (
                     <Card className="border-border/50">
                       <CardContent className="p-6">
                         <h3 className="mb-4 text-lg font-semibold">About</h3>
-                  <p className="whitespace-pre-wrap text-muted-foreground">
-                    {bioExpanded ? artist.bio : truncatedBio}
-                  </p>
-                  {artist.bio.length > 200 && (
-                    <Button
-                      variant="link"
+                        <p className="whitespace-pre-wrap text-muted-foreground">
+                          {bioExpanded ? artist.bio : truncatedBio}
+                        </p>
+                        {artist.bio.length > 200 && (
+                          <Button
+                            variant="link"
                             className="mt-2 px-0 text-purple-600"
-                      onClick={() => setBioExpanded(!bioExpanded)}
-                    >
-                      {bioExpanded ? 'Show less' : 'Expand bio →'}
-                    </Button>
+                            onClick={() => setBioExpanded(!bioExpanded)}
+                          >
+                            {bioExpanded ? 'Show less' : 'Expand bio →'}
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
                   )}
-                </CardContent>
-              </Card>
-            )}
 
-            {/* Portfolio Preview */}
-            {tracks.length > 0 && (
+                  {/* Portfolio Preview */}
+                  {tracks.length > 0 && (
                     <Card className="border-border/50">
                       <CardContent className="p-6">
-                  <div className="mb-4 flex items-center justify-between">
+                        <div className="mb-4 flex items-center justify-between">
                           <h3 className="text-lg font-semibold">Portfolio</h3>
                           <Button
                             variant="link"
@@ -480,21 +480,21 @@ export default function ProfilePage() {
                           >
                             View Full Portfolio
                             <ArrowLeft className="h-4 w-4 rotate-180" />
-                    </Button>
-                  </div>
+                          </Button>
+                        </div>
                         <div className="grid gap-4 md:grid-cols-3">
-                    {tracks.slice(0, 3).map((track) => (
-                      <TrackCard
-                        key={track.id}
-                        track={track}
-                        isPlaying={playingTrackId === track.id}
-                        onPlay={() => handleTrackPlay(track.id)}
-                      />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                          {tracks.slice(0, 3).map((track) => (
+                            <TrackCard
+                              key={track.id}
+                              track={track}
+                              isPlaying={playingTrackId === track.id}
+                              onPlay={() => handleTrackPlay(track.id)}
+                            />
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
 
                 {/* Right Column - Endorsements */}
@@ -520,19 +520,19 @@ export default function ProfilePage() {
                             </Badge>
                           </div>
                         ))}
-                </div>
-              </CardContent>
-            </Card>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
-          </TabsContent>
+            </TabsContent>
 
-          {/* Tab 2: Portfolio */}
-          <TabsContent value="portfolio" className="space-y-4">
+            {/* Tab 2: Portfolio */}
+            <TabsContent value="portfolio" className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Music Portfolio</h2>
-            </div>
-            {tracks.length === 0 ? (
+              </div>
+              {tracks.length === 0 ? (
                 <Card className="border-border/50">
                   <CardContent className="py-12 text-center">
                     <Music className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
@@ -540,51 +540,51 @@ export default function ProfilePage() {
                     <p className="text-muted-foreground">
                       This artist hasn't uploaded any tracks yet.
                     </p>
-                </CardContent>
-              </Card>
-            ) : (
+                  </CardContent>
+                </Card>
+              ) : (
                 <div className="grid gap-4 md:grid-cols-3">
-                {tracks.map((track) => (
-                  <TrackCard
-                    key={track.id}
-                    track={track}
-                    isPlaying={playingTrackId === track.id}
-                    onPlay={() => handleTrackPlay(track.id)}
-                    showActions
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
+                  {tracks.map((track) => (
+                    <TrackCard
+                      key={track.id}
+                      track={track}
+                      isPlaying={playingTrackId === track.id}
+                      onPlay={() => handleTrackPlay(track.id)}
+                      showActions
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
 
-          {/* Tab 3: Explore */}
-          <TabsContent value="explore">
+            {/* Tab 3: Explore */}
+            <TabsContent value="explore">
               <Card className="border-border/50">
                 <CardContent className="py-12 text-center">
                   <Camera className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
                   <h3 className="mb-2 text-xl font-semibold">Media Gallery</h3>
                   <p className="text-muted-foreground">No media posts yet</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          {/* Tab 4: Journey */}
-          <TabsContent value="journey">
+            {/* Tab 4: Journey */}
+            <TabsContent value="journey">
               <Card className="border-border/50">
                 <CardContent className="py-12 text-center">
                   <Calendar className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
                   <h3 className="mb-2 text-xl font-semibold">Career Journey</h3>
                   <p className="text-muted-foreground">Timeline coming soon</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          {/* Tab 5: Reviews */}
-          <TabsContent value="reviews" className="space-y-4">
+            {/* Tab 5: Reviews */}
+            <TabsContent value="reviews" className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Client Reviews ({reviews.length})</h2>
-            </div>
-            {reviews.length === 0 ? (
+              </div>
+              {reviews.length === 0 ? (
                 <Card className="border-border/50">
                   <CardContent className="py-12 text-center">
                     <Star className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
@@ -592,19 +592,19 @@ export default function ProfilePage() {
                     <p className="text-muted-foreground">
                       This artist hasn't received any reviews yet.
                     </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {reviews.map((review) => (
-                  <ReviewCard key={review.id} review={review} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {reviews.map((review) => (
+                    <ReviewCard key={review.id} review={review} />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
 
-          {/* Tab 6: Opportunities */}
-          <TabsContent value="opportunities">
+            {/* Tab 6: Opportunities */}
+            <TabsContent value="opportunities">
               <Card className="border-border/50">
                 <CardContent className="py-12 text-center">
                   <ThumbsUp className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
@@ -616,10 +616,10 @@ export default function ProfilePage() {
                     <MessageCircle className="mr-2 h-4 w-4" />
                     Send Booking Inquiry
                   </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
@@ -709,31 +709,31 @@ function TrackCard({ track, isPlaying, onPlay, showActions }: TrackCardProps) {
   return (
     <Card className="overflow-hidden border-border/50 transition-all hover:shadow-md">
       <div className="relative aspect-square">
-            {track.cover_art_url ? (
-              <img
-                src={track.cover_art_url}
-                alt={track.title}
+        {track.cover_art_url ? (
+          <img
+            src={track.cover_art_url}
+            alt={track.title}
             className="h-full w-full object-cover"
-              />
-            ) : (
+          />
+        ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
             <Music className="h-12 w-12 text-white" />
-              </div>
-            )}
-            {/* Play/Pause Overlay */}
-            <button
-              onClick={onPlay}
+          </div>
+        )}
+        {/* Play/Pause Overlay */}
+        <button
+          onClick={onPlay}
           className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity hover:opacity-100"
-            >
+        >
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90">
-              {isPlaying ? (
+            {isPlaying ? (
               <Pause className="h-6 w-6 text-purple-600" />
-              ) : (
+            ) : (
               <Play className="h-6 w-6 text-purple-600" />
-              )}
+            )}
           </div>
         </button>
-                </div>
+      </div>
       <CardContent className="p-4">
         <h4 className="mb-1 truncate font-semibold">{track.title}</h4>
         <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -741,17 +741,17 @@ function TrackCard({ track, isPlaying, onPlay, showActions }: TrackCardProps) {
             {track.genre || 'Original'}
           </Badge>
           <span>{track.play_count?.toLocaleString() || 0} plays</span>
-              </div>
-              {showActions && (
+        </div>
+        {showActions && (
           <div className="mt-3 flex gap-2">
             <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Heart className="h-4 w-4" />
-                  </Button>
+              <Heart className="h-4 w-4" />
+            </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Share2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
+              <Share2 className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   )
@@ -770,7 +770,7 @@ function ReviewCard({ review }: ReviewCardProps) {
           <Avatar className="h-12 w-12">
             <AvatarImage src={review.reviewer_avatar_url} alt={review.reviewer_name} />
             <AvatarFallback className="bg-purple-100 text-purple-700">
-              {review.reviewer_name.charAt(0).toUpperCase()}
+              {(review.reviewer_name || 'R').charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
@@ -781,11 +781,10 @@ function ReviewCard({ review }: ReviewCardProps) {
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-4 w-4 ${
-                        i < review.rating
-                          ? 'fill-amber-400 text-amber-400'
-                          : 'text-muted-foreground'
-                      }`}
+                      className={`h-4 w-4 ${i < review.rating
+                        ? 'fill-amber-400 text-amber-400'
+                        : 'text-muted-foreground'
+                        }`}
                     />
                   ))}
                 </div>
