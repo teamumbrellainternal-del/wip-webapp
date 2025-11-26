@@ -20,7 +20,6 @@ import {
   Filter,
   MapPin,
   Calendar,
-  DollarSign,
   Star,
   CheckCircle2,
   Loader2,

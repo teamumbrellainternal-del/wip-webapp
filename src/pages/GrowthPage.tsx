@@ -11,8 +11,6 @@ import {
   TrendingUp,
   DollarSign,
   Calendar,
-  Target,
-  Award,
   Users,
   ArrowLeft,
   Star,
@@ -22,7 +20,6 @@ import {
   CheckCircle2,
   Trophy,
   Mic2,
-  Heart,
   Building2,
   Repeat,
 } from 'lucide-react'
@@ -67,10 +64,10 @@ const MOCK_GOALS = [
 export default function GrowthPage() {
   const navigate = useNavigate()
 
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
-  const [performance, setPerformance] = useState<PerformanceData | null>(null)
-  const [goals, setGoals] = useState<Goal[]>([])
-  const [achievements, setAchievements] = useState<Achievement[]>([])
+  const [_metrics, setMetrics] = useState<DashboardMetrics | null>(null)
+  const [_performance, setPerformance] = useState<PerformanceData | null>(null)
+  const [_goals, setGoals] = useState<Goal[]>([])
+  const [_achievements, setAchievements] = useState<Achievement[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
   const [timePeriod, setTimePeriod] = useState<'monthly' | 'yearly'>('monthly')
@@ -103,7 +100,7 @@ export default function GrowthPage() {
     }
   }
 
-  const formatCurrency = (amount: number) => {
+  const _formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',

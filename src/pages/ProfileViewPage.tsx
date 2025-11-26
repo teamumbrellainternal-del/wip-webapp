@@ -10,12 +10,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   MapPin,
   Star,
-  Users,
   Music,
   ThumbsUp,
   Share2,
@@ -645,7 +642,7 @@ interface TrackCardProps {
 }
 
 function TrackCard({ track, isPlaying, onPlay, showActions }: TrackCardProps) {
-  const formatDuration = (seconds: number) => {
+  const _formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins}:${secs.toString().padStart(2, '0')}`

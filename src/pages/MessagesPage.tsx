@@ -21,7 +21,6 @@ import {
   Star,
   X,
   Bell,
-  TrendingUp,
 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import LoadingState from '@/components/common/LoadingState'
@@ -72,7 +71,7 @@ const MOCK_NOTIFICATIONS = [
 export default function MessagesPage() {
   const { conversationId } = useParams<{ conversationId: string }>()
   const navigate = useNavigate()
-  const { user, clerkUser } = useAuth()
+  const { user } = useAuth()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
