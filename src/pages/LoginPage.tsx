@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { SignIn, useAuth } from '@clerk/clerk-react'
 import { MetaTags } from '../components/MetaTags'
 import { Check } from 'lucide-react'
+import UmbrellaLogo from '../../brand/assets/logos/umbrella-logo-light.svg'
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
@@ -85,12 +86,8 @@ export default function LoginPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-amber-50/50 via-white to-white dark:from-slate-950 dark:via-slate-900 dark:to-purple-950">
         <div className="text-center">
-          <div className="mb-4 inline-flex h-16 w-16 animate-pulse items-center justify-center rounded-2xl bg-purple-100 dark:bg-purple-900/30">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16 4C9 4 4 9 4 14c0 1 0.5 2 1.5 2s1.5-1 1.5-2c0-2 1-4 3-4s3 2 3 4c0 1 0.5 2 1 2s1-1 1-2c0-2 1-4 3-4s3 2 3 4c0 1 0.5 2 1.5 2s1.5-1 1.5-2c0-5-3-10-10-10z" fill="#9370DB"/>
-              <rect x="15" y="14" width="2" height="12" rx="1" fill="#9370DB"/>
-              <path d="M17 24c0 1-1 2-2 2s-2-1-2-2h4z" fill="#9370DB"/>
-            </svg>
+          <div className="mb-4 animate-pulse">
+            <img src={UmbrellaLogo} alt="Umbrella" className="h-12" />
           </div>
         </div>
       </div>
@@ -117,18 +114,9 @@ export default function LoginPage() {
         {/* Left Column - Marketing Content */}
         <div className="hidden w-full max-w-xl flex-col justify-center px-12 py-12 lg:flex xl:max-w-2xl xl:px-16">
           {/* Logo & Brand */}
-          <div className="mb-8 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-100 dark:bg-purple-900/30">
-              <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16 4C9 4 4 9 4 14c0 1 0.5 2 1.5 2s1.5-1 1.5-2c0-2 1-4 3-4s3 2 3 4c0 1 0.5 2 1 2s1-1 1-2c0-2 1-4 3-4s3 2 3 4c0 1 0.5 2 1.5 2s1.5-1 1.5-2c0-5-3-10-10-10z" fill="#9370DB"/>
-                <rect x="15" y="14" width="2" height="12" rx="1" fill="#9370DB"/>
-                <path d="M17 24c0 1-1 2-2 2s-2-1-2-2h4z" fill="#9370DB"/>
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">Umbrella</h1>
-              <p className="text-sm text-muted-foreground">Artist Platform</p>
-            </div>
+          <div className="mb-8">
+            <img src={UmbrellaLogo} alt="Umbrella" className="h-12" />
+            <p className="mt-1 text-sm text-muted-foreground">Artist Platform</p>
           </div>
 
           {/* Carousel Content */}
@@ -176,18 +164,9 @@ export default function LoginPage() {
         <div className="flex w-full flex-1 items-center justify-center p-4 lg:p-8">
           <div className="w-full max-w-md">
             {/* Mobile Logo - Only shows on mobile */}
-            <div className="mb-8 flex items-center justify-center gap-3 lg:hidden">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-100 dark:bg-purple-900/30">
-                <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M16 4C9 4 4 9 4 14c0 1 0.5 2 1.5 2s1.5-1 1.5-2c0-2 1-4 3-4s3 2 3 4c0 1 0.5 2 1 2s1-1 1-2c0-2 1-4 3-4s3 2 3 4c0 1 0.5 2 1.5 2s1.5-1 1.5-2c0-5-3-10-10-10z" fill="#9370DB"/>
-                  <rect x="15" y="14" width="2" height="12" rx="1" fill="#9370DB"/>
-                  <path d="M17 24c0 1-1 2-2 2s-2-1-2-2h4z" fill="#9370DB"/>
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">Umbrella</h1>
-                <p className="text-sm text-muted-foreground">Artist Platform</p>
-              </div>
+            <div className="mb-8 flex flex-col items-center justify-center lg:hidden">
+              <img src={UmbrellaLogo} alt="Umbrella" className="h-10" />
+              <p className="mt-1 text-sm text-muted-foreground">Artist Platform</p>
             </div>
 
             {/* Sign In Card */}
