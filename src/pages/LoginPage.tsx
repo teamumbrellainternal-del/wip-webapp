@@ -83,7 +83,7 @@ export default function LoginPage() {
   // Show loading state while checking auth
   if (!isLoaded) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-slate-950 dark:via-slate-900 dark:to-purple-950">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-amber-50/50 via-white to-white dark:from-slate-950 dark:via-slate-900 dark:to-purple-950">
         <div className="text-center">
           <div className="mb-4 inline-flex h-16 w-16 animate-pulse items-center justify-center rounded-2xl bg-purple-500">
             <span className="text-2xl font-bold text-white">U</span>
@@ -109,7 +109,7 @@ export default function LoginPage() {
         noIndex={true}
       />
 
-      <div className="flex min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-slate-950 dark:via-slate-900 dark:to-purple-950">
+      <div className="flex min-h-screen bg-gradient-to-br from-amber-50/50 via-white to-white dark:from-slate-950 dark:via-slate-900 dark:to-purple-950">
         {/* Left Column - Marketing Content */}
         <div className="hidden w-full max-w-xl flex-col justify-center px-12 py-12 lg:flex xl:max-w-2xl xl:px-16">
           {/* Logo & Brand */}
@@ -126,7 +126,7 @@ export default function LoginPage() {
           {/* Carousel Content */}
           <div className="mb-8">
             {/* Icon */}
-            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-100 dark:bg-purple-900/30">
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-pink-100 dark:bg-pink-900/30">
               <span className="text-3xl">{currentContent.icon}</span>
             </div>
 
@@ -155,8 +155,8 @@ export default function LoginPage() {
           <div className="space-y-3">
             {features.map((feature, index) => (
               <div key={index} className="flex items-center gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
-                  <Check className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                  <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                 </div>
                 <span className="text-copy-16 text-foreground">{feature}</span>
               </div>
