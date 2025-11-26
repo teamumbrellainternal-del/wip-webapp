@@ -2,11 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import {
   Dialog,
   DialogContent,
@@ -20,15 +18,16 @@ import { Skeleton } from '@/components/ui/skeleton'
 import {
   Search,
   Filter,
-  Heart,
   MapPin,
   Calendar,
-  DollarSign,
   Star,
   CheckCircle2,
-  X,
   Loader2,
   Users,
+  Clock,
+  ArrowLeft,
+  Share2,
+  Bookmark,
 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import ErrorState from '@/components/common/ErrorState'
@@ -38,12 +37,6 @@ import { toast } from 'sonner'
 import { MetaTags } from '@/components/MetaTags'
 
 type TabType = 'gigs' | 'artists'
-
-interface FilterChip {
-  id: string
-  label: string
-  value: string
-}
 
 const GENRES = [
   'Rock',
@@ -60,11 +53,28 @@ const GENRES = [
   'Indie',
 ]
 
+const QUICK_FILTERS = [
+  { id: 'jazz', label: 'Jazz', type: 'genre' as const },
+  { id: 'rock', label: 'Rock', type: 'genre' as const },
+  { id: 'acoustic', label: 'Acoustic', type: 'genre' as const },
+  { id: 'opening', label: 'Opening Act', type: 'quick' as const },
+  { id: 'weekend', label: 'This Weekend', type: 'quick' as const },
+  { id: 'price500', label: '$500+', type: 'price' as const },
+]
+
 const PRICE_RANGES = [
   { label: 'Under $500', min: 0, max: 500 },
   { label: '$500 - $1,000', min: 500, max: 1000 },
   { label: '$1,000 - $2,500', min: 1000, max: 2500 },
   { label: '$2,500+', min: 2500, max: 999999 },
+]
+
+// Placeholder venue images
+const VENUE_IMAGES = [
+  'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=300&h=200&fit=crop',
+  'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=300&h=200&fit=crop',
 ]
 
 export default function MarketplacePage() {
@@ -86,6 +96,7 @@ export default function MarketplacePage() {
   const [urgentOnly, setUrgentOnly] = useState(false)
   const [verifiedOnly, setVerifiedOnly] = useState(false)
   const [showFiltersModal, setShowFiltersModal] = useState(false)
+  const [activeQuickFilters, setActiveQuickFilters] = useState<Set<string>>(new Set())
 
   // Data state
   const [gigs, setGigs] = useState<Gig[]>([])
@@ -96,7 +107,7 @@ export default function MarketplacePage() {
   const [hasMore, setHasMore] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
 
-  // Detail sidebar state
+  // Detail panel state
   const [selectedGig, setSelectedGig] = useState<Gig | null>(null)
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null)
 
@@ -212,7 +223,6 @@ export default function MarketplacePage() {
 
     const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current
 
-    // Load more when scrolled to 80% of the content
     if (scrollTop + clientHeight >= scrollHeight * 0.8) {
       fetchData(false)
     }
@@ -266,26 +276,29 @@ export default function MarketplacePage() {
     })
   }
 
-  // Handle filter chip removal
-  const handleRemoveFilter = (type: string, value?: string) => {
-    switch (type) {
-      case 'genre':
-        if (value) {
-          setSelectedGenres((prev: string[]) => prev.filter((g: string) => g !== value))
-        }
-        break
-      case 'location':
-        setLocationFilter('')
-        break
-      case 'price':
-        setPriceRange({})
-        break
-      case 'urgent':
-        setUrgentOnly(false)
-        break
-      case 'verified':
-        setVerifiedOnly(false)
-        break
+  // Handle quick filter toggle
+  const handleQuickFilterToggle = (filterId: string) => {
+    setActiveQuickFilters((prev) => {
+      const newFilters = new Set(prev)
+      if (newFilters.has(filterId)) {
+        newFilters.delete(filterId)
+      } else {
+        newFilters.add(filterId)
+      }
+      return newFilters
+    })
+
+    // Apply filter logic based on type
+    const filter = QUICK_FILTERS.find((f) => f.id === filterId)
+    if (filter) {
+      if (filter.type === 'genre') {
+        const genre = filter.label
+        setSelectedGenres((prev) =>
+          prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre]
+        )
+      } else if (filter.id === 'price500') {
+        setPriceRange((prev) => (prev.min === 500 ? {} : { min: 500 }))
+      }
     }
   }
 
@@ -297,10 +310,14 @@ export default function MarketplacePage() {
     setUrgentOnly(false)
     setVerifiedOnly(false)
     setSearchQuery('')
+    setActiveQuickFilters(new Set())
   }
 
   // Format currency
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | undefined | null) => {
+    if (amount === undefined || amount === null || isNaN(amount)) {
+      return 'TBD'
+    }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -319,731 +336,653 @@ export default function MarketplacePage() {
     }).format(date)
   }
 
+  // Format time
+  const formatTime = (timeString?: string) => {
+    if (!timeString) return '7:00 PM'
+    return timeString
+  }
+
   if (!user) return null
 
-  // Active filter chips
-  const activeFilters: FilterChip[] = []
-  selectedGenres.forEach((genre) => {
-    activeFilters.push({ id: `genre-${genre}`, label: genre, value: genre })
-  })
-  if (locationFilter) {
-    activeFilters.push({ id: 'location', label: `📍 ${locationFilter}`, value: locationFilter })
+  // Render gigs list
+  const renderGigsList = () => {
+    if (loading) {
+      return (
+        <div className="space-y-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="overflow-hidden">
+              <div className="flex">
+                <Skeleton className="h-40 w-40 flex-shrink-0" />
+                <div className="flex-1 p-4">
+                  <Skeleton className="mb-2 h-5 w-3/4" />
+                  <Skeleton className="mb-4 h-4 w-1/2" />
+                  <Skeleton className="h-4 w-full" />
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )
+    }
+
+    if (error) {
+      return <ErrorState error={error} retry={() => fetchData(true)} />
+    }
+
+    if (gigs.length === 0) {
+      return (
+        <div className="py-12 text-center">
+          <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground opacity-50" />
+          <h3 className="mb-2 text-lg font-semibold">No gigs found</h3>
+          <p className="mb-4 text-muted-foreground">Try adjusting your filters or search query</p>
+          <Button onClick={handleClearAllFilters}>Clear Filters</Button>
+        </div>
+      )
+    }
+
+    return (
+      <div className="space-y-4">
+        {gigs.map((gig, index) => (
+          <Card
+            key={gig.id}
+            className={`cursor-pointer overflow-hidden border-border/50 transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700 ${
+              selectedGig?.id === gig.id ? 'border-purple-500 ring-1 ring-purple-500' : ''
+            }`}
+            onClick={() => handleGigClick(gig)}
+          >
+            <div className="flex">
+              {/* Venue Image */}
+              <div className="relative h-44 w-44 flex-shrink-0">
+                <img
+                  src={VENUE_IMAGES[index % VENUE_IMAGES.length]}
+                  alt={gig.venue_name}
+                  className="h-full w-full object-cover"
+                />
+                {gig.urgency_flag && (
+                  <Badge className="absolute right-2 top-2 bg-red-500 text-white">Urgent</Badge>
+                )}
+              </div>
+
+              {/* Content */}
+              <CardContent className="flex flex-1 flex-col p-4">
+                <div className="mb-2 flex items-start justify-between">
+                  <div>
+                    <h3 className="font-semibold text-foreground">{gig.venue_name}</h3>
+                    <p className="text-sm text-muted-foreground">{gig.title}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                      {formatCurrency(gig.payment_amount)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">per gig</p>
+                  </div>
+                </div>
+
+                {/* Details Row */}
+                <div className="mb-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span>{formatDate(gig.date)}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>{formatTime(gig.time)}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Users className="h-3.5 w-3.5" />
+                    <span>{gig.capacity || 100} cap</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5" />
+                    <span>{gig.location}</span>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="mt-auto flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {/* Rating */}
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span className="font-medium">4.8</span>
+                      <span className="text-xs text-muted-foreground">(156)</span>
+                    </div>
+                    {/* Genre Tags */}
+                    <div className="flex gap-1">
+                      {gig.genre_tags?.slice(0, 2).map((genre) => (
+                        <Badge
+                          key={genre}
+                          variant="secondary"
+                          className="bg-purple-100 text-xs text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+                        >
+                          {genre}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Action Buttons */}
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleToggleFavorite(gig.id)
+                      }}
+                    >
+                      <Bookmark
+                        className={`h-4 w-4 ${
+                          favorites.has(gig.id)
+                            ? 'fill-purple-500 text-purple-500'
+                            : 'text-muted-foreground'
+                        }`}
+                      />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Share2 className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </div>
+          </Card>
+        ))}
+        {loadingMore && (
+          <div className="flex justify-center py-4">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        )}
+      </div>
+    )
   }
-  if (priceRange.min || priceRange.max) {
-    const label =
-      priceRange.min && priceRange.max
-        ? `${formatCurrency(priceRange.min)} - ${formatCurrency(priceRange.max)}`
-        : priceRange.min
-          ? `${formatCurrency(priceRange.min)}+`
-          : `Up to ${formatCurrency(priceRange.max!)}`
-    activeFilters.push({ id: 'price', label: `💰 ${label}`, value: 'price' })
-  }
-  if (urgentOnly) {
-    activeFilters.push({ id: 'urgent', label: '🔥 Urgent Only', value: 'urgent' })
-  }
-  if (verifiedOnly) {
-    activeFilters.push({ id: 'verified', label: '✓ Verified Only', value: 'verified' })
+
+  // Render artists list
+  const renderArtistsList = () => {
+    if (loading) {
+      return (
+        <div className="space-y-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="overflow-hidden">
+              <div className="flex">
+                <Skeleton className="h-40 w-40 flex-shrink-0" />
+                <div className="flex-1 p-4">
+                  <Skeleton className="mb-2 h-5 w-3/4" />
+                  <Skeleton className="mb-4 h-4 w-1/2" />
+                  <Skeleton className="h-4 w-full" />
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )
+    }
+
+    if (error) {
+      return <ErrorState error={error} retry={() => fetchData(true)} />
+    }
+
+    if (artists.length === 0) {
+      return (
+        <div className="py-12 text-center">
+          <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground opacity-50" />
+          <h3 className="mb-2 text-lg font-semibold">No artists found</h3>
+          <p className="mb-4 text-muted-foreground">Try adjusting your filters or search query</p>
+          <Button onClick={handleClearAllFilters}>Clear Filters</Button>
+        </div>
+      )
+    }
+
+    return (
+      <div className="space-y-4">
+        {artists.map((artist) => (
+          <Card
+            key={artist.id}
+            className={`cursor-pointer overflow-hidden border-border/50 transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700 ${
+              selectedArtist?.id === artist.id ? 'border-purple-500 ring-1 ring-purple-500' : ''
+            }`}
+            onClick={() => handleArtistClick(artist)}
+          >
+            <CardContent className="flex items-center gap-4 p-4">
+              {/* Avatar */}
+              <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-xl font-bold text-white">
+                {artist.artist_name.charAt(0).toUpperCase()}
+              </div>
+
+              {/* Content */}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-foreground">{artist.artist_name}</h3>
+                  {artist.verified && <CheckCircle2 className="h-4 w-4 text-blue-500" />}
+                </div>
+                <p className="text-sm text-muted-foreground">{artist.location}</p>
+                <div className="mt-2 flex items-center gap-4 text-sm">
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="font-medium">{artist.rating_avg?.toFixed(1) || '5.0'}</span>
+                    <span className="text-muted-foreground">({artist.review_count || 0})</span>
+                  </div>
+                  <span className="text-muted-foreground">{artist.gigs_completed || 0} gigs</span>
+                </div>
+              </div>
+
+              {/* Price & Actions */}
+              <div className="flex flex-col items-end gap-2">
+                {artist.price_range_min && artist.price_range_max && (
+                  <p className="font-semibold text-purple-600 dark:text-purple-400">
+                    {formatCurrency(artist.price_range_min)} -{' '}
+                    {formatCurrency(artist.price_range_max)}
+                  </p>
+                )}
+                <div className="flex gap-1">
+                  {artist.genres?.slice(0, 2).map((genre) => (
+                    <Badge
+                      key={genre}
+                      variant="secondary"
+                      className="bg-purple-100 text-xs text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+                    >
+                      {genre}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        {loadingMore && (
+          <div className="flex justify-center py-4">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (
     <AppLayout>
       <MetaTags
-        title="Find Gigs & Discover Artists"
-        description="Connect independent artists with gigs, tools, and opportunities. Browse available gigs or discover talented artists for your venue."
-        keywords={[
-          'music gigs',
-          'artist marketplace',
-          'live music',
-          'independent artists',
-          'venue booking',
-        ]}
+        title="Marketplace"
+        description="Discover gigs and connect with artists on Umbrella"
         url="/marketplace"
       />
-      <div className="container mx-auto flex h-screen flex-col px-4 py-6">
+
+      <div className="flex h-[calc(100vh-4rem)] flex-col">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="mb-2 text-3xl font-bold tracking-tight">Marketplace</h1>
-          <p className="text-muted-foreground">Discover opportunities and connect with artists</p>
-        </div>
-
-        {/* Search Bar */}
-        <div className="mb-4 flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
-            <Input
-              placeholder={activeTab === 'gigs' ? 'Search gigs...' : 'Search artists...'}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Dialog open={showFiltersModal} onOpenChange={setShowFiltersModal}>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <Filter className="mr-2 h-4 w-4" />
-                Filters
-                {activeFilters.length > 0 && (
-                  <Badge variant="secondary" className="ml-2">
-                    {activeFilters.length}
-                  </Badge>
-                )}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Advanced Filters</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-6 py-4">
-                {/* Genre Filter */}
-                <div>
-                  <h3 className="mb-3 font-semibold">Genre</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {GENRES.map((genre: string) => (
-                      <Button
-                        key={genre}
-                        variant={selectedGenres.includes(genre) ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => {
-                          setSelectedGenres((prev: string[]) =>
-                            prev.includes(genre)
-                              ? prev.filter((g: string) => g !== genre)
-                              : [...prev, genre]
-                          )
-                        }}
-                      >
-                        {genre}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Location Filter */}
-                <div>
-                  <h3 className="mb-3 font-semibold">Location</h3>
-                  <Input
-                    placeholder="City or State"
-                    value={locationFilter}
-                    onChange={(e) => setLocationFilter(e.target.value)}
-                  />
-                </div>
-
-                <Separator />
-
-                {/* Price Range Filter */}
-                <div>
-                  <h3 className="mb-3 font-semibold">
-                    {activeTab === 'gigs' ? 'Payment Range' : 'Price Range'}
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {PRICE_RANGES.map((range) => {
-                      const isSelected =
-                        priceRange.min === range.min && priceRange.max === range.max
-                      return (
-                        <Button
-                          key={range.label}
-                          variant={isSelected ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => {
-                            if (isSelected) {
-                              setPriceRange({})
-                            } else {
-                              setPriceRange({ min: range.min, max: range.max })
-                            }
-                          }}
-                        >
-                          {range.label}
-                        </Button>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {activeTab === 'gigs' && (
-                  <>
-                    <Separator />
-                    <div>
-                      <h3 className="mb-3 font-semibold">Urgency</h3>
-                      <Button
-                        variant={urgentOnly ? 'default' : 'outline'}
-                        onClick={() => setUrgentOnly(!urgentOnly)}
-                      >
-                        Urgent Gigs Only
-                      </Button>
-                    </div>
-                  </>
-                )}
-
-                {activeTab === 'artists' && (
-                  <>
-                    <Separator />
-                    <div>
-                      <h3 className="mb-3 font-semibold">Verification</h3>
-                      <Button
-                        variant={verifiedOnly ? 'default' : 'outline'}
-                        onClick={() => setVerifiedOnly(!verifiedOnly)}
-                      >
-                        Verified Artists Only
-                      </Button>
-                    </div>
-                  </>
-                )}
-
-                <Separator />
-
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1" onClick={handleClearAllFilters}>
-                    Clear All
-                  </Button>
-                  <Button className="flex-1" onClick={() => setShowFiltersModal(false)}>
-                    Apply Filters
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {/* Active Filter Chips */}
-        {activeFilters.length > 0 && (
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <span className="text-sm text-muted-foreground">Active filters:</span>
-            {activeFilters.map((filter) => (
-              <Badge key={filter.id} variant="secondary" className="gap-1">
-                {filter.label}
-                <X
-                  className="h-3 w-3 cursor-pointer"
-                  onClick={() => {
-                    if (filter.id.startsWith('genre-')) {
-                      handleRemoveFilter('genre', filter.value)
-                    } else if (filter.id === 'location') {
-                      handleRemoveFilter('location')
-                    } else if (filter.id === 'price') {
-                      handleRemoveFilter('price')
-                    } else if (filter.id === 'urgent') {
-                      handleRemoveFilter('urgent')
-                    } else if (filter.id === 'verified') {
-                      handleRemoveFilter('verified')
-                    }
-                  }}
-                />
-              </Badge>
-            ))}
+        <div className="border-b border-border/50 bg-background px-6 py-4">
+          <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleClearAllFilters}
-              className="h-6 text-xs"
+              className="gap-2"
+              onClick={() => navigate('/dashboard')}
             >
-              Clear all
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
             </Button>
+            <h1 className="text-2xl font-bold text-foreground">Marketplace</h1>
           </div>
-        )}
+        </div>
 
-        {/* Tabs */}
-        <Tabs
-          value={activeTab}
-          onValueChange={(v) => setActiveTab(v as TabType)}
-          className="flex min-h-0 flex-1 flex-col"
-        >
-          <TabsList className="mb-4">
-            <TabsTrigger value="gigs" className="flex-1">
-              <Calendar className="mr-2 h-4 w-4" />
-              Find Gigs
-            </TabsTrigger>
-            <TabsTrigger value="artists" className="flex-1">
-              <Users className="mr-2 h-4 w-4" />
-              Discover Artists
-            </TabsTrigger>
-          </TabsList>
-
-          <div className="min-h-0 flex-1 overflow-hidden">
-            {/* Gigs Tab */}
-            <TabsContent value="gigs" className="m-0 h-full">
-              {loading ? (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <Card key={i}>
-                      <CardHeader>
-                        <Skeleton className="mb-2 h-4 w-3/4" />
-                        <Skeleton className="h-3 w-1/2" />
-                      </CardHeader>
-                      <CardContent>
-                        <Skeleton className="h-20 w-full" />
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : error ? (
-                <ErrorState error={error} retry={() => fetchData(true)} />
-              ) : (
-                <ScrollArea ref={scrollContainerRef} className="h-full">
-                  {gigs.length === 0 ? (
-                    <div className="py-12 text-center">
-                      <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground opacity-50" />
-                      <h3 className="mb-2 text-lg font-semibold">No gigs found</h3>
-                      <p className="mb-4 text-muted-foreground">
-                        Try adjusting your filters or search query
-                      </p>
-                      <Button onClick={handleClearAllFilters}>Clear Filters</Button>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="grid gap-4 pb-4 md:grid-cols-2 lg:grid-cols-3">
-                        {gigs.map((gig) => (
-                          <Card
-                            key={gig.id}
-                            className="relative cursor-pointer transition-shadow hover:shadow-lg"
-                            onClick={() => handleGigClick(gig)}
-                          >
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="absolute right-2 top-2 z-10"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleToggleFavorite(gig.id)
-                              }}
-                            >
-                              <Heart
-                                className={`h-4 w-4 ${
-                                  favorites.has(gig.id)
-                                    ? 'fill-red-500 text-red-500'
-                                    : 'text-muted-foreground'
-                                }`}
-                              />
-                            </Button>
-                            <CardHeader>
-                              <div className="flex items-start justify-between gap-2 pr-8">
-                                <div className="flex-1">
-                                  <CardTitle className="line-clamp-1 text-base">
-                                    {gig.title}
-                                  </CardTitle>
-                                  <CardDescription className="line-clamp-1">
-                                    {gig.venue_name}
-                                  </CardDescription>
-                                </div>
-                              </div>
-                              {gig.urgency_flag && (
-                                <Badge variant="destructive" className="w-fit">
-                                  Urgent
-                                </Badge>
-                              )}
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                              <div className="space-y-2 text-sm">
-                                <div className="flex items-center gap-2">
-                                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                                  <span className="line-clamp-1">{gig.location}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                                  <span>{formatDate(gig.date)}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                                  <span className="font-semibold">
-                                    {formatCurrency(gig.payment_amount)}
-                                  </span>
-                                </div>
-                              </div>
-                              {gig.genre_tags.length > 0 && (
-                                <div className="flex flex-wrap gap-1">
-                                  {gig.genre_tags.slice(0, 3).map((genre) => (
-                                    <Badge key={genre} variant="secondary" className="text-xs">
-                                      {genre}
-                                    </Badge>
-                                  ))}
-                                  {gig.genre_tags.length > 3 && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      +{gig.genre_tags.length - 3}
-                                    </Badge>
-                                  )}
-                                </div>
-                              )}
-                              <Button
-                                className="w-full"
-                                size="sm"
-                                disabled={applyingGigId === gig.id}
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleApplyToGig(gig.id)
-                                }}
-                              >
-                                {applyingGigId === gig.id && (
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                )}
-                                {applyingGigId === gig.id ? 'Applying...' : 'Apply Now'}
-                              </Button>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                      {loadingMore && (
-                        <div className="flex justify-center py-4">
-                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                        </div>
-                      )}
-                      {!hasMore && gigs.length > 0 && (
-                        <div className="py-4 text-center text-sm text-muted-foreground">
-                          No more results
-                        </div>
-                      )}
-                    </>
-                  )}
-                </ScrollArea>
-              )}
-            </TabsContent>
-
-            {/* Artists Tab */}
-            <TabsContent value="artists" className="m-0 h-full">
-              {loading ? (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <Card key={i}>
-                      <CardHeader>
-                        <Skeleton className="mb-2 h-4 w-3/4" />
-                        <Skeleton className="h-3 w-1/2" />
-                      </CardHeader>
-                      <CardContent>
-                        <Skeleton className="h-20 w-full" />
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : error ? (
-                <ErrorState error={error} retry={() => fetchData(true)} />
-              ) : (
-                <ScrollArea ref={scrollContainerRef} className="h-full">
-                  {artists.length === 0 ? (
-                    <div className="py-12 text-center">
-                      <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground opacity-50" />
-                      <h3 className="mb-2 text-lg font-semibold">No artists found</h3>
-                      <p className="mb-4 text-muted-foreground">
-                        Try adjusting your filters or search query
-                      </p>
-                      <Button onClick={handleClearAllFilters}>Clear Filters</Button>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="grid gap-4 pb-4 md:grid-cols-2 lg:grid-cols-3">
-                        {artists.map((artist) => (
-                          <Card
-                            key={artist.id}
-                            className="relative cursor-pointer transition-shadow hover:shadow-lg"
-                            onClick={() => handleArtistClick(artist)}
-                          >
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="absolute right-2 top-2 z-10"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleToggleFavorite(artist.id)
-                              }}
-                            >
-                              <Heart
-                                className={`h-4 w-4 ${
-                                  favorites.has(artist.id)
-                                    ? 'fill-red-500 text-red-500'
-                                    : 'text-muted-foreground'
-                                }`}
-                              />
-                            </Button>
-                            <CardHeader>
-                              <div className="flex items-start gap-3">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 font-semibold text-white">
-                                  {artist.artist_name.charAt(0).toUpperCase()}
-                                </div>
-                                <div className="min-w-0 flex-1 pr-8">
-                                  <CardTitle className="line-clamp-1 flex items-center gap-1 text-base">
-                                    {artist.artist_name}
-                                    {artist.verified && (
-                                      <CheckCircle2 className="h-4 w-4 text-blue-500" />
-                                    )}
-                                  </CardTitle>
-                                  <CardDescription className="line-clamp-1">
-                                    {artist.location}
-                                  </CardDescription>
-                                </div>
-                              </div>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                              {artist.bio && (
-                                <p className="line-clamp-2 text-sm text-muted-foreground">
-                                  {artist.bio}
-                                </p>
-                              )}
-                              <div className="flex items-center justify-between text-sm">
-                                <div className="flex items-center gap-1">
-                                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                  <span className="font-semibold">
-                                    {artist.rating_avg.toFixed(1)}
-                                  </span>
-                                  <span className="text-muted-foreground">
-                                    ({artist.review_count})
-                                  </span>
-                                </div>
-                                <div className="text-muted-foreground">
-                                  {artist.gigs_completed} gigs
-                                </div>
-                              </div>
-                              {artist.genres.length > 0 && (
-                                <div className="flex flex-wrap gap-1">
-                                  {artist.genres.slice(0, 3).map((genre) => (
-                                    <Badge key={genre} variant="secondary" className="text-xs">
-                                      {genre}
-                                    </Badge>
-                                  ))}
-                                  {artist.genres.length > 3 && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      +{artist.genres.length - 3}
-                                    </Badge>
-                                  )}
-                                </div>
-                              )}
-                              {artist.price_range_min && artist.price_range_max && (
-                                <div className="flex items-center gap-2 text-sm">
-                                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                                  <span>
-                                    {formatCurrency(artist.price_range_min)} -{' '}
-                                    {formatCurrency(artist.price_range_max)}
-                                  </span>
-                                </div>
-                              )}
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                      {loadingMore && (
-                        <div className="flex justify-center py-4">
-                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                        </div>
-                      )}
-                      {!hasMore && artists.length > 0 && (
-                        <div className="py-4 text-center text-sm text-muted-foreground">
-                          No more results
-                        </div>
-                      )}
-                    </>
-                  )}
-                </ScrollArea>
-              )}
-            </TabsContent>
+        {/* Tabs & Search */}
+        <div className="border-b border-border/50 bg-background px-6 py-4">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex gap-2">
+              <Button
+                variant={activeTab === 'gigs' ? 'default' : 'outline'}
+                className={activeTab === 'gigs' ? 'bg-purple-500 hover:bg-purple-600' : ''}
+                onClick={() => setActiveTab('gigs')}
+              >
+                Find Gigs
+              </Button>
+              <Button
+                variant={activeTab === 'artists' ? 'default' : 'outline'}
+                className={activeTab === 'artists' ? 'bg-purple-500 hover:bg-purple-600' : ''}
+                onClick={() => setActiveTab('artists')}
+              >
+                Discover Artists
+              </Button>
+            </div>
           </div>
-        </Tabs>
 
-        {/* Detail Sidebar - Gig */}
-        <Sheet open={!!selectedGig} onOpenChange={(open) => !open && setSelectedGig(null)}>
-          <SheetContent className="overflow-y-auto sm:max-w-xl">
-            {selectedGig && (
-              <>
-                <SheetHeader>
-                  <SheetTitle className="text-2xl">{selectedGig.title}</SheetTitle>
-                </SheetHeader>
-                <div className="mt-6 space-y-6">
+          {/* Search Bar */}
+          <div className="mb-4 flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search venues, locations, or gig types..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-11 border-border/50 bg-muted/30 pl-10 focus:border-purple-500 focus:ring-purple-500/20"
+              />
+            </div>
+            <Dialog open={showFiltersModal} onOpenChange={setShowFiltersModal}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="h-11 gap-2 border-border/50">
+                  <Filter className="h-4 w-4" />
+                  Filters
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Advanced Filters</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-6 py-4">
+                  {/* Genre Filter */}
                   <div>
-                    <h3 className="mb-2 text-lg font-semibold">{selectedGig.venue_name}</h3>
-                    {selectedGig.urgency_flag && <Badge variant="destructive">Urgent</Badge>}
+                    <h3 className="mb-3 font-semibold">Genre</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {GENRES.map((genre: string) => (
+                        <Button
+                          key={genre}
+                          variant={selectedGenres.includes(genre) ? 'default' : 'outline'}
+                          size="sm"
+                          className={
+                            selectedGenres.includes(genre)
+                              ? 'bg-purple-500 hover:bg-purple-600'
+                              : ''
+                          }
+                          onClick={() => {
+                            setSelectedGenres((prev: string[]) =>
+                              prev.includes(genre)
+                                ? prev.filter((g: string) => g !== genre)
+                                : [...prev, genre]
+                            )
+                          }}
+                        >
+                          {genre}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
 
                   <Separator />
 
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3">
-                      <MapPin className="mt-0.5 h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <div className="font-medium">Location</div>
-                        <div className="text-muted-foreground">{selectedGig.location}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <Calendar className="mt-0.5 h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <div className="font-medium">Date & Time</div>
-                        <div className="text-muted-foreground">
-                          {formatDate(selectedGig.date)} at {selectedGig.time}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <DollarSign className="mt-0.5 h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <div className="font-medium">Payment</div>
-                        <div className="text-2xl font-bold text-green-600">
-                          {formatCurrency(selectedGig.payment_amount)}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <Users className="mt-0.5 h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <div className="font-medium">Capacity</div>
-                        <div className="text-muted-foreground">{selectedGig.capacity} people</div>
-                      </div>
-                    </div>
+                  {/* Location Filter */}
+                  <div>
+                    <h3 className="mb-3 font-semibold">Location</h3>
+                    <Input
+                      placeholder="City or State"
+                      value={locationFilter}
+                      onChange={(e) => setLocationFilter(e.target.value)}
+                    />
                   </div>
 
-                  {selectedGig.description && (
-                    <>
-                      <Separator />
-                      <div>
-                        <h3 className="mb-2 font-semibold">Description</h3>
-                        <p className="text-muted-foreground">{selectedGig.description}</p>
-                      </div>
-                    </>
-                  )}
+                  <Separator />
 
-                  {selectedGig.genre_tags.length > 0 && (
-                    <>
-                      <Separator />
-                      <div>
-                        <h3 className="mb-2 font-semibold">Genres</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedGig.genre_tags.map((genre) => (
-                            <Badge key={genre} variant="secondary">
-                              {genre}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
+                  {/* Price Range Filter */}
+                  <div>
+                    <h3 className="mb-3 font-semibold">
+                      {activeTab === 'gigs' ? 'Payment Range' : 'Price Range'}
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {PRICE_RANGES.map((range) => {
+                        const isSelected =
+                          priceRange.min === range.min && priceRange.max === range.max
+                        return (
+                          <Button
+                            key={range.label}
+                            variant={isSelected ? 'default' : 'outline'}
+                            size="sm"
+                            className={isSelected ? 'bg-purple-500 hover:bg-purple-600' : ''}
+                            onClick={() => {
+                              if (isSelected) {
+                                setPriceRange({})
+                              } else {
+                                setPriceRange({ min: range.min, max: range.max })
+                              }
+                            }}
+                          >
+                            {range.label}
+                          </Button>
+                        )
+                      })}
+                    </div>
+                  </div>
 
                   <Separator />
 
                   <div className="flex gap-2">
+                    <Button variant="outline" className="flex-1" onClick={handleClearAllFilters}>
+                      Clear All
+                    </Button>
                     <Button
-                      className="flex-1"
+                      className="flex-1 bg-purple-500 hover:bg-purple-600"
+                      onClick={() => setShowFiltersModal(false)}
+                    >
+                      Apply Filters
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Quick Filter Chips */}
+          <div className="flex flex-wrap gap-2">
+            {QUICK_FILTERS.map((filter) => (
+              <Badge
+                key={filter.id}
+                variant={activeQuickFilters.has(filter.id) ? 'default' : 'secondary'}
+                className={`cursor-pointer px-3 py-1.5 text-sm transition-colors ${
+                  activeQuickFilters.has(filter.id)
+                    ? 'bg-purple-500 text-white hover:bg-purple-600'
+                    : 'bg-muted/50 text-foreground hover:bg-muted'
+                }`}
+                onClick={() => handleQuickFilterToggle(filter.id)}
+              >
+                {filter.label}
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Content - Two Column Layout */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Left Column - Listings */}
+          <div className="flex-1 overflow-hidden border-r border-border/50">
+            <ScrollArea ref={scrollContainerRef} className="h-full">
+              <div className="p-4">
+                {activeTab === 'gigs' ? renderGigsList() : renderArtistsList()}
+              </div>
+            </ScrollArea>
+          </div>
+
+          {/* Right Column - Detail Panel */}
+          <div className="hidden w-96 flex-shrink-0 overflow-hidden lg:block">
+            <ScrollArea className="h-full">
+              {selectedGig ? (
+                <div className="p-6">
+                  {/* Gig Image */}
+                  <div className="relative mb-6 h-48 overflow-hidden rounded-lg">
+                    <img
+                      src={VENUE_IMAGES[gigs.indexOf(selectedGig) % VENUE_IMAGES.length]}
+                      alt={selectedGig.venue_name}
+                      className="h-full w-full object-cover"
+                    />
+                    {selectedGig.urgency_flag && (
+                      <Badge className="absolute right-3 top-3 bg-red-500 text-white">Urgent</Badge>
+                    )}
+                  </div>
+
+                  {/* Gig Details */}
+                  <h2 className="mb-1 text-xl font-bold text-foreground">
+                    {selectedGig.venue_name}
+                  </h2>
+                  <p className="mb-4 text-muted-foreground">{selectedGig.title}</p>
+
+                  <div className="mb-6 text-3xl font-bold text-purple-600 dark:text-purple-400">
+                    {formatCurrency(selectedGig.payment_amount)}
+                    <span className="ml-2 text-sm font-normal text-muted-foreground">per gig</span>
+                  </div>
+
+                  <div className="mb-6 space-y-3">
+                    <div className="flex items-center gap-3 text-sm">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span>{formatDate(selectedGig.date)}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span>{formatTime(selectedGig.time)}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span>{selectedGig.capacity || 100} capacity</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span>{selectedGig.location}</span>
+                    </div>
+                  </div>
+
+                  {selectedGig.description && (
+                    <div className="mb-6">
+                      <h3 className="mb-2 font-semibold">Description</h3>
+                      <p className="text-sm text-muted-foreground">{selectedGig.description}</p>
+                    </div>
+                  )}
+
+                  {selectedGig.genre_tags && selectedGig.genre_tags.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="mb-2 font-semibold">Genres</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedGig.genre_tags.map((genre) => (
+                          <Badge
+                            key={genre}
+                            variant="secondary"
+                            className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+                          >
+                            {genre}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Button
+                      className="flex-1 bg-purple-500 hover:bg-purple-600"
                       disabled={applyingGigId === selectedGig.id}
                       onClick={() => handleApplyToGig(selectedGig.id)}
                     >
                       {applyingGigId === selectedGig.id && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       )}
-                      {applyingGigId === selectedGig.id ? 'Applying...' : 'Apply to Gig'}
+                      {applyingGigId === selectedGig.id ? 'Applying...' : 'Apply Now'}
                     </Button>
-                    <Button variant="outline" onClick={() => handleToggleFavorite(selectedGig.id)}>
-                      <Heart
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleToggleFavorite(selectedGig.id)}
+                    >
+                      <Bookmark
                         className={`h-4 w-4 ${
-                          favorites.has(selectedGig.id) ? 'fill-red-500 text-red-500' : ''
+                          favorites.has(selectedGig.id)
+                            ? 'fill-purple-500 text-purple-500'
+                            : 'text-muted-foreground'
                         }`}
                       />
                     </Button>
                   </div>
                 </div>
-              </>
-            )}
-          </SheetContent>
-        </Sheet>
-
-        {/* Detail Sidebar - Artist */}
-        <Sheet open={!!selectedArtist} onOpenChange={(open) => !open && setSelectedArtist(null)}>
-          <SheetContent className="overflow-y-auto sm:max-w-xl">
-            {selectedArtist && (
-              <>
-                <SheetHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-2xl font-bold text-white">
+              ) : selectedArtist ? (
+                <div className="p-6">
+                  {/* Artist Avatar */}
+                  <div className="mb-6 flex items-center gap-4">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-2xl font-bold text-white">
                       {selectedArtist.artist_name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <SheetTitle className="flex items-center gap-2 text-2xl">
-                        {selectedArtist.artist_name}
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-xl font-bold text-foreground">
+                          {selectedArtist.artist_name}
+                        </h2>
                         {selectedArtist.verified && (
                           <CheckCircle2 className="h-5 w-5 text-blue-500" />
                         )}
-                      </SheetTitle>
-                      <div className="text-muted-foreground">{selectedArtist.location}</div>
+                      </div>
+                      <p className="text-muted-foreground">{selectedArtist.location}</p>
                     </div>
                   </div>
-                </SheetHeader>
 
-                <div className="mt-6 space-y-6">
-                  <div className="flex items-center gap-6 text-center">
+                  {/* Stats */}
+                  <div className="mb-6 grid grid-cols-3 gap-4 text-center">
                     <div>
-                      <div className="text-2xl font-bold">
-                        {selectedArtist.rating_avg.toFixed(1)}
-                      </div>
-                      <div className="text-sm text-muted-foreground">Rating</div>
+                      <p className="text-2xl font-bold">
+                        {selectedArtist.rating_avg?.toFixed(1) || '5.0'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Rating</p>
                     </div>
-                    <Separator orientation="vertical" className="h-12" />
                     <div>
-                      <div className="text-2xl font-bold">{selectedArtist.gigs_completed}</div>
-                      <div className="text-sm text-muted-foreground">Gigs</div>
+                      <p className="text-2xl font-bold">{selectedArtist.gigs_completed || 0}</p>
+                      <p className="text-xs text-muted-foreground">Gigs</p>
                     </div>
-                    <Separator orientation="vertical" className="h-12" />
                     <div>
-                      <div className="text-2xl font-bold">{selectedArtist.follower_count}</div>
-                      <div className="text-sm text-muted-foreground">Followers</div>
+                      <p className="text-2xl font-bold">{selectedArtist.follower_count || 0}</p>
+                      <p className="text-xs text-muted-foreground">Followers</p>
                     </div>
                   </div>
 
                   {selectedArtist.bio && (
-                    <>
-                      <Separator />
-                      <div>
-                        <h3 className="mb-2 font-semibold">About</h3>
-                        <p className="text-muted-foreground">{selectedArtist.bio}</p>
-                      </div>
-                    </>
+                    <div className="mb-6">
+                      <h3 className="mb-2 font-semibold">About</h3>
+                      <p className="text-sm text-muted-foreground">{selectedArtist.bio}</p>
+                    </div>
                   )}
 
-                  {selectedArtist.genres.length > 0 && (
-                    <>
-                      <Separator />
-                      <div>
-                        <h3 className="mb-2 font-semibold">Genres</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedArtist.genres.map((genre) => (
-                            <Badge key={genre} variant="secondary">
-                              {genre}
-                            </Badge>
-                          ))}
-                        </div>
+                  {selectedArtist.genres && selectedArtist.genres.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="mb-2 font-semibold">Genres</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedArtist.genres.map((genre) => (
+                          <Badge
+                            key={genre}
+                            variant="secondary"
+                            className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+                          >
+                            {genre}
+                          </Badge>
+                        ))}
                       </div>
-                    </>
+                    </div>
                   )}
 
                   {selectedArtist.price_range_min && selectedArtist.price_range_max && (
-                    <>
-                      <Separator />
-                      <div>
-                        <h3 className="mb-2 font-semibold">Price Range</h3>
-                        <div className="text-2xl font-bold">
-                          {formatCurrency(selectedArtist.price_range_min)} -{' '}
-                          {formatCurrency(selectedArtist.price_range_max)}
-                        </div>
-                      </div>
-                    </>
+                    <div className="mb-6">
+                      <h3 className="mb-2 font-semibold">Price Range</h3>
+                      <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                        {formatCurrency(selectedArtist.price_range_min)} -{' '}
+                        {formatCurrency(selectedArtist.price_range_max)}
+                      </p>
+                    </div>
                   )}
 
-                  <Separator />
-
-                  <div className="flex gap-2">
-                    <Button
-                      className="flex-1"
-                      onClick={() => navigate(`/artist/${selectedArtist.id}`)}
-                    >
-                      View Full Profile
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleToggleFavorite(selectedArtist.id)}
-                    >
-                      <Heart
-                        className={`h-4 w-4 ${
-                          favorites.has(selectedArtist.id) ? 'fill-red-500 text-red-500' : ''
-                        }`}
-                      />
-                    </Button>
-                  </div>
+                  <Button
+                    className="w-full bg-purple-500 hover:bg-purple-600"
+                    onClick={() => navigate(`/artist/${selectedArtist.id}`)}
+                  >
+                    View Full Profile
+                  </Button>
                 </div>
-              </>
-            )}
-          </SheetContent>
-        </Sheet>
+              ) : (
+                // Empty State
+                <div className="flex h-full flex-col items-center justify-center p-6 text-center">
+                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                    <Search className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold">Select a gig</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Click on a listing to view details and apply
+                  </p>
+                </div>
+              )}
+            </ScrollArea>
+          </div>
+        </div>
       </div>
     </AppLayout>
   )

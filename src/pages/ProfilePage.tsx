@@ -11,12 +11,6 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -32,23 +26,64 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   MapPin,
   Star,
-  Users,
   Music,
   ThumbsUp,
   Share2,
   Flag,
-  Edit,
   MoreVertical,
-  Globe,
   MessageCircle,
   Play,
   Pause,
   Heart,
   CheckCircle2,
+  ArrowLeft,
+  Calendar,
+  Camera,
+  UserPlus,
+  UserMinus,
 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
 import { MetaTags } from '@/components/MetaTags'
+
+// Social platform icons
+const TikTokIcon = () => (
+  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+  </svg>
+)
+
+const SpotifyIcon = () => (
+  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+  </svg>
+)
+
+const AppleMusicIcon = () => (
+  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026-.747.043-1.49.123-2.193.401-1.336.53-2.3 1.452-2.865 2.78-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.801.42.127.856.187 1.293.228.555.053 1.11.06 1.667.06h11.03a12.5 12.5 0 001.57-.1c.822-.106 1.596-.35 2.295-.81a5.046 5.046 0 001.88-2.207c.186-.42.293-.87.37-1.324.113-.675.138-1.358.137-2.04-.002-3.8 0-7.595-.003-11.393zm-6.423 3.99v5.712c0 .417-.058.827-.244 1.206-.29.59-.76.962-1.388 1.14-.35.1-.706.157-1.07.173-.95.042-1.8-.228-2.403-.96-.63-.767-.7-1.636-.37-2.526.348-.922 1.077-1.45 2.024-1.645.287-.06.58-.09.87-.124.453-.05.904-.1 1.35-.18.162-.028.322-.072.478-.138.07-.03.097-.082.097-.16-.003-1.58-.002-3.16-.002-4.74 0-.1-.031-.14-.136-.154-.542-.077-1.084-.16-1.627-.235-.918-.128-1.836-.253-2.755-.378-.024-.003-.05-.003-.083-.005-.01.097-.022.184-.022.272-.005 2.442-.004 4.885-.007 7.328 0 .413-.05.82-.23 1.194-.29.595-.77.974-1.407 1.148-.35.096-.706.15-1.065.166-.96.037-1.817-.24-2.418-.985-.618-.764-.682-1.625-.354-2.51.342-.923 1.074-1.457 2.028-1.656.29-.06.585-.093.878-.126.443-.05.887-.09 1.325-.173.182-.035.358-.088.528-.16.067-.03.096-.082.095-.156-.002-2.09-.002-4.18-.002-6.27 0-.048.003-.096.01-.143.01-.064.044-.09.11-.078.164.03.328.054.492.084l2.296.402c1.282.223 2.564.447 3.846.67.166.03.333.054.498.087.058.013.09.048.09.108.003.166.01.332.01.498v6.074z" />
+  </svg>
+)
+
+const InstagramIcon = () => (
+  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+  </svg>
+)
+
+// Mock endorsements data
+const MOCK_ENDORSEMENTS = [
+  { id: '1', label: '🔥 Dynamic Vocalist', count: 12 },
+  { id: '2', label: '🎸 Reliable Musician', count: 8 },
+  { id: '3', label: '⭐ Great Collaborator', count: 15 },
+  { id: '4', label: '🎤 Stage Presence', count: 9 },
+]
 
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>()
@@ -78,15 +113,12 @@ export default function ProfilePage() {
         setLoading(true)
         setError(null)
 
-        // Fetch artist profile
         const artistData = await artistsService.getById(id)
         setArtist(artistData)
 
-        // Fetch tracks
         const tracksData = await artistsService.getTracks(id)
         setTracks(tracksData)
 
-        // Fetch reviews
         const reviewsData = await artistsService.getReviews(id)
         setReviews(reviewsData)
       } catch (err) {
@@ -122,12 +154,10 @@ export default function ProfilePage() {
   }
 
   const handleBookArtist = () => {
-    // D-076: Opens message composer with pre-filled booking inquiry
     navigate(`/messages/new?recipient=${id}&template=booking`)
   }
 
   const handleShare = () => {
-    // Copy profile URL to clipboard
     const profileUrl = `${window.location.origin}/artist/${id}`
     navigator.clipboard.writeText(profileUrl)
     toast({
@@ -142,8 +172,6 @@ export default function ProfilePage() {
 
   const handleReportSubmit = async () => {
     try {
-      // TODO: Call API endpoint when available
-      // await apiClient.reportProfile(id, reportReason, reportDetails)
       console.log('Report submitted:', { id, reason: reportReason, details: reportDetails })
 
       toast({
@@ -168,7 +196,6 @@ export default function ProfilePage() {
       setPlayingTrackId(null)
     } else {
       setPlayingTrackId(trackId)
-      // Record play count (D-024: Inline playback tracking)
       try {
         await tracksService.recordPlay(trackId)
       } catch (err) {
@@ -199,343 +226,416 @@ export default function ProfilePage() {
   return (
     <AppLayout>
       <MetaTags
-        title={artist.artist_name}
+        title={artist.artist_name || 'Artist Profile'}
         description={
           artist.bio ||
-          `${artist.artist_name} - Independent artist on Umbrella. ${artist.genres.join(', ')}. ${artist.gigs_completed} gigs completed.`
+          `${artist.artist_name || 'Artist'} - Independent artist on Umbrella. ${artist.genres?.join(', ') || 'Various genres'}. ${artist.gigs_completed || 0} gigs completed.`
         }
-        keywords={artist.genres}
+        keywords={artist.genres || []}
         url={`/artist/${id}`}
         type="profile"
       />
-      <div className="container mx-auto max-w-6xl px-4 py-6">
-        {/* Header Actions */}
-        <div className="mb-6 flex items-center justify-between">
-          <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-            ← Back to Dashboard
-          </Button>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Profile 85% complete</span>
-            {/* D-023: Profile actions menu */}
+
+      <div className="flex min-h-[calc(100vh-4rem)] flex-col">
+        {/* Cover Image Section */}
+        <div className="relative h-48 bg-gradient-to-r from-purple-600 to-pink-600 md:h-64">
+          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&h=400&fit=crop')] bg-cover bg-center opacity-50" />
+
+          {/* Header with back button */}
+          <div className="absolute left-0 right-0 top-0 flex items-center justify-between p-4">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="gap-2 bg-white/90 hover:bg-white"
+              onClick={() => navigate('/dashboard')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="secondary" size="icon" className="bg-white/90 hover:bg-white">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {isOwnProfile ? (
-                  <>
-                    <DropdownMenuItem onClick={() => navigate('/profile/edit')}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit Profile
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleShare}>
-                      <Share2 className="mr-2 h-4 w-4" />
-                      Share Profile
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <>
-                    <DropdownMenuItem onClick={handleShare}>
-                      <Share2 className="mr-2 h-4 w-4" />
-                      Share
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleReport}>
-                      <Flag className="mr-2 h-4 w-4" />
-                      Report
-                    </DropdownMenuItem>
-                  </>
+                <DropdownMenuItem onClick={handleShare}>
+                  <Share2 className="mr-2 h-4 w-4" />
+                  Share
+                </DropdownMenuItem>
+                {!isOwnProfile && (
+                  <DropdownMenuItem onClick={handleReport}>
+                    <Flag className="mr-2 h-4 w-4" />
+                    Report
+                  </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </div>
 
-        {/* Hero Section */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
+        {/* Profile Header - overlapping cover */}
+        <div className="relative mx-auto w-full max-w-6xl px-4">
+          <div className="-mt-16 rounded-xl border border-border/50 bg-card p-6 shadow-lg md:-mt-20">
             <div className="flex flex-col gap-6 md:flex-row">
               {/* Avatar */}
-              <Avatar className="h-32 w-32 shrink-0">
-                <AvatarImage src={artist.avatar_url} alt={artist.artist_name} />
-                <AvatarFallback className="text-2xl">
-                  {artist.artist_name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative -mt-20 md:-mt-24">
+                <Avatar className="h-32 w-32 border-4 border-background shadow-lg md:h-40 md:w-40">
+                  <AvatarImage src={artist.avatar_url} alt={artist.artist_name || 'Artist'} />
+                  <AvatarFallback className="bg-purple-100 text-3xl text-purple-700">
+                    {(artist.artist_name || 'A').charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {artist.verified && (
+                  <div className="absolute -bottom-1 -right-1 rounded-full bg-blue-500 p-1.5">
+                    <CheckCircle2 className="h-5 w-5 text-white" />
+                  </div>
+                )}
+              </div>
 
               {/* Profile Info */}
               <div className="flex-1">
-                <div className="mb-2 flex items-start justify-between">
+                <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div>
-                    <div className="mb-1 flex items-center gap-2">
-                      <h1 className="text-3xl font-bold">{artist.artist_name}</h1>
+                    <div className="mb-1 flex flex-wrap items-center gap-2">
+                      <h1 className="text-2xl font-bold md:text-3xl">
+                        {artist.artist_name || 'Artist'}
+                      </h1>
                       {artist.verified && (
-                        <Badge variant="default" className="gap-1 bg-green-600">
-                          <CheckCircle2 className="h-3 w-3" />
-                          Wholesome
+                        <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                          Professional
                         </Badge>
                       )}
                     </div>
-                    <div className="mb-2 flex items-center text-muted-foreground">
-                      <MapPin className="mr-1 h-4 w-4" />
-                      {artist.location}
+                    <p className="mb-1 text-muted-foreground">
+                      @{(artist.artist_name || 'artist').toLowerCase().replace(/\s+/g, '')}
+                    </p>
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <MapPin className="h-4 w-4" />
+                      <span>{artist.location}</span>
                     </div>
                   </div>
+
+                  {/* Action Buttons */}
+                  {!isOwnProfile && (
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="gap-2" onClick={handleFollowToggle}>
+                        {isFollowing ? (
+                          <>
+                            <UserMinus className="h-4 w-4" />
+                            Unfollow
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="h-4 w-4" />
+                            Follow
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        className="gap-2 bg-purple-500 hover:bg-purple-600"
+                        onClick={handleBookArtist}
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        Book Artist
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
-                {/* Metrics */}
-                <div className="mb-4 flex flex-wrap gap-4">
-                  <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-semibold">{artist.follower_count.toLocaleString()}</span>
-                    <span className="text-sm text-muted-foreground">Followers</span>
+                {/* Stats Row */}
+                <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">{artist.follower_count.toLocaleString()}</p>
+                    <p className="text-sm text-muted-foreground">Followers</p>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Music className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-semibold">{tracks.length}</span>
-                    <span className="text-sm text-muted-foreground">Tracks</span>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">{artist.gigs_completed}</p>
+                    <p className="text-sm text-muted-foreground">Gigs Booked</p>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 text-yellow-500" />
-                    <span className="font-semibold">{artist.rating_avg.toFixed(1)}</span>
-                    <span className="text-sm text-muted-foreground">
-                      ({artist.review_count} reviews)
-                    </span>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <p className="text-2xl font-bold">{artist.rating_avg.toFixed(1)}</p>
+                      <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">Avg Rating</p>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <ThumbsUp className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-semibold">{artist.gigs_completed}</span>
-                    <span className="text-sm text-muted-foreground">Gigs</span>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">{artist.review_count}</p>
+                    <p className="text-sm text-muted-foreground">Endorsements</p>
                   </div>
                 </div>
 
                 {/* Social Links */}
-                {Object.keys(artist.social_links).length > 0 && (
-                  <div className="mb-4 flex flex-wrap gap-2">
-                    {artist.social_links.website && (
-                      <Button variant="outline" size="sm" asChild>
-                        <a
-                          href={artist.social_links.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Globe className="mr-1 h-4 w-4" />
-                          Website
-                        </a>
-                      </Button>
-                    )}
-                    {artist.social_links.instagram && (
-                      <Button variant="outline" size="sm" asChild>
-                        <a
-                          href={artist.social_links.instagram}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Instagram
-                        </a>
-                      </Button>
-                    )}
-                    {artist.social_links.tiktok && (
-                      <Button variant="outline" size="sm" asChild>
-                        <a
-                          href={artist.social_links.tiktok}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          TikTok
-                        </a>
-                      </Button>
-                    )}
-                    {artist.social_links.spotify && (
-                      <Button variant="outline" size="sm" asChild>
-                        <a
-                          href={artist.social_links.spotify}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Spotify
-                        </a>
-                      </Button>
-                    )}
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                {!isOwnProfile && (
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={handleFollowToggle}>
-                      {isFollowing ? 'Unfollow' : 'Follow'}
-                    </Button>
-                    <Button onClick={handleBookArtist}>
-                      <MessageCircle className="mr-2 h-4 w-4" />
-                      Book Artist
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 6-Tab Navigation System */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6 w-full justify-start">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
-            <TabsTrigger value="explore">Explore</TabsTrigger>
-            <TabsTrigger value="journey">Journey</TabsTrigger>
-            <TabsTrigger value="reviews">Reviews</TabsTrigger>
-            <TabsTrigger value="opportunities">Opportunities</TabsTrigger>
-          </TabsList>
-
-          {/* Tab 1: Overview */}
-          <TabsContent value="overview" className="space-y-6">
-            {/* Bio */}
-            {artist.bio && (
-              <Card>
-                <CardContent className="pt-6">
-                  <h2 className="mb-3 text-xl font-semibold">About</h2>
-                  <p className="whitespace-pre-wrap text-muted-foreground">
-                    {bioExpanded ? artist.bio : truncatedBio}
-                  </p>
-                  {artist.bio.length > 200 && (
-                    <Button
-                      variant="link"
-                      className="mt-2 px-0"
-                      onClick={() => setBioExpanded(!bioExpanded)}
+                <div className="flex gap-3">
+                  {artist.social_links?.tiktok && (
+                    <a
+                      href={artist.social_links.tiktok}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-muted transition-colors hover:bg-muted/80"
                     >
-                      {bioExpanded ? 'Show less' : 'Expand bio →'}
-                    </Button>
+                      <TikTokIcon />
+                    </a>
                   )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Portfolio Preview */}
-            {tracks.length > 0 && (
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-xl font-semibold">Portfolio</h2>
-                    <Button variant="link" onClick={() => setActiveTab('portfolio')}>
-                      View Full Portfolio →
-                    </Button>
-                  </div>
-                  <div className="space-y-3">
-                    {tracks.slice(0, 3).map((track) => (
-                      <TrackCard
-                        key={track.id}
-                        track={track}
-                        isPlaying={playingTrackId === track.id}
-                        onPlay={() => handleTrackPlay(track.id)}
-                      />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Endorsements Preview */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-xl font-semibold">Endorsements</h2>
-                  <Button variant="link">View All →</Button>
+                  {artist.social_links?.spotify && (
+                    <a
+                      href={artist.social_links.spotify}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-muted transition-colors hover:bg-muted/80"
+                    >
+                      <SpotifyIcon />
+                    </a>
+                  )}
+                  {artist.social_links?.apple_music && (
+                    <a
+                      href={artist.social_links.apple_music}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-muted transition-colors hover:bg-muted/80"
+                    >
+                      <AppleMusicIcon />
+                    </a>
+                  )}
+                  {artist.social_links?.instagram && (
+                    <a
+                      href={artist.social_links.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-muted transition-colors hover:bg-muted/80"
+                    >
+                      <InstagramIcon />
+                    </a>
+                  )}
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary">🔥 Dynamic Vocalist - 17</Badge>
-                  <Badge variant="secondary">🎵 Reliable Musician - 8</Badge>
-                  <Badge variant="secondary">🤝 Great Collaborator - 16</Badge>
-                  <Badge variant="secondary">🎸 Stage Presence - 9</Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            </div>
+          </div>
+        </div>
 
-          {/* Tab 2: Portfolio */}
-          <TabsContent value="portfolio" className="space-y-4">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-2xl font-semibold">Music Portfolio</h2>
-              {isOwnProfile && (
-                <Button>
-                  <Music className="mr-2 h-4 w-4" />
-                  Add Track
-                </Button>
+        {/* Tabs Section */}
+        <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-6 w-full justify-start bg-muted/50">
+              <TabsTrigger
+                value="overview"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
+                Overview
+              </TabsTrigger>
+              <TabsTrigger
+                value="portfolio"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
+                Portfolio
+              </TabsTrigger>
+              <TabsTrigger
+                value="explore"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
+                Explore
+              </TabsTrigger>
+              <TabsTrigger
+                value="journey"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
+                Journey
+              </TabsTrigger>
+              <TabsTrigger
+                value="reviews"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
+                Reviews
+              </TabsTrigger>
+              <TabsTrigger
+                value="opportunities"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
+                Opportunities
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Tab 1: Overview */}
+            <TabsContent value="overview" className="space-y-6">
+              <div className="grid gap-6 lg:grid-cols-3">
+                {/* Left Column - Bio & Portfolio */}
+                <div className="space-y-6 lg:col-span-2">
+                  {/* Bio Card */}
+                  {artist.bio && (
+                    <Card className="border-border/50">
+                      <CardContent className="p-6">
+                        <h3 className="mb-4 text-lg font-semibold">About</h3>
+                        <p className="whitespace-pre-wrap text-muted-foreground">
+                          {bioExpanded ? artist.bio : truncatedBio}
+                        </p>
+                        {artist.bio.length > 200 && (
+                          <Button
+                            variant="link"
+                            className="mt-2 px-0 text-purple-600"
+                            onClick={() => setBioExpanded(!bioExpanded)}
+                          >
+                            {bioExpanded ? 'Show less' : 'Expand bio →'}
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Portfolio Preview */}
+                  {tracks.length > 0 && (
+                    <Card className="border-border/50">
+                      <CardContent className="p-6">
+                        <div className="mb-4 flex items-center justify-between">
+                          <h3 className="text-lg font-semibold">Portfolio</h3>
+                          <Button
+                            variant="link"
+                            className="gap-1 text-purple-600"
+                            onClick={() => setActiveTab('portfolio')}
+                          >
+                            View Full Portfolio
+                            <ArrowLeft className="h-4 w-4 rotate-180" />
+                          </Button>
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-3">
+                          {tracks.slice(0, 3).map((track) => (
+                            <TrackCard
+                              key={track.id}
+                              track={track}
+                              isPlaying={playingTrackId === track.id}
+                              onPlay={() => handleTrackPlay(track.id)}
+                            />
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+
+                {/* Right Column - Endorsements */}
+                <div className="space-y-6">
+                  <Card className="border-border/50">
+                    <CardContent className="p-6">
+                      <div className="mb-4 flex items-center justify-between">
+                        <h3 className="text-lg font-semibold">Endorsements</h3>
+                        <Button variant="link" className="gap-1 text-purple-600">
+                          View All
+                          <ArrowLeft className="h-4 w-4 rotate-180" />
+                        </Button>
+                      </div>
+                      <div className="space-y-3">
+                        {MOCK_ENDORSEMENTS.map((endorsement) => (
+                          <div
+                            key={endorsement.id}
+                            className="flex items-center justify-between rounded-lg bg-muted/50 px-4 py-3"
+                          >
+                            <span className="text-sm">{endorsement.label}</span>
+                            <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                              {endorsement.count}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Tab 2: Portfolio */}
+            <TabsContent value="portfolio" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Music Portfolio</h2>
+              </div>
+              {tracks.length === 0 ? (
+                <Card className="border-border/50">
+                  <CardContent className="py-12 text-center">
+                    <Music className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
+                    <h3 className="mb-2 text-xl font-semibold">No tracks uploaded yet</h3>
+                    <p className="text-muted-foreground">
+                      This artist hasn't uploaded any tracks yet.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-3">
+                  {tracks.map((track) => (
+                    <TrackCard
+                      key={track.id}
+                      track={track}
+                      isPlaying={playingTrackId === track.id}
+                      onPlay={() => handleTrackPlay(track.id)}
+                      showActions
+                    />
+                  ))}
+                </div>
               )}
-            </div>
-            {tracks.length === 0 ? (
-              <Card>
-                <CardContent className="pt-6 text-center text-muted-foreground">
-                  No tracks uploaded yet
+            </TabsContent>
+
+            {/* Tab 3: Explore */}
+            <TabsContent value="explore">
+              <Card className="border-border/50">
+                <CardContent className="py-12 text-center">
+                  <Camera className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
+                  <h3 className="mb-2 text-xl font-semibold">Media Gallery</h3>
+                  <p className="text-muted-foreground">No media posts yet</p>
                 </CardContent>
               </Card>
-            ) : (
-              <div className="space-y-3">
-                {tracks.map((track) => (
-                  <TrackCard
-                    key={track.id}
-                    track={track}
-                    isPlaying={playingTrackId === track.id}
-                    onPlay={() => handleTrackPlay(track.id)}
-                    showActions
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
+            </TabsContent>
 
-          {/* Tab 3: Explore */}
-          <TabsContent value="explore">
-            <Card>
-              <CardContent className="pt-6">
-                <h2 className="mb-4 text-2xl font-semibold">Media Gallery</h2>
-                <p className="py-8 text-center text-muted-foreground">No media posts yet</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Tab 4: Journey */}
-          <TabsContent value="journey">
-            <Card>
-              <CardContent className="pt-6">
-                <h2 className="mb-4 text-2xl font-semibold">Career Journey</h2>
-                <p className="py-8 text-center text-muted-foreground">Timeline coming soon</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Tab 5: Reviews */}
-          <TabsContent value="reviews" className="space-y-4">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-2xl font-semibold">Reviews ({reviews.length})</h2>
-              {isOwnProfile && <Button variant="outline">Invite Review</Button>}
-            </div>
-            {reviews.length === 0 ? (
-              <Card>
-                <CardContent className="pt-6 text-center text-muted-foreground">
-                  No reviews yet
+            {/* Tab 4: Journey */}
+            <TabsContent value="journey">
+              <Card className="border-border/50">
+                <CardContent className="py-12 text-center">
+                  <Calendar className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
+                  <h3 className="mb-2 text-xl font-semibold">Career Journey</h3>
+                  <p className="text-muted-foreground">Timeline coming soon</p>
                 </CardContent>
               </Card>
-            ) : (
-              <div className="space-y-4">
-                {reviews.map((review) => (
-                  <ReviewCard key={review.id} review={review} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
+            </TabsContent>
 
-          {/* Tab 6: Opportunities */}
-          <TabsContent value="opportunities">
-            <Card>
-              <CardContent className="pt-6">
-                <h2 className="mb-4 text-2xl font-semibold">Latest Opportunities</h2>
-                <p className="py-8 text-center text-muted-foreground">No opportunities available</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+            {/* Tab 5: Reviews */}
+            <TabsContent value="reviews" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Client Reviews ({reviews.length})</h2>
+              </div>
+              {reviews.length === 0 ? (
+                <Card className="border-border/50">
+                  <CardContent className="py-12 text-center">
+                    <Star className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
+                    <h3 className="mb-2 text-xl font-semibold">No reviews yet</h3>
+                    <p className="text-muted-foreground">
+                      This artist hasn't received any reviews yet.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {reviews.map((review) => (
+                    <ReviewCard key={review.id} review={review} />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Tab 6: Opportunities */}
+            <TabsContent value="opportunities">
+              <Card className="border-border/50">
+                <CardContent className="py-12 text-center">
+                  <ThumbsUp className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
+                  <h3 className="mb-2 text-xl font-semibold">Available for Booking</h3>
+                  <p className="mb-4 text-muted-foreground">
+                    Reach out to book this artist for your next event
+                  </p>
+                  <Button className="bg-purple-500 hover:bg-purple-600" onClick={handleBookArtist}>
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    Send Booking Inquiry
+                  </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
 
       {/* Report Dialog */}
@@ -599,7 +699,12 @@ export default function ProfilePage() {
 
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleReportSubmit}>Submit Report</AlertDialogAction>
+            <AlertDialogAction
+              onClick={handleReportSubmit}
+              className="bg-purple-500 hover:bg-purple-600"
+            >
+              Submit Report
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -607,7 +712,7 @@ export default function ProfilePage() {
   )
 }
 
-// Track Card Component with Inline Player (D-024)
+// Track Card Component
 interface TrackCardProps {
   track: Track
   isPlaying: boolean
@@ -616,68 +721,48 @@ interface TrackCardProps {
 }
 
 function TrackCard({ track, isPlaying, onPlay, showActions }: TrackCardProps) {
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-
   return (
-    <Card>
-      <CardContent className="pt-4">
-        <div className="flex items-center gap-4">
-          {/* Album Art */}
-          <div className="relative h-16 w-16 flex-shrink-0 rounded bg-muted">
-            {track.cover_art_url ? (
-              <img
-                src={track.cover_art_url}
-                alt={track.title}
-                className="h-full w-full rounded object-cover"
-              />
+    <Card className="overflow-hidden border-border/50 transition-all hover:shadow-md">
+      <div className="relative aspect-square">
+        {track.cover_art_url ? (
+          <img src={track.cover_art_url} alt={track.title} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
+            <Music className="h-12 w-12 text-white" />
+          </div>
+        )}
+        {/* Play/Pause Overlay */}
+        <button
+          onClick={onPlay}
+          className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity hover:opacity-100"
+        >
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90">
+            {isPlaying ? (
+              <Pause className="h-6 w-6 text-purple-600" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center">
-                <Music className="h-6 w-6 text-muted-foreground" />
-              </div>
+              <Play className="h-6 w-6 text-purple-600" />
             )}
-            {/* Play/Pause Overlay */}
-            <button
-              onClick={onPlay}
-              className="absolute inset-0 flex items-center justify-center rounded bg-black/50 opacity-0 transition-opacity hover:opacity-100"
-            >
-              {isPlaying ? (
-                <Pause className="h-6 w-6 text-white" />
-              ) : (
-                <Play className="h-6 w-6 text-white" />
-              )}
-            </button>
           </div>
-
-          {/* Track Info */}
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between">
-              <div className="min-w-0">
-                <h3 className="truncate font-semibold">{track.title}</h3>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>{track.genre}</span>
-                  <span>•</span>
-                  <span>{formatDuration(track.duration_seconds)}</span>
-                  <span>•</span>
-                  <span>{track.play_count.toLocaleString()} plays</span>
-                </div>
-              </div>
-              {showActions && (
-                <div className="ml-2 flex gap-2">
-                  <Button variant="ghost" size="icon">
-                    <Heart className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <Share2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
+        </button>
+      </div>
+      <CardContent className="p-4">
+        <h4 className="mb-1 truncate font-semibold">{track.title}</h4>
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <Badge variant="secondary" className="text-xs">
+            {track.genre || 'Original'}
+          </Badge>
+          <span>{track.play_count?.toLocaleString() || 0} plays</span>
         </div>
+        {showActions && (
+          <div className="mt-3 flex gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Heart className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Share2 className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   )
@@ -690,15 +775,17 @@ interface ReviewCardProps {
 
 function ReviewCard({ review }: ReviewCardProps) {
   return (
-    <Card>
-      <CardContent className="pt-6">
+    <Card className="border-border/50">
+      <CardContent className="p-6">
         <div className="flex gap-4">
-          <Avatar className="h-10 w-10">
+          <Avatar className="h-12 w-12">
             <AvatarImage src={review.reviewer_avatar_url} alt={review.reviewer_name} />
-            <AvatarFallback>{review.reviewer_name.charAt(0).toUpperCase()}</AvatarFallback>
+            <AvatarFallback className="bg-purple-100 text-purple-700">
+              {(review.reviewer_name || 'R').charAt(0).toUpperCase()}
+            </AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <div className="mb-2 flex items-center justify-between">
+            <div className="mb-2 flex items-start justify-between">
               <div>
                 <h4 className="font-semibold">{review.reviewer_name}</h4>
                 <div className="flex items-center gap-1">
@@ -707,7 +794,7 @@ function ReviewCard({ review }: ReviewCardProps) {
                       key={i}
                       className={`h-4 w-4 ${
                         i < review.rating
-                          ? 'fill-yellow-500 text-yellow-500'
+                          ? 'fill-amber-400 text-amber-400'
                           : 'text-muted-foreground'
                       }`}
                     />
@@ -715,13 +802,13 @@ function ReviewCard({ review }: ReviewCardProps) {
                 </div>
               </div>
               <span className="text-sm text-muted-foreground">
-                {new Date(review.created_at).toLocaleDateString()}
+                {new Date(review.created_at).toLocaleDateString('en-US', {
+                  month: 'short',
+                  year: 'numeric',
+                })}
               </span>
             </div>
             <p className="text-muted-foreground">{review.comment}</p>
-            {review.gig_title && (
-              <p className="mt-2 text-sm text-muted-foreground">Gig: {review.gig_title}</p>
-            )}
           </div>
         </div>
       </CardContent>

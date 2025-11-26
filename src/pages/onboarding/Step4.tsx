@@ -1,388 +1,326 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { format } from 'date-fns'
 import { apiClient } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
-import { Slider } from '@/components/ui/slider'
-import { Calendar } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Loader2, AlertCircle, Lightbulb, CalendarIcon, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Loader2, AlertCircle, CheckCircle, Star, Music2, X } from 'lucide-react'
+import OnboardingLayout from '@/components/onboarding/OnboardingLayout'
 
 interface Step4FormData {
-  largest_show_capacity: number
-  flat_rate: number
-  hourly_rate: number
-  time_split_creative: number
-  available_dates: Date[]
+  response_time: string
+  average_gig_price: string
 }
+
+const SKILL_OPTIONS = [
+  'Vocals',
+  'Guitar',
+  'Piano',
+  'Drums',
+  'Bass',
+  'Songwriting',
+  'Mixing',
+  'Live Performance',
+  'DJ',
+  'Production',
+  'Violin',
+  'Saxophone',
+]
 
 export default function OnboardingStep4() {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([])
+  const [skillInput, setSkillInput] = useState('')
 
   const form = useForm<Step4FormData>({
     defaultValues: {
-      largest_show_capacity: 0,
-      flat_rate: 0,
-      hourly_rate: 0,
-      time_split_creative: 50,
-      available_dates: [],
+      response_time: 'within_1_hour',
+      average_gig_price: '',
     },
   })
 
-  const creativeSplit = form.watch('time_split_creative')
-  const logisticsSplit = 100 - creativeSplit
-  const selectedDates = form.watch('available_dates') || []
+  const addSkill = (skill: string) => {
+    if (skill && !selectedSkills.includes(skill) && selectedSkills.length < 10) {
+      setSelectedSkills([...selectedSkills, skill])
+      setSkillInput('')
+    }
+  }
+
+  const removeSkill = (skill: string) => {
+    setSelectedSkills(selectedSkills.filter((s) => s !== skill))
+  }
+
+  const handleSkillInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      addSkill(skillInput.trim())
+    }
+  }
 
   const onSubmit = async (data: Step4FormData) => {
     setError(null)
     setIsLoading(true)
 
     try {
-      // Prepare API payload
-      const payload = {
-        largest_show_capacity: data.largest_show_capacity,
-        base_rate_flat: data.flat_rate,
-        base_rate_hourly: data.hourly_rate,
-        time_split_creative: data.time_split_creative,
-        time_split_logistics: 100 - data.time_split_creative,
-        available_dates: data.available_dates.map((date) => format(date, 'yyyy-MM-dd')),
-      }
+      // Store step 4 data locally
+      localStorage.setItem(
+        'onboarding_step4',
+        JSON.stringify({
+          skills: selectedSkills,
+          response_time: data.response_time,
+          average_gig_price: data.average_gig_price,
+        })
+      )
 
-      // Use apiClient with correct D1 endpoint
-      await apiClient.request('/onboarding/artists/step4', {
-        method: 'POST',
-        body: JSON.stringify(payload),
+      // Call API to mark onboarding as complete
+      // Using existing step4 and step5 endpoints
+      await apiClient.submitOnboardingStep4({
+        largest_show_capacity: 100, // Default values
+        base_rate_flat: parseInt(data.average_gig_price) || 500,
+        base_rate_hourly: Math.round((parseInt(data.average_gig_price) || 500) / 4),
+        time_split_creative: 60,
+        time_split_logistics: 40,
+        available_dates: [],
       })
 
-      // Navigate to step 5 on success
-      navigate('/onboarding/artists/step5')
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to submit step 4'
+      await apiClient.submitOnboardingStep5({
+        currently_making_music: true,
+        confident_online_presence: true,
+        struggles_creative_niche: false,
+        knows_where_find_gigs: true,
+        paid_fairly_performing: true,
+        understands_royalties: true,
+      })
 
-      // Handle "Step 3 must be completed first" error
-      if (errorMessage.includes('Step 3 must be completed first')) {
-        setError('Please complete Step 3 first. Redirecting...')
-        setTimeout(() => navigate('/onboarding/artists/step3'), 2000)
-      } else {
-        setError(errorMessage)
-      }
-      console.error('Error submitting step 4:', err)
+      // Navigate to dashboard on success
+      navigate('/dashboard')
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to complete onboarding'
+      setError(errorMessage)
+      console.error('Error completing onboarding:', err)
     } finally {
       setIsLoading(false)
     }
   }
 
-  const removeDate = (dateToRemove: Date) => {
-    const currentDates = form.getValues('available_dates') || []
-    form.setValue(
-      'available_dates',
-      currentDates.filter(
-        (d: Date) => format(d, 'yyyy-MM-dd') !== format(dateToRemove, 'yyyy-MM-dd')
-      )
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-slate-50 p-4 dark:from-slate-950 dark:to-purple-950">
-      <div className="mx-auto max-w-3xl py-8">
-        {/* Progress Indicator */}
-        <div className="mb-6">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">Step 4 of 5</span>
-            <span className="text-sm font-medium text-muted-foreground">80% Complete</span>
+    <OnboardingLayout currentStep={4} backPath="/onboarding/artists/step3">
+      <Card className="border-0 bg-card/80 shadow-xl backdrop-blur-sm">
+        <CardContent className="p-8">
+          {/* Header */}
+          <div className="mb-8 text-center">
+            <h1 className="text-heading-32 text-foreground">Build your credibility</h1>
+            <p className="text-copy-16 mt-2 text-muted-foreground">
+              Add endorsements and showcase your experience
+            </p>
           </div>
-          <div className="h-2.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-            <div className="h-2.5 rounded-full bg-purple-600" style={{ width: '80%' }}></div>
-          </div>
-        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl">Your Numbers</CardTitle>
-            <CardDescription>Help us understand your scale and availability</CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            {/* Alert Banner */}
-            <Alert className="mb-6 border-purple-600 bg-purple-50 dark:bg-purple-950">
-              <Lightbulb className="h-4 w-4 text-purple-600" />
-              <AlertDescription className="text-purple-900 dark:text-purple-100">
-                These details help match you with the right opportunities and collaborators!
-              </AlertDescription>
+          {/* Error Message */}
+          {error && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
             </Alert>
+          )}
 
-            {/* Error Message */}
-            {error && (
-              <Alert variant="destructive" className="mb-6">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Skills & Instruments */}
+              <Card className="overflow-hidden border-border/50 bg-muted/30">
+                <CardContent className="p-6">
+                  <h3 className="mb-4 text-lg font-semibold text-foreground">
+                    Skills & Instruments
+                  </h3>
 
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                {/* Largest Show Capacity */}
-                <FormField
-                  control={form.control}
-                  name="largest_show_capacity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Largest show you've played</FormLabel>
-                      <FormDescription>
-                        What facility ticket sold at your biggest performance?
-                      </FormDescription>
-                      <FormControl>
-                        <div className="space-y-4">
-                          <Slider
-                            min={0}
-                            max={1000}
-                            step={10}
-                            value={[field.value]}
-                            onValueChange={(vals: number[]) => field.onChange(vals[0])}
-                            className="w-full"
-                          />
-                          <div className="flex justify-between text-sm text-muted-foreground">
-                            <span>0</span>
-                            <span className="font-semibold text-foreground">
-                              {field.value === 1000 ? '1,000+' : field.value} people
-                            </span>
-                            <span>1,000+</span>
-                          </div>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                  {/* Selected Skills */}
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    {selectedSkills.map((skill) => (
+                      <Badge
+                        key={skill}
+                        variant="secondary"
+                        className="bg-purple-100 px-3 py-1 text-purple-700 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300"
+                      >
+                        {skill}
+                        <button
+                          type="button"
+                          onClick={() => removeSkill(skill)}
+                          className="ml-2 hover:text-purple-900 dark:hover:text-purple-100"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+
+                  {/* Skill Input */}
+                  <Input
+                    placeholder="Add a skill or instrument..."
+                    value={skillInput}
+                    onChange={(e) => setSkillInput(e.target.value)}
+                    onKeyDown={handleSkillInputKeyDown}
+                    className="h-12 rounded-lg border-border bg-background focus:border-purple-500 focus:ring-purple-500/20"
+                    list="skill-suggestions"
+                  />
+                  <datalist id="skill-suggestions">
+                    {SKILL_OPTIONS.filter((s) => !selectedSkills.includes(s)).map((skill) => (
+                      <option key={skill} value={skill} />
+                    ))}
+                  </datalist>
+
+                  {/* Quick Add Buttons */}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {SKILL_OPTIONS.filter((s) => !selectedSkills.includes(s))
+                      .slice(0, 5)
+                      .map((skill) => (
+                        <Button
+                          key={skill}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addSkill(skill)}
+                          className="text-xs"
+                        >
+                          + {skill}
+                        </Button>
+                      ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Verification Cards */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <Card className="border-border/50 bg-muted/30">
+                  <CardContent className="flex flex-col items-center p-6 text-center">
+                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                      <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+                    </div>
+                    <h4 className="font-semibold text-foreground">Verified Artist</h4>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Complete verification process
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/50 bg-muted/30">
+                  <CardContent className="flex flex-col items-center p-6 text-center">
+                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/30">
+                      <Star className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                    </div>
+                    <h4 className="font-semibold text-foreground">5.0 Rating</h4>
+                    <p className="mt-1 text-xs text-muted-foreground">Average venue rating</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/50 bg-muted/30">
+                  <CardContent className="flex flex-col items-center p-6 text-center">
+                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
+                      <Music2 className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <h4 className="font-semibold text-foreground">0 Gigs</h4>
+                    <p className="mt-1 text-xs text-muted-foreground">Completed bookings</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Professional Details */}
+              <Card className="overflow-hidden border-border/50 bg-muted/30">
+                <CardContent className="p-6">
+                  <h3 className="mb-4 text-lg font-semibold text-foreground">
+                    Professional Details
+                  </h3>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="response_time"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">
+                            Typical Response Time
+                          </FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="h-12 rounded-lg border-border bg-background">
+                                <SelectValue placeholder="Select response time" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="within_1_hour">Within 1 hour</SelectItem>
+                              <SelectItem value="within_4_hours">Within 4 hours</SelectItem>
+                              <SelectItem value="within_24_hours">Within 24 hours</SelectItem>
+                              <SelectItem value="within_48_hours">Within 48 hours</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="average_gig_price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Average Gig Price</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="e.g. $500-1000"
+                              className="h-12 rounded-lg border-border bg-background focus:border-purple-500 focus:ring-purple-500/20"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Complete Button */}
+              <div className="flex justify-end pt-4">
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="h-12 min-w-[180px] bg-purple-500 px-6 font-semibold hover:bg-purple-600"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Completing...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Complete Profile
+                    </>
                   )}
-                />
-
-                {/* Flat Rate */}
-                <FormField
-                  control={form.control}
-                  name="flat_rate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Flat rate (per show/event)</FormLabel>
-                      <FormDescription>
-                        What's your typical flat rate for a complete performance?
-                      </FormDescription>
-                      <FormControl>
-                        <div className="space-y-4">
-                          <Slider
-                            min={0}
-                            max={5000}
-                            step={50}
-                            value={[field.value]}
-                            onValueChange={(vals: number[]) => field.onChange(vals[0])}
-                            className="w-full"
-                          />
-                          <div className="flex justify-between text-sm text-muted-foreground">
-                            <span>$0</span>
-                            <span className="font-semibold text-foreground">
-                              {field.value === 5000
-                                ? '$5,000+'
-                                : `$${field.value.toLocaleString()}`}
-                            </span>
-                            <span>$5,000+</span>
-                          </div>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Hourly Rate */}
-                <FormField
-                  control={form.control}
-                  name="hourly_rate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Hourly rate</FormLabel>
-                      <FormDescription>
-                        What's your hourly rate for sessions, studio time, or consulting?
-                      </FormDescription>
-                      <FormControl>
-                        <div className="space-y-4">
-                          <Slider
-                            min={0}
-                            max={500}
-                            step={5}
-                            value={[field.value]}
-                            onValueChange={(vals: number[]) => field.onChange(vals[0])}
-                            className="w-full"
-                          />
-                          <div className="flex justify-between text-sm text-muted-foreground">
-                            <span>$0/hr</span>
-                            <span className="font-semibold text-foreground">
-                              {field.value === 500 ? '$500+/hr' : `$${field.value}/hr`}
-                            </span>
-                            <span>$500+/hr</span>
-                          </div>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Time Split */}
-                <FormField
-                  control={form.control}
-                  name="time_split_creative"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>How do you spend your time?</FormLabel>
-                      <FormDescription>
-                        Adjust the balance between creative work and logistics/business tasks
-                      </FormDescription>
-                      <FormControl>
-                        <div className="space-y-4">
-                          <Slider
-                            min={0}
-                            max={100}
-                            step={5}
-                            value={[field.value]}
-                            onValueChange={(vals: number[]) => field.onChange(vals[0])}
-                            className="w-full"
-                          />
-                          <div className="flex justify-between text-sm">
-                            <div className="text-left">
-                              <div className="font-semibold text-purple-600">
-                                Creative: {creativeSplit}%
-                              </div>
-                              <div className="text-xs text-muted-foreground">More Creative</div>
-                            </div>
-                            <div className="text-right">
-                              <div className="font-semibold text-blue-600">
-                                Logistics: {logisticsSplit}%
-                              </div>
-                              <div className="text-xs text-muted-foreground">More Logistics</div>
-                            </div>
-                          </div>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Available Dates */}
-                <FormField
-                  control={form.control}
-                  name="available_dates"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Upcoming availability</FormLabel>
-                      <FormDescription>
-                        Pick up to 3 future dates you're available for gigs ({selectedDates.length}
-                        /3 selected)
-                      </FormDescription>
-                      <FormControl>
-                        <div className="space-y-4">
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  'w-full justify-start text-left font-normal',
-                                  selectedDates.length === 0 && 'text-muted-foreground'
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {selectedDates.length === 0
-                                  ? 'Select dates'
-                                  : `${selectedDates.length} date${selectedDates.length > 1 ? 's' : ''} selected`}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="multiple"
-                                selected={selectedDates}
-                                onSelect={(dates: Date[] | undefined) => {
-                                  if (dates && dates.length <= 3) {
-                                    form.setValue('available_dates', dates as Date[])
-                                  }
-                                }}
-                                disabled={(date: Date) =>
-                                  date < new Date() || selectedDates.length >= 3
-                                }
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-
-                          {/* Selected Dates Chips */}
-                          {selectedDates.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                              {selectedDates.map((date: Date, index: number) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center gap-2 rounded-full bg-purple-100 px-3 py-1.5 text-sm text-purple-900 dark:bg-purple-900 dark:text-purple-100"
-                                >
-                                  <span>{format(date, 'MMM d, yyyy')}</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => removeDate(date)}
-                                    className="rounded-full p-0.5 hover:bg-purple-200 dark:hover:bg-purple-800"
-                                  >
-                                    <X className="h-3 w-3" />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Form Actions */}
-                <div className="flex justify-between pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate('/onboarding/artists/step3')}
-                    disabled={isLoading}
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="bg-purple-600 hover:bg-purple-700"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Submitting...
-                      </>
-                    ) : (
-                      'Next'
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </OnboardingLayout>
   )
 }

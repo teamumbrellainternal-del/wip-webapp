@@ -5,45 +5,26 @@ import { apiClient } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Loader2, AlertCircle, Lightbulb } from 'lucide-react'
+import { Loader2, AlertCircle, MapPin, ArrowRight } from 'lucide-react'
+import OnboardingLayout from '@/components/onboarding/OnboardingLayout'
 
 interface Step1FormData {
+  full_name: string
   stage_name: string
-  location_city: string
-  location_state: string
-  location_zip?: string
-  phone_number?: string
-  legal_name?: string
-  pronouns?: string
-  inspirations?: string
-  genre_primary?: string[]
+  location: string
+  primary_genre: string
+  bio: string
 }
-
-const GENRE_OPTIONS = [
-  { id: 'rock', label: 'Rock' },
-  { id: 'pop', label: 'Pop' },
-  { id: 'hip-hop', label: 'Hip-Hop' },
-  { id: 'jazz', label: 'Jazz' },
-  { id: 'electronic', label: 'Electronic' },
-  { id: 'country', label: 'Country' },
-  { id: 'r&b', label: 'R&B' },
-  { id: 'classical', label: 'Classical' },
-  { id: 'indie', label: 'Indie' },
-  { id: 'folk', label: 'Folk' },
-]
 
 export default function OnboardingStep1() {
   const navigate = useNavigate()
@@ -52,46 +33,43 @@ export default function OnboardingStep1() {
 
   const form = useForm<Step1FormData>({
     defaultValues: {
+      full_name: '',
       stage_name: '',
-      location_city: '',
-      location_state: '',
-      location_zip: '',
-      phone_number: '',
-      legal_name: '',
-      pronouns: '',
-      inspirations: '',
-      genre_primary: [],
+      location: '',
+      primary_genre: '',
+      bio: '',
     },
   })
-
-  const selectedGenres = form.watch('genre_primary') || []
 
   const onSubmit = async (data: Step1FormData) => {
     setError(null)
     setIsLoading(true)
 
     try {
-      // Convert inspirations textarea to array
-      const inspirationsArray = data.inspirations
-        ? data.inspirations
-            .split('\n')
-            .map((line) => line.trim())
-            .filter((line) => line.length > 0)
-        : undefined
+      // Parse location into city and state
+      const locationParts = data.location.split(',').map((part) => part.trim())
+      const city = locationParts[0] || ''
+      const state = locationParts[1] || ''
 
-      // Prepare API payload
+      // Prepare API payload (map to existing API structure)
       const payload = {
         stage_name: data.stage_name,
-        location_city: data.location_city,
-        location_state: data.location_state,
-        location_zip: data.location_zip || undefined,
-        phone_number: data.phone_number || undefined,
-        legal_name: data.legal_name || undefined,
-        pronouns: data.pronouns || undefined,
-        inspirations: inspirationsArray,
-        genre_primary:
-          data.genre_primary && data.genre_primary.length > 0 ? data.genre_primary : undefined,
+        location_city: city,
+        location_state: state,
+        legal_name: data.full_name || undefined,
+        genre_primary: data.primary_genre ? [data.primary_genre.toLowerCase()] : undefined,
+        // Store bio in localStorage for now (can be added to profile later)
       }
+
+      // Store additional data locally for profile completion
+      localStorage.setItem(
+        'onboarding_step1',
+        JSON.stringify({
+          full_name: data.full_name,
+          bio: data.bio,
+          primary_genre: data.primary_genre,
+        })
+      )
 
       // Call API
       await apiClient.submitOnboardingStep1(payload)
@@ -99,7 +77,7 @@ export default function OnboardingStep1() {
       // Navigate to step 2 on success
       navigate('/onboarding/artists/step2')
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to submit step 1'
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save your profile'
       setError(errorMessage)
       console.error('Error submitting step 1:', err)
     } finally {
@@ -107,250 +85,166 @@ export default function OnboardingStep1() {
     }
   }
 
-  const handleGenreToggle = (genreId: string) => {
-    const currentGenres = form.getValues('genre_primary') || []
-
-    if (currentGenres.includes(genreId)) {
-      // Remove genre
-      form.setValue(
-        'genre_primary',
-        currentGenres.filter((g) => g !== genreId)
-      )
-    } else {
-      // Add genre (max 3)
-      if (currentGenres.length < 3) {
-        form.setValue('genre_primary', [...currentGenres, genreId])
-      }
-    }
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-slate-50 p-4 dark:from-slate-950 dark:to-purple-950">
-      <div className="mx-auto max-w-3xl py-8">
-        {/* Progress Indicator */}
-        <div className="mb-6">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">Step 1 of 5</span>
-            <span className="text-sm font-medium text-muted-foreground">20% Complete</span>
+    <OnboardingLayout currentStep={1} showBack={false}>
+      <Card className="border-0 bg-card/80 shadow-xl backdrop-blur-sm">
+        <CardContent className="p-8">
+          {/* Header */}
+          <div className="mb-8 text-center">
+            <h1 className="text-heading-32 text-foreground">Let's create your profile</h1>
+            <p className="text-copy-16 mt-2 text-muted-foreground">
+              Tell us about yourself and your music
+            </p>
           </div>
-          <div className="h-2.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-            <div className="h-2.5 rounded-full bg-purple-600" style={{ width: '20%' }}></div>
-          </div>
-        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl">Identity & Basics</CardTitle>
-            <CardDescription>Tell us who you are as an artist</CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            {/* Alert Banner */}
-            <Alert className="mb-6 border-purple-600 bg-purple-50 dark:bg-purple-950">
-              <Lightbulb className="h-4 w-4 text-purple-600" />
-              <AlertDescription className="text-purple-900 dark:text-purple-100">
-                The better your responses to this form, the better the platform will be able to help
-                you grow!
-              </AlertDescription>
+          {/* Error Message */}
+          {error && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
             </Alert>
+          )}
 
-            {/* Error Message */}
-            {error && (
-              <Alert variant="destructive" className="mb-6">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Full Name & Artist Name Row */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="full_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">Full Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Your legal name"
+                          className="h-12 rounded-lg border-border bg-muted/50 focus:border-purple-500 focus:ring-purple-500/20"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Stage Name (Required) */}
                 <FormField
                   control={form.control}
                   name="stage_name"
                   rules={{
-                    required: 'Artist/stage name is required',
+                    required: 'Artist name is required',
                     maxLength: {
                       value: 100,
-                      message: 'Artist/stage name must be 100 characters or less',
+                      message: 'Artist name must be 100 characters or less',
                     },
-                    validate: (value) =>
-                      value.trim().length > 0 || 'Artist/stage name cannot be empty',
                   }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>
-                        Artist/Stage Name <span className="text-destructive">*</span>
+                      <FormLabel className="text-sm font-medium">
+                        Artist Name <span className="text-destructive">*</span>
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter your artist or stage name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Location Fields (Required) */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="location_city"
-                    rules={{
-                      required: 'City is required',
-                      maxLength: {
-                        value: 100,
-                        message: 'City must be 100 characters or less',
-                      },
-                      validate: (value) => value.trim().length > 0 || 'City cannot be empty',
-                    }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          City <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter your city" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="location_state"
-                    rules={{
-                      required: 'State is required',
-                      maxLength: {
-                        value: 50,
-                        message: 'State must be 50 characters or less',
-                      },
-                      validate: (value) => value.trim().length > 0 || 'State cannot be empty',
-                    }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          State <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter your state" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Inspirations (Optional) */}
-                <FormField
-                  control={form.control}
-                  name="inspirations"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Inspirations (Optional)</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Enter artists or inspirations (one per line)"
-                          className="resize-none"
-                          rows={4}
+                        <Input
+                          placeholder="Your stage name"
+                          className="h-12 rounded-lg border-border bg-muted/50 focus:border-purple-500 focus:ring-purple-500/20"
                           {...field}
                         />
                       </FormControl>
-                      <FormDescription>
-                        List artists or inspirations that influence your music (one per line)
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+              </div>
 
-                {/* Genre Selection (Optional, Max 3) */}
+              {/* Location & Primary Genre Row */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="genre_primary"
-                  render={() => (
+                  name="location"
+                  rules={{
+                    required: 'Location is required',
+                  }}
+                  render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Primary Genres (Optional, Select up to 3)</FormLabel>
-                      <div className="mt-2 grid grid-cols-2 gap-3 md:grid-cols-3">
-                        {GENRE_OPTIONS.map((genre) => {
-                          const isSelected = selectedGenres.includes(genre.id)
-                          const isDisabled = !isSelected && selectedGenres.length >= 3
-
-                          return (
-                            <div
-                              key={genre.id}
-                              className={`flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors ${
-                                isSelected
-                                  ? 'border-purple-600 bg-purple-50 dark:bg-purple-950'
-                                  : isDisabled
-                                    ? 'cursor-not-allowed border-gray-200 bg-gray-50 opacity-50 dark:bg-gray-900'
-                                    : 'border-gray-200 hover:border-purple-400 dark:border-gray-700'
-                              }`}
-                              onClick={(e) => {
-                                if (e.target !== e.currentTarget) return
-                                if (!isDisabled) handleGenreToggle(genre.id)
-                              }}
-                            >
-                              <div className="pointer-events-none flex items-center space-x-2">
-                                <Checkbox
-                                  checked={isSelected}
-                                  disabled={isDisabled}
-                                  onCheckedChange={() => handleGenreToggle(genre.id)}
-                                  className="pointer-events-auto"
-                                />
-                                <Label
-                                  className="pointer-events-auto cursor-pointer"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    if (!isDisabled) handleGenreToggle(genre.id)
-                                  }}
-                                >
-                                  {genre.label}
-                                </Label>
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                      <FormDescription>
-                        Select up to 3 genres that best describe your music ({selectedGenres.length}
-                        /3 selected)
-                      </FormDescription>
+                      <FormLabel className="text-sm font-medium">
+                        Location <span className="text-destructive">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            placeholder="City, State"
+                            className="h-12 rounded-lg border-border bg-muted/50 pl-10 focus:border-purple-500 focus:ring-purple-500/20"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                {/* Form Actions */}
-                <div className="flex justify-between pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate('/onboarding/role-selection')}
-                    disabled={isLoading}
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="bg-purple-600 hover:bg-purple-700"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Submitting...
-                      </>
-                    ) : (
-                      'Next'
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+                <FormField
+                  control={form.control}
+                  name="primary_genre"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">Primary Genre</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g. Rock, Jazz, Electronic"
+                          className="h-12 rounded-lg border-border bg-muted/50 focus:border-purple-500 focus:ring-purple-500/20"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Bio */}
+              <FormField
+                control={form.control}
+                name="bio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium">Bio</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Tell us your story, your musical journey, and what drives your passion..."
+                        className="min-h-[120px] resize-none rounded-lg border-border bg-muted/50 focus:border-purple-500 focus:ring-purple-500/20"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Continue Button */}
+              <div className="flex justify-end pt-4">
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="h-12 min-w-[140px] bg-purple-500 px-6 font-semibold hover:bg-purple-600"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      Continue
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </OnboardingLayout>
   )
 }
