@@ -189,21 +189,21 @@ export default function DashboardPage() {
 
             {/* Stats Cards */}
             <div className="grid gap-4 sm:grid-cols-3">
-          {/* This Month Earnings */}
-              <Card className="border-border/50 bg-card/80 backdrop-blur-sm">
+          {/* This Month Earnings - Purple background to match Figma */}
+              <Card className="border-purple-400 bg-purple-600 text-white dark:border-purple-700 dark:bg-purple-800">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">This Month</p>
-                      <p className="mt-1 text-2xl font-bold text-foreground">
+                      <p className="text-sm font-medium text-purple-100">This Month</p>
+                      <p className="mt-1 text-2xl font-bold text-white">
                 {formatCurrency(data.earnings.current_month)}
                       </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-1 text-xs text-purple-100">
                 <span
                   className={
                             data.earnings.percentage_change >= 0
-                              ? 'text-green-600 dark:text-green-400'
-                              : 'text-red-600 dark:text-red-400'
+                              ? 'text-green-300'
+                              : 'text-red-300'
                   }
                 >
                   {formatPercentage(data.earnings.percentage_change)}
@@ -211,8 +211,8 @@ export default function DashboardPage() {
                 from last month
               </p>
                     </div>
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                      <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+                      <DollarSign className="h-5 w-5 text-white" />
                     </div>
                   </div>
             </CardContent>
