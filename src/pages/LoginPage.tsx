@@ -114,9 +114,7 @@ export default function LoginPage() {
         <div className="hidden w-full max-w-xl flex-col justify-center px-12 py-12 lg:flex xl:max-w-2xl xl:px-16">
           {/* Logo & Brand */}
           <div className="mb-8 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500">
-              <span className="text-xl font-bold text-white">U</span>
-            </div>
+            <img src="/icon.svg" alt="Umbrella" className="h-12 w-12 rounded-2xl" />
             <div>
               <h1 className="text-xl font-bold text-foreground">Umbrella</h1>
               <p className="text-sm text-muted-foreground">Artist Platform</p>
@@ -169,9 +167,7 @@ export default function LoginPage() {
           <div className="w-full max-w-md">
             {/* Mobile Logo - Only shows on mobile */}
             <div className="mb-8 flex items-center justify-center gap-3 lg:hidden">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500">
-                <span className="text-xl font-bold text-white">U</span>
-              </div>
+              <img src="/icon.svg" alt="Umbrella" className="h-12 w-12 rounded-2xl" />
               <div>
                 <h1 className="text-xl font-bold text-foreground">Umbrella</h1>
                 <p className="text-sm text-muted-foreground">Artist Platform</p>
