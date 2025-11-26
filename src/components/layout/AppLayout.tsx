@@ -30,7 +30,6 @@ const navigationTabs = [
   { label: 'Messages', path: '/messages' },
   { label: 'Violet', path: '/violet' },
   { label: 'Growth', path: '/growth' },
-  { label: 'Tools', path: '/tools' }, // D-044: New navigation item
 ]
 
 export default function AppLayout({ children }: AppLayoutProps) {
