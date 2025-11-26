@@ -86,15 +86,15 @@ export default function OnboardingStep2() {
           {/* Header */}
           <div className="mb-8 text-center">
             <h1 className="text-heading-32 text-foreground">Show your personality</h1>
-            <p className="mt-2 text-copy-16 text-muted-foreground">
+            <p className="text-copy-16 mt-2 text-muted-foreground">
               Complete these fun prompts to help others connect with you
             </p>
-        </div>
+          </div>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               {/* Prompt Cards - 2 column grid on desktop */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {prompts.slice(0, 4).map((prompt) => {
                   const Icon = prompt.icon
                   return (
@@ -109,17 +109,17 @@ export default function OnboardingStep2() {
                               <div className="mb-3 flex items-center gap-2">
                                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
                                   <Icon className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              </div>
+                                </div>
                                 <h3 className="text-sm font-semibold text-foreground">
                                   {prompt.title}
                                 </h3>
-              </div>
+                              </div>
                               <FormControl>
                                 <Textarea
                                   placeholder={prompt.placeholder}
                                   className="min-h-[80px] resize-none border-0 bg-transparent p-0 text-sm focus-visible:ring-0"
                                   {...field}
-                />
+                                />
                               </FormControl>
                             </CardContent>
                           </Card>
@@ -144,11 +144,13 @@ export default function OnboardingStep2() {
                           <div className="mb-3 flex items-center gap-2">
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
                               <Icon className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              </div>
-                            <h3 className="text-sm font-semibold text-foreground">{prompt.title}</h3>
-              </div>
+                            </div>
+                            <h3 className="text-sm font-semibold text-foreground">
+                              {prompt.title}
+                            </h3>
+                          </div>
                           <FormControl>
-              <Textarea
+                            <Textarea
                               placeholder={prompt.placeholder}
                               className="min-h-[80px] resize-none border-0 bg-transparent p-0 text-sm focus-visible:ring-0"
                               {...field}
@@ -163,7 +165,7 @@ export default function OnboardingStep2() {
 
               {/* Continue Button */}
               <div className="flex justify-end pt-4">
-            <Button
+                <Button
                   type="submit"
                   disabled={isLoading}
                   className="h-12 min-w-[140px] bg-purple-500 px-6 font-semibold hover:bg-purple-600"
@@ -179,9 +181,9 @@ export default function OnboardingStep2() {
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </>
                   )}
-            </Button>
-          </div>
-        </form>
+                </Button>
+              </div>
+            </form>
           </Form>
         </CardContent>
       </Card>

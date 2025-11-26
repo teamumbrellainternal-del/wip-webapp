@@ -40,18 +40,70 @@ const MOCK_MONTHLY_DATA = [
 ]
 
 const MOCK_ACHIEVEMENTS = [
-  { id: '1', title: 'First Gig', description: 'Complete your first booking', icon: Mic2, unlocked: true },
-  { id: '2', title: 'Five Star Rating', description: 'Maintain 5.0 rating for 5 gigs', icon: Star, unlocked: true },
-  { id: '3', title: 'Rising Star', description: 'Get 10 venue endorsements', icon: TrendingUp, unlocked: true },
-  { id: '4', title: 'Concert Hall', description: 'Perform at a 500+ capacity venue', icon: Building2, unlocked: false },
-  { id: '5', title: 'Monthly Regular', description: 'Book 10 gigs in one month', icon: Calendar, unlocked: false },
-  { id: '6', title: 'Collaboration Master', description: 'Complete 5 artist collaborations', icon: Repeat, unlocked: false },
+  {
+    id: '1',
+    title: 'First Gig',
+    description: 'Complete your first booking',
+    icon: Mic2,
+    unlocked: true,
+  },
+  {
+    id: '2',
+    title: 'Five Star Rating',
+    description: 'Maintain 5.0 rating for 5 gigs',
+    icon: Star,
+    unlocked: true,
+  },
+  {
+    id: '3',
+    title: 'Rising Star',
+    description: 'Get 10 venue endorsements',
+    icon: TrendingUp,
+    unlocked: true,
+  },
+  {
+    id: '4',
+    title: 'Concert Hall',
+    description: 'Perform at a 500+ capacity venue',
+    icon: Building2,
+    unlocked: false,
+  },
+  {
+    id: '5',
+    title: 'Monthly Regular',
+    description: 'Book 10 gigs in one month',
+    icon: Calendar,
+    unlocked: false,
+  },
+  {
+    id: '6',
+    title: 'Collaboration Master',
+    description: 'Complete 5 artist collaborations',
+    icon: Repeat,
+    unlocked: false,
+  },
 ]
 
 const MOCK_SPOTLIGHT = [
   { id: '1', name: 'Maya Chen', genre: 'Jazz Fusion', rating: 4.9, gigs: 24, rank: 1, image: null },
-  { id: '2', name: 'The Velvet Sounds', genre: 'Soul/R&B', rating: 4.8, gigs: 18, rank: 2, image: null },
-  { id: '3', name: 'Alex Rivers', genre: 'Acoustic Folk', rating: 4.7, gigs: 15, rank: 3, image: null },
+  {
+    id: '2',
+    name: 'The Velvet Sounds',
+    genre: 'Soul/R&B',
+    rating: 4.8,
+    gigs: 18,
+    rank: 2,
+    image: null,
+  },
+  {
+    id: '3',
+    name: 'Alex Rivers',
+    genre: 'Acoustic Folk',
+    rating: 4.7,
+    gigs: 15,
+    rank: 3,
+    image: null,
+  },
 ]
 
 const MOCK_GOALS = [
@@ -233,32 +285,38 @@ export default function GrowthPage() {
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">Performance Analytics</CardTitle>
-          <div className="flex gap-2">
-            <Button
-              variant={timePeriod === 'monthly' ? 'default' : 'outline'}
+                      <div className="flex gap-2">
+                        <Button
+                          variant={timePeriod === 'monthly' ? 'default' : 'outline'}
                           size="sm"
-                          className={timePeriod === 'monthly' ? 'bg-purple-500 hover:bg-purple-600' : ''}
-              onClick={() => setTimePeriod('monthly')}
-            >
-              Monthly
-            </Button>
-            <Button
-              variant={timePeriod === 'yearly' ? 'default' : 'outline'}
+                          className={
+                            timePeriod === 'monthly' ? 'bg-purple-500 hover:bg-purple-600' : ''
+                          }
+                          onClick={() => setTimePeriod('monthly')}
+                        >
+                          Monthly
+                        </Button>
+                        <Button
+                          variant={timePeriod === 'yearly' ? 'default' : 'outline'}
                           size="sm"
-                          className={timePeriod === 'yearly' ? 'bg-purple-500 hover:bg-purple-600' : ''}
-              onClick={() => setTimePeriod('yearly')}
-            >
-              Yearly
-            </Button>
-          </div>
-        </div>
-              </CardHeader>
-              <CardContent>
+                          className={
+                            timePeriod === 'yearly' ? 'bg-purple-500 hover:bg-purple-600' : ''
+                          }
+                          onClick={() => setTimePeriod('yearly')}
+                        >
+                          Yearly
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
                     {/* Chart Grid */}
                     <div className="mb-4 grid grid-cols-6 gap-4">
                       {MOCK_MONTHLY_DATA.map((data) => (
                         <div key={data.month} className="text-center">
-                          <div className="mb-2 text-sm font-medium text-foreground">{data.month}</div>
+                          <div className="mb-2 text-sm font-medium text-foreground">
+                            {data.month}
+                          </div>
                           <div className="mb-1 rounded-lg bg-purple-100 px-2 py-1 dark:bg-purple-900/30">
                             <span className="text-xs text-muted-foreground">Revenue</span>
                             <p className="text-sm font-semibold text-purple-700 dark:text-purple-300">
@@ -283,7 +341,9 @@ export default function GrowthPage() {
                     <div className="grid grid-cols-3 gap-4 border-t pt-4">
                       <div className="text-center">
                         <p className="text-sm text-muted-foreground">Peak Revenue</p>
-                        <p className="text-lg font-bold text-foreground">${peakRevenue.toLocaleString()}</p>
+                        <p className="text-lg font-bold text-foreground">
+                          ${peakRevenue.toLocaleString()}
+                        </p>
                       </div>
                       <div className="text-center">
                         <p className="text-sm text-muted-foreground">Peak Gigs</p>
@@ -292,10 +352,10 @@ export default function GrowthPage() {
                       <div className="text-center">
                         <p className="text-sm text-muted-foreground">Peak Fans</p>
                         <p className="text-lg font-bold text-foreground">{peakFans}</p>
-                </div>
-                </div>
-              </CardContent>
-            </Card>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Goals Section */}
                 <Card className="mb-6 border-border/50">
@@ -307,7 +367,7 @@ export default function GrowthPage() {
                         Set New Goal
                       </Button>
                     </div>
-              </CardHeader>
+                  </CardHeader>
                   <CardContent className="space-y-4">
                     {MOCK_GOALS.map((goal) => {
                       const percentage = Math.round((goal.current / goal.target) * 100)
@@ -316,7 +376,9 @@ export default function GrowthPage() {
                           <div className="flex items-center justify-between">
                             <h4 className="text-sm font-medium">{goal.title}</h4>
                             <span className="text-sm text-muted-foreground">
-                              {goal.unit === '$' ? `$${goal.current.toLocaleString()}` : goal.current}
+                              {goal.unit === '$'
+                                ? `$${goal.current.toLocaleString()}`
+                                : goal.current}
                               {' of '}
                               {goal.unit === '$' ? `$${goal.target.toLocaleString()}` : goal.target}
                               {goal.unit === '%' ? '%' : ''}
@@ -327,8 +389,8 @@ export default function GrowthPage() {
                         </div>
                       )
                     })}
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
 
                 {/* Verified Status */}
                 <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50 dark:border-purple-800 dark:from-purple-950 dark:to-pink-950">
@@ -338,15 +400,26 @@ export default function GrowthPage() {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-foreground">Your Verified Status</h3>
-                      <p className="text-sm text-muted-foreground">You're a verified artist on Umbrella!</p>
+                      <p className="text-sm text-muted-foreground">
+                        You're a verified artist on Umbrella!
+                      </p>
                       <div className="mt-2 flex flex-wrap gap-2">
-                        <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                        <Badge
+                          variant="secondary"
+                          className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                        >
                           Identity Verified
                         </Badge>
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                        <Badge
+                          variant="secondary"
+                          className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                        >
                           Performance History
                         </Badge>
-                        <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                        <Badge
+                          variant="secondary"
+                          className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
+                        >
                           Quality Reviews
                         </Badge>
                       </div>
@@ -355,19 +428,19 @@ export default function GrowthPage() {
                       <div className="flex items-center gap-1">
                         <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
                         <span className="text-2xl font-bold">4.8</span>
-                </div>
+                      </div>
                       <p className="text-xs text-muted-foreground">avg rating</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </ScrollArea>
           </div>
 
           {/* Right Sidebar */}
           <div className="hidden w-80 flex-shrink-0 border-l border-border/50 bg-card/30 lg:block">
             <ScrollArea className="h-full">
-              <div className="p-6 space-y-6">
+              <div className="space-y-6 p-6">
                 {/* Achievements */}
                 <div>
                   <div className="mb-4 flex items-center gap-2">
@@ -377,7 +450,7 @@ export default function GrowthPage() {
                   <div className="space-y-3">
                     {MOCK_ACHIEVEMENTS.map((achievement) => {
                       const Icon = achievement.icon
-                    return (
+                      return (
                         <div
                           key={achievement.id}
                           className={`flex items-center gap-3 rounded-lg p-3 ${
@@ -386,7 +459,7 @@ export default function GrowthPage() {
                               : 'bg-muted/50 opacity-60'
                           }`}
                         >
-                        <div
+                          <div
                             className={`flex h-10 w-10 items-center justify-center rounded-full ${
                               achievement.unlocked
                                 ? 'bg-amber-100 dark:bg-amber-900/30'
@@ -399,24 +472,26 @@ export default function GrowthPage() {
                                   ? 'text-amber-600 dark:text-amber-400'
                                   : 'text-muted-foreground'
                               }`}
-                        />
+                            />
                           </div>
                           <div>
                             <h4 className="text-sm font-medium">{achievement.title}</h4>
-                            <p className="text-xs text-muted-foreground">{achievement.description}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {achievement.description}
+                            </p>
                           </div>
-                      </div>
-                    )
-                  })}
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
 
                 {/* Spotlight Artists */}
-                          <div>
+                <div>
                   <div className="mb-4 flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-purple-500" />
                     <h3 className="font-semibold">Spotlight Artists</h3>
-                          </div>
+                  </div>
                   <p className="mb-3 text-xs text-muted-foreground">Top performers this week</p>
                   <div className="space-y-3">
                     {MOCK_SPOTLIGHT.map((artist) => (
@@ -451,39 +526,39 @@ export default function GrowthPage() {
                         >
                           {artist.rank}
                         </Badge>
-                          </div>
+                      </div>
                     ))}
                   </div>
-            </div>
+                </div>
 
                 {/* Boost Your Growth */}
-                    <div>
+                <div>
                   <h3 className="mb-4 font-semibold">Boost Your Growth</h3>
                   <div className="space-y-2">
-                      <Button
+                    <Button
                       variant="outline"
                       className="w-full justify-start gap-2 border-border/50"
                       onClick={() => navigate('/marketplace/gigs')}
-                      >
+                    >
                       <Search className="h-4 w-4" />
                       Find More Gigs
-                      </Button>
-                      <Button
+                    </Button>
+                    <Button
                       variant="outline"
                       className="w-full justify-start gap-2 border-border/50"
                       onClick={() => navigate('/violet')}
-                      >
+                    >
                       <Sparkles className="h-4 w-4" />
                       Get AI Insights
-                      </Button>
-                      <Button
+                    </Button>
+                    <Button
                       variant="outline"
                       className="w-full justify-start gap-2 border-border/50"
                       onClick={() => navigate('/marketplace?tab=artists')}
-                      >
+                    >
                       <Users className="h-4 w-4" />
                       Network & Collaborate
-                      </Button>
+                    </Button>
                   </div>
                 </div>
               </div>

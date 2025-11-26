@@ -205,14 +205,7 @@ export default function ProfileViewPage() {
               <span className="text-sm font-medium">Profile {profileCompletion}% complete</span>
               <div className="h-5 w-5">
                 <svg viewBox="0 0 36 36" className="h-5 w-5 -rotate-90">
-                  <circle
-                    cx="18"
-                    cy="18"
-                    r="16"
-                    fill="none"
-                    stroke="#e5e7eb"
-                    strokeWidth="3"
-                  />
+                  <circle cx="18" cy="18" r="16" fill="none" stroke="#e5e7eb" strokeWidth="3" />
                   <circle
                     cx="18"
                     cy="18"
@@ -236,7 +229,10 @@ export default function ProfileViewPage() {
               {/* Avatar */}
               <div className="relative -mt-20 md:-mt-24">
                 <Avatar className="h-32 w-32 border-4 border-background shadow-lg md:h-40 md:w-40">
-                  <AvatarImage src={artist.avatar_url || undefined} alt={artist.artist_name || 'Artist'} />
+                  <AvatarImage
+                    src={artist.avatar_url || undefined}
+                    alt={artist.artist_name || 'Artist'}
+                  />
                   <AvatarFallback className="bg-purple-100 text-3xl text-purple-700">
                     {(artist.artist_name || 'A').charAt(0).toUpperCase()}
                   </AvatarFallback>
@@ -253,7 +249,9 @@ export default function ProfileViewPage() {
                 <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div>
                     <div className="mb-1 flex flex-wrap items-center gap-2">
-                      <h1 className="text-2xl font-bold md:text-3xl">{artist.artist_name || 'Artist'}</h1>
+                      <h1 className="text-2xl font-bold md:text-3xl">
+                        {artist.artist_name || 'Artist'}
+                      </h1>
                       {artist.verified && (
                         <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
                           Professional
@@ -287,7 +285,9 @@ export default function ProfileViewPage() {
                 {/* Stats Row */}
                 <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
                   <div className="text-center">
-                    <p className="text-2xl font-bold">{artist.follower_count?.toLocaleString() || 0}</p>
+                    <p className="text-2xl font-bold">
+                      {artist.follower_count?.toLocaleString() || 0}
+                    </p>
                     <p className="text-sm text-muted-foreground">Followers</p>
                   </div>
                   <div className="text-center">
@@ -359,22 +359,40 @@ export default function ProfileViewPage() {
         <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-6 w-full justify-start bg-muted/50">
-              <TabsTrigger value="overview" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+              <TabsTrigger
+                value="overview"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
                 Overview
               </TabsTrigger>
-              <TabsTrigger value="portfolio" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+              <TabsTrigger
+                value="portfolio"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
                 Portfolio
               </TabsTrigger>
-              <TabsTrigger value="explore" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+              <TabsTrigger
+                value="explore"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
                 Explore
               </TabsTrigger>
-              <TabsTrigger value="journey" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+              <TabsTrigger
+                value="journey"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
                 Journey
               </TabsTrigger>
-              <TabsTrigger value="reviews" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+              <TabsTrigger
+                value="reviews"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
                 Reviews
               </TabsTrigger>
-              <TabsTrigger value="opportunities" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+              <TabsTrigger
+                value="opportunities"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
                 Opportunities
               </TabsTrigger>
             </TabsList>
@@ -383,7 +401,7 @@ export default function ProfileViewPage() {
             <TabsContent value="overview" className="space-y-6">
               <div className="grid gap-6 lg:grid-cols-3">
                 {/* Left Column - Bio */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="space-y-6 lg:col-span-2">
                   {/* Bio Card */}
                   <Card className="border-border/50">
                     <CardContent className="p-6">
@@ -392,7 +410,14 @@ export default function ProfileViewPage() {
                         <div className="flex items-center gap-2">
                           <div className="h-8 w-8">
                             <svg viewBox="0 0 36 36" className="h-8 w-8 -rotate-90">
-                              <circle cx="18" cy="18" r="16" fill="none" stroke="#e5e7eb" strokeWidth="2" />
+                              <circle
+                                cx="18"
+                                cy="18"
+                                r="16"
+                                fill="none"
+                                stroke="#e5e7eb"
+                                strokeWidth="2"
+                              />
                               <circle
                                 cx="18"
                                 cy="18"
@@ -405,7 +430,9 @@ export default function ProfileViewPage() {
                               />
                             </svg>
                           </div>
-                          <span className="text-sm text-muted-foreground">{profileCompletion}%</span>
+                          <span className="text-sm text-muted-foreground">
+                            {profileCompletion}%
+                          </span>
                         </div>
                       </div>
                       {artist.bio ? (
@@ -542,7 +569,9 @@ export default function ProfileViewPage() {
                     <p className="mb-4 text-muted-foreground">
                       Upload tracks to showcase your work to venues and collaborators
                     </p>
-                    <Button className="bg-purple-500 hover:bg-purple-600">Upload Your First Track</Button>
+                    <Button className="bg-purple-500 hover:bg-purple-600">
+                      Upload Your First Track
+                    </Button>
                   </CardContent>
                 </Card>
               ) : (
@@ -619,7 +648,9 @@ export default function ProfileViewPage() {
                 <CardContent className="py-12 text-center">
                   <ThumbsUp className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
                   <h3 className="mb-2 text-xl font-semibold">Latest Opportunities</h3>
-                  <p className="mb-4 text-muted-foreground">Check back soon for new gig opportunities</p>
+                  <p className="mb-4 text-muted-foreground">
+                    Check back soon for new gig opportunities
+                  </p>
                   <Button variant="outline" onClick={() => navigate('/marketplace/gigs')}>
                     Browse All Gigs
                   </Button>
@@ -652,11 +683,7 @@ function TrackCard({ track, isPlaying, onPlay, showActions }: TrackCardProps) {
     <Card className="overflow-hidden border-border/50 transition-all hover:shadow-md">
       <div className="relative aspect-square">
         {track.cover_art_url ? (
-          <img
-            src={track.cover_art_url}
-            alt={track.title}
-            className="h-full w-full object-cover"
-          />
+          <img src={track.cover_art_url} alt={track.title} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
             <Music className="h-12 w-12 text-white" />
@@ -723,10 +750,11 @@ function ReviewCard({ review }: ReviewCardProps) {
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-4 w-4 ${i < review.rating
-                        ? 'fill-amber-400 text-amber-400'
-                        : 'text-muted-foreground'
-                        }`}
+                      className={`h-4 w-4 ${
+                        i < review.rating
+                          ? 'fill-amber-400 text-amber-400'
+                          : 'text-muted-foreground'
+                      }`}
                     />
                   ))}
                 </div>

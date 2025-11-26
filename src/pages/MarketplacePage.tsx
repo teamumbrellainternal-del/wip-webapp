@@ -374,9 +374,7 @@ export default function MarketplacePage() {
         <div className="py-12 text-center">
           <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground opacity-50" />
           <h3 className="mb-2 text-lg font-semibold">No gigs found</h3>
-          <p className="mb-4 text-muted-foreground">
-            Try adjusting your filters or search query
-          </p>
+          <p className="mb-4 text-muted-foreground">Try adjusting your filters or search query</p>
           <Button onClick={handleClearAllFilters}>Clear Filters</Button>
         </div>
       )
@@ -534,9 +532,7 @@ export default function MarketplacePage() {
         <div className="py-12 text-center">
           <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground opacity-50" />
           <h3 className="mb-2 text-lg font-semibold">No artists found</h3>
-          <p className="mb-4 text-muted-foreground">
-            Try adjusting your filters or search query
-          </p>
+          <p className="mb-4 text-muted-foreground">Try adjusting your filters or search query</p>
           <Button onClick={handleClearAllFilters}>Clear Filters</Button>
         </div>
       )
@@ -651,120 +647,120 @@ export default function MarketplacePage() {
                 Discover Artists
               </Button>
             </div>
-        </div>
-
-        {/* Search Bar */}
-          <div className="mb-4 flex gap-3">
-          <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-                placeholder="Search venues, locations, or gig types..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-11 border-border/50 bg-muted/30 pl-10 focus:border-purple-500 focus:ring-purple-500/20"
-            />
           </div>
-          <Dialog open={showFiltersModal} onOpenChange={setShowFiltersModal}>
-            <DialogTrigger asChild>
+
+          {/* Search Bar */}
+          <div className="mb-4 flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search venues, locations, or gig types..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-11 border-border/50 bg-muted/30 pl-10 focus:border-purple-500 focus:ring-purple-500/20"
+              />
+            </div>
+            <Dialog open={showFiltersModal} onOpenChange={setShowFiltersModal}>
+              <DialogTrigger asChild>
                 <Button variant="outline" className="h-11 gap-2 border-border/50">
                   <Filter className="h-4 w-4" />
-                Filters
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Advanced Filters</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-6 py-4">
-                {/* Genre Filter */}
-                <div>
-                  <h3 className="mb-3 font-semibold">Genre</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {GENRES.map((genre: string) => (
-                      <Button
-                        key={genre}
-                        variant={selectedGenres.includes(genre) ? 'default' : 'outline'}
-                        size="sm"
+                  Filters
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Advanced Filters</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-6 py-4">
+                  {/* Genre Filter */}
+                  <div>
+                    <h3 className="mb-3 font-semibold">Genre</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {GENRES.map((genre: string) => (
+                        <Button
+                          key={genre}
+                          variant={selectedGenres.includes(genre) ? 'default' : 'outline'}
+                          size="sm"
                           className={
                             selectedGenres.includes(genre)
                               ? 'bg-purple-500 hover:bg-purple-600'
                               : ''
                           }
-                        onClick={() => {
-                          setSelectedGenres((prev: string[]) =>
-                            prev.includes(genre)
-                              ? prev.filter((g: string) => g !== genre)
-                              : [...prev, genre]
-                          )
-                        }}
-                      >
-                        {genre}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Location Filter */}
-                <div>
-                  <h3 className="mb-3 font-semibold">Location</h3>
-                  <Input
-                    placeholder="City or State"
-                    value={locationFilter}
-                    onChange={(e) => setLocationFilter(e.target.value)}
-                  />
-                </div>
-
-                <Separator />
-
-                {/* Price Range Filter */}
-                <div>
-                  <h3 className="mb-3 font-semibold">
-                    {activeTab === 'gigs' ? 'Payment Range' : 'Price Range'}
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {PRICE_RANGES.map((range) => {
-                      const isSelected =
-                        priceRange.min === range.min && priceRange.max === range.max
-                      return (
-                        <Button
-                          key={range.label}
-                          variant={isSelected ? 'default' : 'outline'}
-                          size="sm"
-                            className={isSelected ? 'bg-purple-500 hover:bg-purple-600' : ''}
                           onClick={() => {
-                            if (isSelected) {
-                              setPriceRange({})
-                            } else {
-                              setPriceRange({ min: range.min, max: range.max })
-                            }
+                            setSelectedGenres((prev: string[]) =>
+                              prev.includes(genre)
+                                ? prev.filter((g: string) => g !== genre)
+                                : [...prev, genre]
+                            )
                           }}
                         >
-                          {range.label}
+                          {genre}
                         </Button>
-                      )
-                    })}
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                <Separator />
+                  <Separator />
 
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1" onClick={handleClearAllFilters}>
-                    Clear All
-                  </Button>
+                  {/* Location Filter */}
+                  <div>
+                    <h3 className="mb-3 font-semibold">Location</h3>
+                    <Input
+                      placeholder="City or State"
+                      value={locationFilter}
+                      onChange={(e) => setLocationFilter(e.target.value)}
+                    />
+                  </div>
+
+                  <Separator />
+
+                  {/* Price Range Filter */}
+                  <div>
+                    <h3 className="mb-3 font-semibold">
+                      {activeTab === 'gigs' ? 'Payment Range' : 'Price Range'}
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {PRICE_RANGES.map((range) => {
+                        const isSelected =
+                          priceRange.min === range.min && priceRange.max === range.max
+                        return (
+                          <Button
+                            key={range.label}
+                            variant={isSelected ? 'default' : 'outline'}
+                            size="sm"
+                            className={isSelected ? 'bg-purple-500 hover:bg-purple-600' : ''}
+                            onClick={() => {
+                              if (isSelected) {
+                                setPriceRange({})
+                              } else {
+                                setPriceRange({ min: range.min, max: range.max })
+                              }
+                            }}
+                          >
+                            {range.label}
+                          </Button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex gap-2">
+                    <Button variant="outline" className="flex-1" onClick={handleClearAllFilters}>
+                      Clear All
+                    </Button>
                     <Button
                       className="flex-1 bg-purple-500 hover:bg-purple-600"
                       onClick={() => setShowFiltersModal(false)}
                     >
-                    Apply Filters
-                  </Button>
+                      Apply Filters
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
+              </DialogContent>
+            </Dialog>
+          </div>
 
           {/* Quick Filter Chips */}
           <div className="flex flex-wrap gap-2">
@@ -783,18 +779,18 @@ export default function MarketplacePage() {
               </Badge>
             ))}
           </div>
-                </div>
+        </div>
 
         {/* Main Content - Two Column Layout */}
         <div className="flex flex-1 overflow-hidden">
           {/* Left Column - Listings */}
           <div className="flex-1 overflow-hidden border-r border-border/50">
-                <ScrollArea ref={scrollContainerRef} className="h-full">
+            <ScrollArea ref={scrollContainerRef} className="h-full">
               <div className="p-4">
                 {activeTab === 'gigs' ? renderGigsList() : renderArtistsList()}
-                    </div>
-                </ScrollArea>
-                </div>
+              </div>
+            </ScrollArea>
+          </div>
 
           {/* Right Column - Detail Panel */}
           <div className="hidden w-96 flex-shrink-0 overflow-hidden lg:block">
@@ -811,7 +807,7 @@ export default function MarketplacePage() {
                     {selectedGig.urgency_flag && (
                       <Badge className="absolute right-3 top-3 bg-red-500 text-white">Urgent</Badge>
                     )}
-                                </div>
+                  </div>
 
                   {/* Gig Details */}
                   <h2 className="mb-1 text-xl font-bold text-foreground">
@@ -820,15 +816,15 @@ export default function MarketplacePage() {
                   <p className="mb-4 text-muted-foreground">{selectedGig.title}</p>
 
                   <div className="mb-6 text-3xl font-bold text-purple-600 dark:text-purple-400">
-                          {formatCurrency(selectedGig.payment_amount)}
+                    {formatCurrency(selectedGig.payment_amount)}
                     <span className="ml-2 text-sm font-normal text-muted-foreground">per gig</span>
-                        </div>
+                  </div>
 
                   <div className="mb-6 space-y-3">
                     <div className="flex items-center gap-3 text-sm">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span>{formatDate(selectedGig.date)}</span>
-                      </div>
+                    </div>
                     <div className="flex items-center gap-3 text-sm">
                       <Clock className="h-4 w-4 text-muted-foreground" />
                       <span>{formatTime(selectedGig.time)}</span>
@@ -836,7 +832,7 @@ export default function MarketplacePage() {
                     <div className="flex items-center gap-3 text-sm">
                       <Users className="h-4 w-4 text-muted-foreground" />
                       <span>{selectedGig.capacity || 100} capacity</span>
-                      </div>
+                    </div>
                     <div className="flex items-center gap-3 text-sm">
                       <MapPin className="h-4 w-4 text-muted-foreground" />
                       <span>{selectedGig.location}</span>
@@ -845,26 +841,26 @@ export default function MarketplacePage() {
 
                   {selectedGig.description && (
                     <div className="mb-6">
-                        <h3 className="mb-2 font-semibold">Description</h3>
+                      <h3 className="mb-2 font-semibold">Description</h3>
                       <p className="text-sm text-muted-foreground">{selectedGig.description}</p>
-                      </div>
+                    </div>
                   )}
 
                   {selectedGig.genre_tags && selectedGig.genre_tags.length > 0 && (
                     <div className="mb-6">
-                        <h3 className="mb-2 font-semibold">Genres</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedGig.genre_tags.map((genre) => (
+                      <h3 className="mb-2 font-semibold">Genres</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedGig.genre_tags.map((genre) => (
                           <Badge
                             key={genre}
                             variant="secondary"
                             className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
                           >
-                              {genre}
-                            </Badge>
-                          ))}
-                        </div>
+                            {genre}
+                          </Badge>
+                        ))}
                       </div>
+                    </div>
                   )}
 
                   <div className="flex gap-2">
@@ -903,14 +899,14 @@ export default function MarketplacePage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <h2 className="text-xl font-bold text-foreground">
-                        {selectedArtist.artist_name}
+                          {selectedArtist.artist_name}
                         </h2>
                         {selectedArtist.verified && (
                           <CheckCircle2 className="h-5 w-5 text-blue-500" />
                         )}
-                    </div>
+                      </div>
                       <p className="text-muted-foreground">{selectedArtist.location}</p>
-                  </div>
+                    </div>
                   </div>
 
                   {/* Stats */}
@@ -920,7 +916,7 @@ export default function MarketplacePage() {
                         {selectedArtist.rating_avg?.toFixed(1) || '5.0'}
                       </p>
                       <p className="text-xs text-muted-foreground">Rating</p>
-                      </div>
+                    </div>
                     <div>
                       <p className="text-2xl font-bold">{selectedArtist.gigs_completed || 0}</p>
                       <p className="text-xs text-muted-foreground">Gigs</p>
@@ -933,57 +929,57 @@ export default function MarketplacePage() {
 
                   {selectedArtist.bio && (
                     <div className="mb-6">
-                        <h3 className="mb-2 font-semibold">About</h3>
+                      <h3 className="mb-2 font-semibold">About</h3>
                       <p className="text-sm text-muted-foreground">{selectedArtist.bio}</p>
-                      </div>
+                    </div>
                   )}
 
                   {selectedArtist.genres && selectedArtist.genres.length > 0 && (
                     <div className="mb-6">
-                        <h3 className="mb-2 font-semibold">Genres</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedArtist.genres.map((genre) => (
+                      <h3 className="mb-2 font-semibold">Genres</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedArtist.genres.map((genre) => (
                           <Badge
                             key={genre}
                             variant="secondary"
                             className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
                           >
-                              {genre}
-                            </Badge>
-                          ))}
-                        </div>
+                            {genre}
+                          </Badge>
+                        ))}
                       </div>
+                    </div>
                   )}
 
                   {selectedArtist.price_range_min && selectedArtist.price_range_max && (
                     <div className="mb-6">
-                        <h3 className="mb-2 font-semibold">Price Range</h3>
+                      <h3 className="mb-2 font-semibold">Price Range</h3>
                       <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                          {formatCurrency(selectedArtist.price_range_min)} -{' '}
-                          {formatCurrency(selectedArtist.price_range_max)}
+                        {formatCurrency(selectedArtist.price_range_min)} -{' '}
+                        {formatCurrency(selectedArtist.price_range_max)}
                       </p>
-                        </div>
+                    </div>
                   )}
 
-                    <Button
+                  <Button
                     className="w-full bg-purple-500 hover:bg-purple-600"
-                      onClick={() => navigate(`/artist/${selectedArtist.id}`)}
-                    >
-                      View Full Profile
-                    </Button>
-                  </div>
+                    onClick={() => navigate(`/artist/${selectedArtist.id}`)}
+                  >
+                    View Full Profile
+                  </Button>
+                </div>
               ) : (
                 // Empty State
                 <div className="flex h-full flex-col items-center justify-center p-6 text-center">
                   <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
                     <Search className="h-8 w-8 text-muted-foreground" />
-                </div>
+                  </div>
                   <h3 className="mb-2 text-lg font-semibold">Select a gig</h3>
                   <p className="text-sm text-muted-foreground">
                     Click on a listing to view details and apply
                   </p>
                 </div>
-            )}
+              )}
             </ScrollArea>
           </div>
         </div>

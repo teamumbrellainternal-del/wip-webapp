@@ -79,7 +79,7 @@ export default function OnboardingStep3() {
           {/* Header */}
           <div className="mb-8 text-center">
             <h1 className="text-heading-32 text-foreground">Showcase your work</h1>
-            <p className="mt-2 text-copy-16 text-muted-foreground">
+            <p className="text-copy-16 mt-2 text-muted-foreground">
               Upload your best tracks, photos, and videos
             </p>
           </div>
@@ -92,7 +92,7 @@ export default function OnboardingStep3() {
                   <div className="flex flex-col items-center text-center">
                     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
                       <Upload className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-          </div>
+                    </div>
                     <h3 className="text-lg font-semibold text-foreground">Upload Audio Tracks</h3>
                     <p className="mb-4 text-sm text-muted-foreground">
                       MP3, WAV, or FLAC files up to 50MB each
@@ -124,20 +124,20 @@ export default function OnboardingStep3() {
                       <div className="mt-4 w-full text-left">
                         <p className="mb-2 text-xs font-medium text-muted-foreground">
                           {audioFiles.length} file(s) selected
-                </p>
+                        </p>
                         <div className="space-y-1">
                           {audioFiles.map((file, index) => (
                             <div
                               key={index}
                               className="rounded-md bg-purple-50 px-3 py-2 text-xs dark:bg-purple-900/20"
-                      >
+                            >
                               {file.name}
                             </div>
                           ))}
                         </div>
-                </div>
-                )}
-              </div>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
 
@@ -171,10 +171,10 @@ export default function OnboardingStep3() {
                           placeholder="https://music.apple.com/artist/..."
                           className="h-12 rounded-lg border-border bg-muted/50 focus:border-purple-500 focus:ring-purple-500/20"
                           {...field}
-                />
+                        />
                       </FormControl>
                     </FormItem>
-                )}
+                  )}
                 />
               </div>
 
@@ -184,7 +184,7 @@ export default function OnboardingStep3() {
                   <div className="flex flex-col items-center text-center">
                     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
                       <Upload className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                </div>
+                    </div>
                     <h3 className="text-lg font-semibold text-foreground">Photos & Videos</h3>
                     <p className="mb-4 text-sm text-muted-foreground">
                       Show your performances, studio sessions, and behind-the-scenes
@@ -216,20 +216,20 @@ export default function OnboardingStep3() {
                       <div className="mt-4 w-full text-left">
                         <p className="mb-2 text-xs font-medium text-muted-foreground">
                           {mediaFiles.length} file(s) selected
-                </p>
+                        </p>
                         <div className="space-y-1">
                           {mediaFiles.map((file, index) => (
                             <div
                               key={index}
                               className="rounded-md bg-purple-50 px-3 py-2 text-xs dark:bg-purple-900/20"
-                      >
+                            >
                               {file.name}
-                </div>
+                            </div>
                           ))}
-              </div>
-                </div>
-                )}
-              </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
 
@@ -255,8 +255,8 @@ export default function OnboardingStep3() {
               </div>
             </form>
           </Form>
-          </CardContent>
-        </Card>
+        </CardContent>
+      </Card>
     </OnboardingLayout>
   )
 }

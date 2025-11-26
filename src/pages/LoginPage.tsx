@@ -127,7 +127,7 @@ export default function LoginPage() {
             </div>
 
             {/* Title & Description */}
-            <h2 className="mb-4 text-heading-32 text-foreground">{currentContent.title}</h2>
+            <h2 className="text-heading-32 mb-4 text-foreground">{currentContent.title}</h2>
             <p className="text-copy-18 text-muted-foreground">{currentContent.description}</p>
 
             {/* Carousel Dots */}
@@ -174,20 +174,20 @@ export default function LoginPage() {
               {/* Header */}
               <div className="mb-6 text-center">
                 <h2 className="text-heading-24 text-foreground">Welcome Back</h2>
-                <p className="mt-2 text-copy-14 text-muted-foreground">
+                <p className="text-copy-14 mt-2 text-muted-foreground">
                   Sign in to continue your creative journey
                 </p>
-          </div>
+              </div>
 
-          {/* Clerk Sign In Component */}
-          <SignIn
-            appearance={{
-              elements: {
-                rootBox: 'mx-auto w-full',
+              {/* Clerk Sign In Component */}
+              <SignIn
+                appearance={{
+                  elements: {
+                    rootBox: 'mx-auto w-full',
                     card: 'shadow-none bg-transparent p-0',
                     headerTitle: 'hidden',
                     headerSubtitle: 'hidden',
-                socialButtonsBlockButton:
+                    socialButtonsBlockButton:
                       'bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 border border-border transition-all duration-200 rounded-lg h-11',
                     socialButtonsBlockButtonText: 'font-medium text-sm',
                     socialButtonsBlockButtonArrow: 'hidden',
@@ -199,7 +199,7 @@ export default function LoginPage() {
                     formFieldInput:
                       'rounded-lg border-border h-11 focus:border-purple-500 focus:ring-purple-500/20',
                     footerActionLink: 'text-purple-500 hover:text-purple-600 font-medium',
-                identityPreviewText: 'text-sm',
+                    identityPreviewText: 'text-sm',
                     identityPreviewEditButton: 'text-purple-500 hover:text-purple-600',
                     formFieldAction: 'text-purple-500 hover:text-purple-600 text-sm font-medium',
                     otpCodeFieldInput: 'border-border rounded-lg',
@@ -207,19 +207,19 @@ export default function LoginPage() {
                     footer: 'pt-4',
                     footerAction: 'text-sm',
                     footerActionText: 'text-muted-foreground',
-              },
-              layout: {
+                  },
+                  layout: {
                     socialButtonsPlacement: 'bottom',
-                socialButtonsVariant: 'blockButton',
-              },
-            }}
-            forceRedirectUrl="/auth/sso-callback"
-            routing="path"
-            path="/auth"
-          />
+                    socialButtonsVariant: 'blockButton',
+                  },
+                }}
+                forceRedirectUrl="/auth/sso-callback"
+                routing="path"
+                path="/auth"
+              />
             </div>
 
-          {/* Footer */}
+            {/* Footer */}
             <p className="mt-6 text-center text-xs text-muted-foreground">
               By signing in, you agree to our{' '}
               <a href="/terms" className="text-purple-500 hover:text-purple-600 hover:underline">
@@ -229,7 +229,7 @@ export default function LoginPage() {
               <a href="/privacy" className="text-purple-500 hover:text-purple-600 hover:underline">
                 Privacy Policy
               </a>
-          </p>
+            </p>
           </div>
         </div>
       </div>

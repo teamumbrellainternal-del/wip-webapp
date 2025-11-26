@@ -251,7 +251,7 @@ export default function ProfilePage() {
             >
               <ArrowLeft className="h-4 w-4" />
               Back to Dashboard
-          </Button>
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="secondary" size="icon" className="bg-white/90 hover:bg-white">
@@ -259,15 +259,15 @@ export default function ProfilePage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleShare}>
-                      <Share2 className="mr-2 h-4 w-4" />
-                      Share
-                    </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleShare}>
+                  <Share2 className="mr-2 h-4 w-4" />
+                  Share
+                </DropdownMenuItem>
                 {!isOwnProfile && (
-                    <DropdownMenuItem onClick={handleReport}>
-                      <Flag className="mr-2 h-4 w-4" />
-                      Report
-                    </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleReport}>
+                    <Flag className="mr-2 h-4 w-4" />
+                    Report
+                  </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
@@ -284,8 +284,8 @@ export default function ProfilePage() {
                   <AvatarImage src={artist.avatar_url} alt={artist.artist_name || 'Artist'} />
                   <AvatarFallback className="bg-purple-100 text-3xl text-purple-700">
                     {(artist.artist_name || 'A').charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+                  </AvatarFallback>
+                </Avatar>
                 {artist.verified && (
                   <div className="absolute -bottom-1 -right-1 rounded-full bg-blue-500 p-1.5">
                     <CheckCircle2 className="h-5 w-5 text-white" />
@@ -298,7 +298,9 @@ export default function ProfilePage() {
                 <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div>
                     <div className="mb-1 flex flex-wrap items-center gap-2">
-                      <h1 className="text-2xl font-bold md:text-3xl">{artist.artist_name || 'Artist'}</h1>
+                      <h1 className="text-2xl font-bold md:text-3xl">
+                        {artist.artist_name || 'Artist'}
+                      </h1>
                       {artist.verified && (
                         <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
                           Professional
@@ -317,11 +319,7 @@ export default function ProfilePage() {
                   {/* Action Buttons */}
                   {!isOwnProfile && (
                     <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        className="gap-2"
-                        onClick={handleFollowToggle}
-                      >
+                      <Button variant="outline" className="gap-2" onClick={handleFollowToggle}>
                         {isFollowing ? (
                           <>
                             <UserMinus className="h-4 w-4" />
@@ -371,46 +369,46 @@ export default function ProfilePage() {
                 {/* Social Links */}
                 <div className="flex gap-3">
                   {artist.social_links?.tiktok && (
-                        <a
+                    <a
                       href={artist.social_links.tiktok}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex h-10 w-10 items-center justify-center rounded-full bg-muted transition-colors hover:bg-muted/80"
-                        >
+                    >
                       <TikTokIcon />
-                        </a>
-                    )}
+                    </a>
+                  )}
                   {artist.social_links?.spotify && (
-                        <a
+                    <a
                       href={artist.social_links.spotify}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex h-10 w-10 items-center justify-center rounded-full bg-muted transition-colors hover:bg-muted/80"
-                        >
+                    >
                       <SpotifyIcon />
-                        </a>
-                    )}
+                    </a>
+                  )}
                   {artist.social_links?.apple_music && (
-                        <a
+                    <a
                       href={artist.social_links.apple_music}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex h-10 w-10 items-center justify-center rounded-full bg-muted transition-colors hover:bg-muted/80"
-                        >
+                    >
                       <AppleMusicIcon />
-                        </a>
-                    )}
+                    </a>
+                  )}
                   {artist.social_links?.instagram && (
-                        <a
+                    <a
                       href={artist.social_links.instagram}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex h-10 w-10 items-center justify-center rounded-full bg-muted transition-colors hover:bg-muted/80"
-                        >
+                    >
                       <InstagramIcon />
-                        </a>
-                    )}
-                  </div>
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -418,59 +416,77 @@ export default function ProfilePage() {
 
         {/* Tabs Section */}
         <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-6 w-full justify-start bg-muted/50">
-              <TabsTrigger value="overview" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+              <TabsTrigger
+                value="overview"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
                 Overview
               </TabsTrigger>
-              <TabsTrigger value="portfolio" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+              <TabsTrigger
+                value="portfolio"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
                 Portfolio
               </TabsTrigger>
-              <TabsTrigger value="explore" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+              <TabsTrigger
+                value="explore"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
                 Explore
               </TabsTrigger>
-              <TabsTrigger value="journey" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+              <TabsTrigger
+                value="journey"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
                 Journey
               </TabsTrigger>
-              <TabsTrigger value="reviews" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+              <TabsTrigger
+                value="reviews"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
                 Reviews
               </TabsTrigger>
-              <TabsTrigger value="opportunities" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">
+              <TabsTrigger
+                value="opportunities"
+                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+              >
                 Opportunities
               </TabsTrigger>
-          </TabsList>
+            </TabsList>
 
-          {/* Tab 1: Overview */}
-          <TabsContent value="overview" className="space-y-6">
+            {/* Tab 1: Overview */}
+            <TabsContent value="overview" className="space-y-6">
               <div className="grid gap-6 lg:grid-cols-3">
                 {/* Left Column - Bio & Portfolio */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="space-y-6 lg:col-span-2">
                   {/* Bio Card */}
-            {artist.bio && (
+                  {artist.bio && (
                     <Card className="border-border/50">
                       <CardContent className="p-6">
                         <h3 className="mb-4 text-lg font-semibold">About</h3>
-                  <p className="whitespace-pre-wrap text-muted-foreground">
-                    {bioExpanded ? artist.bio : truncatedBio}
-                  </p>
-                  {artist.bio.length > 200 && (
-                    <Button
-                      variant="link"
+                        <p className="whitespace-pre-wrap text-muted-foreground">
+                          {bioExpanded ? artist.bio : truncatedBio}
+                        </p>
+                        {artist.bio.length > 200 && (
+                          <Button
+                            variant="link"
                             className="mt-2 px-0 text-purple-600"
-                      onClick={() => setBioExpanded(!bioExpanded)}
-                    >
-                      {bioExpanded ? 'Show less' : 'Expand bio →'}
-                    </Button>
+                            onClick={() => setBioExpanded(!bioExpanded)}
+                          >
+                            {bioExpanded ? 'Show less' : 'Expand bio →'}
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
                   )}
-                </CardContent>
-              </Card>
-            )}
 
-            {/* Portfolio Preview */}
-            {tracks.length > 0 && (
+                  {/* Portfolio Preview */}
+                  {tracks.length > 0 && (
                     <Card className="border-border/50">
                       <CardContent className="p-6">
-                  <div className="mb-4 flex items-center justify-between">
+                        <div className="mb-4 flex items-center justify-between">
                           <h3 className="text-lg font-semibold">Portfolio</h3>
                           <Button
                             variant="link"
@@ -479,21 +495,21 @@ export default function ProfilePage() {
                           >
                             View Full Portfolio
                             <ArrowLeft className="h-4 w-4 rotate-180" />
-                    </Button>
-                  </div>
+                          </Button>
+                        </div>
                         <div className="grid gap-4 md:grid-cols-3">
-                    {tracks.slice(0, 3).map((track) => (
-                      <TrackCard
-                        key={track.id}
-                        track={track}
-                        isPlaying={playingTrackId === track.id}
-                        onPlay={() => handleTrackPlay(track.id)}
-                      />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                          {tracks.slice(0, 3).map((track) => (
+                            <TrackCard
+                              key={track.id}
+                              track={track}
+                              isPlaying={playingTrackId === track.id}
+                              onPlay={() => handleTrackPlay(track.id)}
+                            />
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
 
                 {/* Right Column - Endorsements */}
@@ -519,19 +535,19 @@ export default function ProfilePage() {
                             </Badge>
                           </div>
                         ))}
-                </div>
-              </CardContent>
-            </Card>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
-          </TabsContent>
+            </TabsContent>
 
-          {/* Tab 2: Portfolio */}
-          <TabsContent value="portfolio" className="space-y-4">
+            {/* Tab 2: Portfolio */}
+            <TabsContent value="portfolio" className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Music Portfolio</h2>
-            </div>
-            {tracks.length === 0 ? (
+              </div>
+              {tracks.length === 0 ? (
                 <Card className="border-border/50">
                   <CardContent className="py-12 text-center">
                     <Music className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
@@ -539,51 +555,51 @@ export default function ProfilePage() {
                     <p className="text-muted-foreground">
                       This artist hasn't uploaded any tracks yet.
                     </p>
-                </CardContent>
-              </Card>
-            ) : (
+                  </CardContent>
+                </Card>
+              ) : (
                 <div className="grid gap-4 md:grid-cols-3">
-                {tracks.map((track) => (
-                  <TrackCard
-                    key={track.id}
-                    track={track}
-                    isPlaying={playingTrackId === track.id}
-                    onPlay={() => handleTrackPlay(track.id)}
-                    showActions
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
+                  {tracks.map((track) => (
+                    <TrackCard
+                      key={track.id}
+                      track={track}
+                      isPlaying={playingTrackId === track.id}
+                      onPlay={() => handleTrackPlay(track.id)}
+                      showActions
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
 
-          {/* Tab 3: Explore */}
-          <TabsContent value="explore">
+            {/* Tab 3: Explore */}
+            <TabsContent value="explore">
               <Card className="border-border/50">
                 <CardContent className="py-12 text-center">
                   <Camera className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
                   <h3 className="mb-2 text-xl font-semibold">Media Gallery</h3>
                   <p className="text-muted-foreground">No media posts yet</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          {/* Tab 4: Journey */}
-          <TabsContent value="journey">
+            {/* Tab 4: Journey */}
+            <TabsContent value="journey">
               <Card className="border-border/50">
                 <CardContent className="py-12 text-center">
                   <Calendar className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
                   <h3 className="mb-2 text-xl font-semibold">Career Journey</h3>
                   <p className="text-muted-foreground">Timeline coming soon</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          {/* Tab 5: Reviews */}
-          <TabsContent value="reviews" className="space-y-4">
+            {/* Tab 5: Reviews */}
+            <TabsContent value="reviews" className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Client Reviews ({reviews.length})</h2>
-            </div>
-            {reviews.length === 0 ? (
+              </div>
+              {reviews.length === 0 ? (
                 <Card className="border-border/50">
                   <CardContent className="py-12 text-center">
                     <Star className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
@@ -591,19 +607,19 @@ export default function ProfilePage() {
                     <p className="text-muted-foreground">
                       This artist hasn't received any reviews yet.
                     </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {reviews.map((review) => (
-                  <ReviewCard key={review.id} review={review} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {reviews.map((review) => (
+                    <ReviewCard key={review.id} review={review} />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
 
-          {/* Tab 6: Opportunities */}
-          <TabsContent value="opportunities">
+            {/* Tab 6: Opportunities */}
+            <TabsContent value="opportunities">
               <Card className="border-border/50">
                 <CardContent className="py-12 text-center">
                   <ThumbsUp className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
@@ -615,10 +631,10 @@ export default function ProfilePage() {
                     <MessageCircle className="mr-2 h-4 w-4" />
                     Send Booking Inquiry
                   </Button>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
@@ -708,31 +724,27 @@ function TrackCard({ track, isPlaying, onPlay, showActions }: TrackCardProps) {
   return (
     <Card className="overflow-hidden border-border/50 transition-all hover:shadow-md">
       <div className="relative aspect-square">
-            {track.cover_art_url ? (
-              <img
-                src={track.cover_art_url}
-                alt={track.title}
-            className="h-full w-full object-cover"
-              />
-            ) : (
+        {track.cover_art_url ? (
+          <img src={track.cover_art_url} alt={track.title} className="h-full w-full object-cover" />
+        ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
             <Music className="h-12 w-12 text-white" />
-              </div>
-            )}
-            {/* Play/Pause Overlay */}
-            <button
-              onClick={onPlay}
+          </div>
+        )}
+        {/* Play/Pause Overlay */}
+        <button
+          onClick={onPlay}
           className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity hover:opacity-100"
-            >
+        >
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90">
-              {isPlaying ? (
+            {isPlaying ? (
               <Pause className="h-6 w-6 text-purple-600" />
-              ) : (
+            ) : (
               <Play className="h-6 w-6 text-purple-600" />
-              )}
+            )}
           </div>
         </button>
-                </div>
+      </div>
       <CardContent className="p-4">
         <h4 className="mb-1 truncate font-semibold">{track.title}</h4>
         <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -740,17 +752,17 @@ function TrackCard({ track, isPlaying, onPlay, showActions }: TrackCardProps) {
             {track.genre || 'Original'}
           </Badge>
           <span>{track.play_count?.toLocaleString() || 0} plays</span>
-              </div>
-              {showActions && (
+        </div>
+        {showActions && (
           <div className="mt-3 flex gap-2">
             <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Heart className="h-4 w-4" />
-                  </Button>
+              <Heart className="h-4 w-4" />
+            </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Share2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
+              <Share2 className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   )
@@ -780,8 +792,9 @@ function ReviewCard({ review }: ReviewCardProps) {
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-4 w-4 ${i < review.rating
-                        ? 'fill-amber-400 text-amber-400'
+                      className={`h-4 w-4 ${
+                        i < review.rating
+                          ? 'fill-amber-400 text-amber-400'
                           : 'text-muted-foreground'
                       }`}
                     />

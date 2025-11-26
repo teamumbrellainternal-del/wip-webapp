@@ -92,21 +92,21 @@ export default function OnboardingStep1() {
           {/* Header */}
           <div className="mb-8 text-center">
             <h1 className="text-heading-32 text-foreground">Let's create your profile</h1>
-            <p className="mt-2 text-copy-16 text-muted-foreground">
+            <p className="text-copy-16 mt-2 text-muted-foreground">
               Tell us about yourself and your music
             </p>
           </div>
 
-            {/* Error Message */}
-            {error && (
-              <Alert variant="destructive" className="mb-6">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+          {/* Error Message */}
+          {error && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Full Name & Artist Name Row */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField
@@ -156,19 +156,19 @@ export default function OnboardingStep1() {
               </div>
 
               {/* Location & Primary Genre Row */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <FormField
-                    control={form.control}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
                   name="location"
-                    rules={{
+                  rules={{
                     required: 'Location is required',
-                    }}
-                    render={({ field }) => (
-                      <FormItem>
+                  }}
+                  render={({ field }) => (
+                    <FormItem>
                       <FormLabel className="text-sm font-medium">
                         Location <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <FormControl>
+                      </FormLabel>
+                      <FormControl>
                         <div className="relative">
                           <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                           <Input
@@ -177,14 +177,14 @@ export default function OnboardingStep1() {
                             {...field}
                           />
                         </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <FormField
-                    control={form.control}
+                <FormField
+                  control={form.control}
                   name="primary_genre"
                   render={({ field }) => (
                     <FormItem>
@@ -203,11 +203,11 @@ export default function OnboardingStep1() {
               </div>
 
               {/* Bio */}
-                <FormField
-                  control={form.control}
+              <FormField
+                control={form.control}
                 name="bio"
                 render={({ field }) => (
-                    <FormItem>
+                  <FormItem>
                     <FormLabel className="text-sm font-medium">Bio</FormLabel>
                     <FormControl>
                       <Textarea
@@ -216,35 +216,35 @@ export default function OnboardingStep1() {
                         {...field}
                       />
                     </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Continue Button */}
               <div className="flex justify-end pt-4">
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
+                <Button
+                  type="submit"
+                  disabled={isLoading}
                   className="h-12 min-w-[140px] bg-purple-500 px-6 font-semibold hover:bg-purple-600"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Saving...
-                      </>
-                    ) : (
+                    </>
+                  ) : (
                     <>
                       Continue
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </OnboardingLayout>
   )
 }

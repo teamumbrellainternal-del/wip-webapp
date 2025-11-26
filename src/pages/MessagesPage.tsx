@@ -285,7 +285,7 @@ export default function MessagesPage() {
       />
 
       <div className="flex h-[calc(100vh-4rem)] flex-col">
-          {/* Header */}
+        {/* Header */}
         <div className="border-b border-border/50 bg-background px-6 py-4">
           <div className="flex items-center gap-4">
             <Button
@@ -313,30 +313,30 @@ export default function MessagesPage() {
                   <Badge className="bg-purple-500 text-white">{totalUnread} new</Badge>
                 )}
               </div>
-          </div>
+            </div>
 
-          {/* Conversation List */}
-          <ScrollArea className="flex-1">
-            {conversations.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+            {/* Conversation List */}
+            <ScrollArea className="flex-1">
+              {conversations.length === 0 ? (
+                <div className="flex h-full flex-col items-center justify-center p-8 text-center">
                   <MessageCircle className="mb-4 h-12 w-12 text-muted-foreground/50" />
                   <p className="text-sm text-muted-foreground">No messages yet</p>
-              </div>
-            ) : (
+                </div>
+              ) : (
                 <div className="p-2">
-                {conversations.map((conversation) => {
-                  const otherParticipant = getOtherParticipant(conversation)
-                  const isSelected = conversation.id === conversationId
+                  {conversations.map((conversation) => {
+                    const otherParticipant = getOtherParticipant(conversation)
+                    const isSelected = conversation.id === conversationId
 
-                  return (
+                    return (
                       <div
-                      key={conversation.id}
-                      className={cn(
+                        key={conversation.id}
+                        className={cn(
                           'mb-1 cursor-pointer rounded-lg p-3 transition-all hover:bg-muted/50',
                           isSelected && 'bg-purple-50 dark:bg-purple-900/20'
-                      )}
-                      onClick={() => handleSelectConversation(conversation)}
-                    >
+                        )}
+                        onClick={() => handleSelectConversation(conversation)}
+                      >
                         <div className="flex items-start gap-3">
                           <Avatar className="h-11 w-11">
                             {otherParticipant.avatar_url && (
@@ -370,122 +370,128 @@ export default function MessagesPage() {
 
                             <Badge
                               variant="secondary"
-                              className={cn('text-xs capitalize', getTypeBadgeStyle(conversation.context_type))}
+                              className={cn(
+                                'text-xs capitalize',
+                                getTypeBadgeStyle(conversation.context_type)
+                              )}
                             >
                               {conversation.context_type}
                             </Badge>
                           </div>
                         </div>
                       </div>
-                  )
-                })}
-              </div>
-            )}
-          </ScrollArea>
-        </div>
+                    )
+                  })}
+                </div>
+              )}
+            </ScrollArea>
+          </div>
 
           {/* Center Column - Chat View */}
-        <div className="flex flex-1 flex-col bg-background">
-          {!conversationId || !selectedConversation ? (
-            <div className="flex flex-1 items-center justify-center p-8 text-center">
-              <div>
+          <div className="flex flex-1 flex-col bg-background">
+            {!conversationId || !selectedConversation ? (
+              <div className="flex flex-1 items-center justify-center p-8 text-center">
+                <div>
                   <MessageCircle className="mx-auto mb-4 h-16 w-16 text-muted-foreground/50" />
                   <h3 className="mb-2 text-lg font-semibold">Select a conversation</h3>
                   <p className="text-sm text-muted-foreground">
                     Choose a conversation to view messages
-                </p>
+                  </p>
+                </div>
               </div>
-            </div>
-          ) : (
-            <>
+            ) : (
+              <>
                 {/* Chat Header */}
                 <div className="border-b border-border/50 bg-card/50 p-4">
-                <div className="flex items-center gap-3">
-                  {(() => {
-                    const otherParticipant = getOtherParticipant(selectedConversation)
-                    return (
-                      <>
-                        <Avatar className="h-10 w-10">
-                          {otherParticipant.avatar_url && (
-                            <AvatarImage src={otherParticipant.avatar_url} />
-                          )}
+                  <div className="flex items-center gap-3">
+                    {(() => {
+                      const otherParticipant = getOtherParticipant(selectedConversation)
+                      return (
+                        <>
+                          <Avatar className="h-10 w-10">
+                            {otherParticipant.avatar_url && (
+                              <AvatarImage src={otherParticipant.avatar_url} />
+                            )}
                             <AvatarFallback className="bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">
                               {getInitials(otherParticipant.name)}
                             </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                            <h3 className="font-semibold text-foreground">{otherParticipant.name}</h3>
+                          </Avatar>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-foreground">
+                              {otherParticipant.name}
+                            </h3>
                             <p className="text-sm capitalize text-muted-foreground">
                               {selectedConversation.context_type}
                             </p>
-                        </div>
-                      </>
-                    )
-                  })()}
+                          </div>
+                        </>
+                      )
+                    })()}
+                  </div>
                 </div>
-              </div>
 
-              {/* Messages */}
+                {/* Messages */}
                 <ScrollArea className="flex-1">
                   <div className="p-4">
-                {messages.length === 0 ? (
+                    {messages.length === 0 ? (
                       <div className="flex h-full items-center justify-center py-12">
                         <p className="text-muted-foreground">Start the conversation!</p>
-                  </div>
-                ) : (
+                      </div>
+                    ) : (
                       <div className="space-y-4">
-                    {messages.map((message) => {
-                      const isSender = message.sender_id === user.id
+                        {messages.map((message) => {
+                          const isSender = message.sender_id === user.id
 
-                      return (
-                        <div
-                          key={message.id}
-                          className={cn('flex gap-3', isSender ? 'justify-end' : 'justify-start')}
-                        >
-                          <div
-                            className={cn(
-                                  'max-w-[70%] rounded-2xl px-4 py-3',
-                                  isSender
-                                    ? 'bg-purple-500 text-white'
-                                    : 'bg-muted/70'
-                            )}
-                          >
-                                <p className="text-sm">{message.content}</p>
-                            <p
+                          return (
+                            <div
+                              key={message.id}
                               className={cn(
-                                'mt-1 text-xs',
-                                    isSender ? 'text-white/70' : 'text-muted-foreground'
+                                'flex gap-3',
+                                isSender ? 'justify-end' : 'justify-start'
                               )}
                             >
+                              <div
+                                className={cn(
+                                  'max-w-[70%] rounded-2xl px-4 py-3',
+                                  isSender ? 'bg-purple-500 text-white' : 'bg-muted/70'
+                                )}
+                              >
+                                <p className="text-sm">{message.content}</p>
+                                <p
+                                  className={cn(
+                                    'mt-1 text-xs',
+                                    isSender ? 'text-white/70' : 'text-muted-foreground'
+                                  )}
+                                >
                                   {formatMessageTime(message.timestamp)}
-                            </p>
-                          </div>
-                        </div>
-                      )
-                    })}
-                    <div ref={messagesEndRef} />
+                                </p>
+                              </div>
+                            </div>
+                          )
+                        })}
+                        <div ref={messagesEndRef} />
+                      </div>
+                    )}
                   </div>
-                )}
-                  </div>
-              </ScrollArea>
+                </ScrollArea>
 
                 {/* Quick Starters */}
                 <div className="border-t border-border/50 bg-card/30 px-4 py-3">
                   <p className="mb-2 text-xs text-muted-foreground">Quick conversation starters:</p>
-                <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {CONVERSATION_STARTERS.map((starter, index) => {
                       const Icon = starter.icon
                       return (
-                    <Button
-                      key={index}
-                      variant="outline"
-                      size="sm"
+                        <Button
+                          key={index}
+                          variant="outline"
+                          size="sm"
                           className="h-8 gap-1.5 border-border/50 text-xs hover:bg-purple-50 hover:text-purple-700 dark:hover:bg-purple-950 dark:hover:text-purple-300"
                           onClick={() => handleInsertStarter(starter.text)}
-                    >
+                        >
                           <Icon className="h-3.5 w-3.5" />
                           {starter.text}
-                    </Button>
+                        </Button>
                       )
                     })}
                   </div>
@@ -517,32 +523,32 @@ export default function MessagesPage() {
 
                   {/* Quick Share Buttons */}
                   <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="h-8 gap-1.5 border-border/50 text-xs"
-                        disabled
-                      >
+                      disabled
+                    >
                       <Music className="h-3.5 w-3.5" />
-                        Share Track
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
+                      Share Track
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="h-8 gap-1.5 border-border/50 text-xs"
-                        disabled
-                      >
+                      disabled
+                    >
                       <Briefcase className="h-3.5 w-3.5" />
-                        Share Portfolio
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
+                      Share Portfolio
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="h-8 gap-1.5 border-border/50 text-xs"
-                        disabled
-                      >
+                      disabled
+                    >
                       <FileText className="h-3.5 w-3.5" />
-                        Share Gig Flyer
+                      Share Gig Flyer
                     </Button>
                   </div>
                 </div>
@@ -565,8 +571,8 @@ export default function MessagesPage() {
                   onClick={() => setShowNotifications(false)}
                 >
                   <X className="h-4 w-4" />
-                      </Button>
-                    </div>
+                </Button>
+              </div>
 
               <ScrollArea className="flex-1">
                 <div className="space-y-3 p-4">
@@ -583,9 +589,9 @@ export default function MessagesPage() {
                               {notification.message}
                             </p>
                             {notification.action && (
-                      <Button
+                              <Button
                                 variant="link"
-                        size="sm"
+                                size="sm"
                                 className="mt-1 h-auto p-0 text-xs text-purple-600 dark:text-purple-400"
                               >
                                 {notification.action}
@@ -594,14 +600,14 @@ export default function MessagesPage() {
                           </div>
                           <Button variant="ghost" size="icon" className="h-6 w-6">
                             <X className="h-3 w-3 text-muted-foreground" />
-                      </Button>
-                    </div>
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
                 </div>
               </ScrollArea>
-              </div>
+            </div>
           )}
         </div>
       </div>

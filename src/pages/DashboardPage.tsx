@@ -144,9 +144,9 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-8 lg:flex-row">
           {/* Main Content - Left Column */}
           <div className="flex-1 space-y-6">
-        {/* Welcome Section */}
+            {/* Welcome Section */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+              <div>
                 <h1 className="text-heading-32 font-bold tracking-tight text-foreground">
                   Welcome back, {user.name?.split(' ')[0] || 'Artist'}!
                 </h1>
@@ -162,63 +162,61 @@ export default function DashboardPage() {
                 <User className="mr-2 h-4 w-4" />
                 View My Profile
               </Button>
-        </div>
+            </div>
 
-        {/* Onboarding Alert */}
-        {!user.onboarding_complete && (
-          <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950">
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="mb-1 font-semibold">Complete Your Profile</h3>
-                  <p className="mb-4 text-sm text-muted-foreground">
-                    Finish setting up your artist profile to start booking gigs
-                  </p>
+            {/* Onboarding Alert */}
+            {!user.onboarding_complete && (
+              <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950">
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="mb-1 font-semibold">Complete Your Profile</h3>
+                      <p className="mb-4 text-sm text-muted-foreground">
+                        Finish setting up your artist profile to start booking gigs
+                      </p>
                       <Button
                         className="bg-purple-500 hover:bg-purple-600"
                         onClick={() => navigate('/onboarding')}
                       >
                         Continue Onboarding
                       </Button>
-                </div>
-                <Badge variant="secondary">Setup Required</Badge>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                    </div>
+                    <Badge variant="secondary">Setup Required</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Stats Cards */}
             <div className="grid gap-4 sm:grid-cols-3">
-          {/* This Month Earnings - Purple background to match Figma */}
+              {/* This Month Earnings - Purple background to match Figma */}
               <Card className="border-purple-400 bg-purple-600 text-white dark:border-purple-700 dark:bg-purple-800">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="text-sm font-medium text-purple-100">This Month</p>
                       <p className="mt-1 text-2xl font-bold text-white">
-                {formatCurrency(data.earnings.current_month)}
+                        {formatCurrency(data.earnings.current_month)}
                       </p>
                       <p className="mt-1 text-xs text-purple-100">
-                <span
-                  className={
-                            data.earnings.percentage_change >= 0
-                              ? 'text-green-300'
-                              : 'text-red-300'
-                  }
-                >
-                  {formatPercentage(data.earnings.percentage_change)}
-                </span>{' '}
-                from last month
-              </p>
+                        <span
+                          className={
+                            data.earnings.percentage_change >= 0 ? 'text-green-300' : 'text-red-300'
+                          }
+                        >
+                          {formatPercentage(data.earnings.percentage_change)}
+                        </span>{' '}
+                        from last month
+                      </p>
                     </div>
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
                       <DollarSign className="h-5 w-5 text-white" />
                     </div>
                   </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
 
-          {/* Gigs Booked */}
+              {/* Gigs Booked */}
               <Card className="border-border/50 bg-card/80 backdrop-blur-sm">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between">
@@ -235,10 +233,10 @@ export default function DashboardPage() {
                       <Calendar className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                     </div>
                   </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
 
-          {/* Profile Views */}
+              {/* Profile Views */}
               <Card className="border-border/50 bg-card/80 backdrop-blur-sm">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between">
@@ -248,29 +246,29 @@ export default function DashboardPage() {
                         {data.profile_views.count}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                <span
-                  className={
+                        <span
+                          className={
                             data.profile_views.percentage_change >= 0
                               ? 'text-green-600 dark:text-green-400'
                               : 'text-red-600 dark:text-red-400'
-                  }
-                >
-                  {formatPercentage(data.profile_views.percentage_change)}
-                </span>{' '}
-                this week
-              </p>
+                          }
+                        >
+                          {formatPercentage(data.profile_views.percentage_change)}
+                        </span>{' '}
+                        this week
+                      </p>
                     </div>
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
                       <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     </div>
                   </div>
-            </CardContent>
-          </Card>
-        </div>
+                </CardContent>
+              </Card>
+            </div>
 
-        {/* New Opportunities Section */}
-          <div>
-            <div className="mb-4 flex items-center justify-between">
+            {/* New Opportunities Section */}
+            <div>
+              <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-foreground">New Opportunities</h2>
                 <Button
                   variant="ghost"
@@ -279,8 +277,8 @@ export default function DashboardPage() {
                   onClick={() => navigate('/marketplace/gigs')}
                 >
                   View All
-              </Button>
-            </div>
+                </Button>
+              </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {data.opportunities && data.opportunities.length > 0 ? (
                   data.opportunities.slice(0, 3).map((opportunity, index) => (
@@ -308,8 +306,8 @@ export default function DashboardPage() {
                         <div className="mt-3 flex items-center justify-between text-sm">
                           <div className="flex items-center gap-1 text-muted-foreground">
                             <Calendar className="h-3.5 w-3.5" />
-                        <span>{formatDate(opportunity.date)}</span>
-                      </div>
+                            <span>{formatDate(opportunity.date)}</span>
+                          </div>
                           <div className="flex items-center gap-1 font-semibold text-purple-600 dark:text-purple-400">
                             <DollarSign className="h-3.5 w-3.5" />
                             <span>{formatCurrency(opportunity.payment_amount).slice(1)}</span>
@@ -340,8 +338,8 @@ export default function DashboardPage() {
                       >
                         Browse all gigs
                       </Button>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
                 )}
               </div>
             </div>
@@ -375,7 +373,7 @@ export default function DashboardPage() {
 
           {/* Sidebar - Right Column */}
           <div className="w-full space-y-6 lg:w-80">
-          {/* Messages Widget */}
+            {/* Messages Widget */}
             <Card className="border-border/50">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
                 <CardTitle className="text-base font-semibold">Messages</CardTitle>
@@ -386,57 +384,57 @@ export default function DashboardPage() {
                   onClick={() => navigate('/messages')}
                 >
                   <ArrowRight className="h-4 w-4" />
-              </Button>
-            </CardHeader>
+                </Button>
+              </CardHeader>
               <CardContent className="pt-0">
-              {data.messages && data.messages.length > 0 ? (
+                {data.messages && data.messages.length > 0 ? (
                   <div className="space-y-3">
-                  {data.messages.slice(0, 3).map((message) => (
-                    <div
-                      key={message.conversation_id}
+                    {data.messages.slice(0, 3).map((message) => (
+                      <div
+                        key={message.conversation_id}
                         className="flex cursor-pointer items-start gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50"
-                      onClick={() => navigate(`/messages/${message.conversation_id}`)}
-                    >
+                        onClick={() => navigate(`/messages/${message.conversation_id}`)}
+                      >
                         <Avatar className="h-9 w-9">
                           <AvatarFallback className="bg-purple-100 text-xs text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">
                             {getInitials(message.sender_name)}
                           </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="truncate text-sm font-medium">{message.sender_name}</p>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="truncate text-sm font-medium">{message.sender_name}</p>
                             <span className="text-xs text-muted-foreground">
-                            {formatTimestamp(message.timestamp)}
-                          </span>
-                        </div>
+                              {formatTimestamp(message.timestamp)}
+                            </span>
+                          </div>
                           <p className="truncate text-xs text-muted-foreground">
-                          {message.preview_text}
-                        </p>
+                            {message.preview_text}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
+                    ))}
+                  </div>
+                ) : (
                   <div className="py-6 text-center text-muted-foreground">
                     <MessageCircle className="mx-auto mb-2 h-8 w-8 opacity-50" />
-                  <p className="text-sm">No messages yet</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    <p className="text-sm">No messages yet</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-          {/* Recent Endorsements Widget */}
+            {/* Recent Endorsements Widget */}
             <Card className="border-border/50">
               <CardHeader className="flex flex-row items-center justify-between pb-3">
                 <CardTitle className="flex items-center gap-2 text-base font-semibold">
                   Recent Endorsements
                   <Star className="h-4 w-4 text-yellow-500" />
                 </CardTitle>
-            </CardHeader>
+              </CardHeader>
               <CardContent className="pt-0">
-              {data.endorsements && data.endorsements.length > 0 ? (
+                {data.endorsements && data.endorsements.length > 0 ? (
                   <div className="space-y-3">
-                  {data.endorsements.slice(0, 3).map((endorsement) => (
+                    {data.endorsements.slice(0, 3).map((endorsement) => (
                       <div key={endorsement.id} className="flex items-start gap-3">
                         <Avatar className="h-9 w-9">
                           {endorsement.endorser_avatar_url ? (
@@ -447,57 +445,57 @@ export default function DashboardPage() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium">{endorsement.endorser_name}</p>
+                          <p className="text-sm font-medium">{endorsement.endorser_name}</p>
                           <p className="text-xs text-muted-foreground">"{endorsement.skill}"</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
+                    ))}
+                  </div>
+                ) : (
                   <div className="py-6 text-center text-muted-foreground">
                     <Star className="mx-auto mb-2 h-8 w-8 opacity-50" />
-                  <p className="text-sm">No endorsements yet</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    <p className="text-sm">No endorsements yet</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-        {/* Quick Actions Widget */}
+            {/* Quick Actions Widget */}
             <Card className="border-border/50">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-semibold">Quick Actions</CardTitle>
-          </CardHeader>
+              </CardHeader>
               <CardContent className="pt-0">
                 <div className="space-y-2">
-              <Button
-                variant="outline"
+                  <Button
+                    variant="outline"
                     className="w-full justify-start border-border/50 hover:bg-purple-50 hover:text-purple-700 dark:hover:bg-purple-950 dark:hover:text-purple-300"
-                onClick={() => navigate('/marketplace/gigs')}
-              >
+                    onClick={() => navigate('/marketplace/gigs')}
+                  >
                     <Search className="mr-3 h-4 w-4" />
                     Find Gigs
-              </Button>
-              <Button
-                variant="outline"
+                  </Button>
+                  <Button
+                    variant="outline"
                     className="w-full justify-start border-border/50 hover:bg-purple-50 hover:text-purple-700 dark:hover:bg-purple-950 dark:hover:text-purple-300"
-                onClick={() => navigate('/marketplace/artists')}
-              >
+                    onClick={() => navigate('/marketplace/artists')}
+                  >
                     <Users className="mr-3 h-4 w-4" />
                     Find Collaborators
-              </Button>
-              <Button
-                variant="outline"
+                  </Button>
+                  <Button
+                    variant="outline"
                     className="w-full justify-start border-border/50 hover:bg-purple-50 hover:text-purple-700 dark:hover:bg-purple-950 dark:hover:text-purple-300"
-                onClick={() => navigate('/growth')}
-              >
+                    onClick={() => navigate('/growth')}
+                  >
                     <BarChart3 className="mr-3 h-4 w-4" />
                     View Analytics
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-              </div>
-            </div>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </AppLayout>
   )

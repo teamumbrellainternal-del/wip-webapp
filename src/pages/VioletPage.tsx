@@ -302,36 +302,42 @@ export default function VioletPage() {
                       <Card
                         key={category.id}
                         className="cursor-pointer border-border/50 transition-all hover:border-purple-300 hover:shadow-sm dark:hover:border-purple-700"
-                        onClick={() => handleSamplePrompt(`Help me with ${category.name.toLowerCase()}`)}
+                        onClick={() =>
+                          handleSamplePrompt(`Help me with ${category.name.toLowerCase()}`)
+                        }
                       >
                         <CardContent className="flex items-center gap-3 p-4">
                           <div
-                            className={`flex h-10 w-10 items-center justify-center rounded-lg ${category.color === 'purple'
-                              ? 'bg-purple-100 dark:bg-purple-900/30'
-                              : category.color === 'amber'
-                                ? 'bg-amber-100 dark:bg-amber-900/30'
-                                : category.color === 'blue'
-                                  ? 'bg-blue-100 dark:bg-blue-900/30'
-                                  : category.color === 'green'
-                                    ? 'bg-green-100 dark:bg-green-900/30'
-                                    : 'bg-pink-100 dark:bg-pink-900/30'
-                              }`}
+                            className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                              category.color === 'purple'
+                                ? 'bg-purple-100 dark:bg-purple-900/30'
+                                : category.color === 'amber'
+                                  ? 'bg-amber-100 dark:bg-amber-900/30'
+                                  : category.color === 'blue'
+                                    ? 'bg-blue-100 dark:bg-blue-900/30'
+                                    : category.color === 'green'
+                                      ? 'bg-green-100 dark:bg-green-900/30'
+                                      : 'bg-pink-100 dark:bg-pink-900/30'
+                            }`}
                           >
                             <Icon
-                              className={`h-5 w-5 ${category.color === 'purple'
-                                ? 'text-purple-600 dark:text-purple-400'
-                                : category.color === 'amber'
-                                  ? 'text-amber-600 dark:text-amber-400'
-                                  : category.color === 'blue'
-                                    ? 'text-blue-600 dark:text-blue-400'
-                                    : category.color === 'green'
-                                      ? 'text-green-600 dark:text-green-400'
-                                      : 'text-pink-600 dark:text-pink-400'
-                                }`}
+                              className={`h-5 w-5 ${
+                                category.color === 'purple'
+                                  ? 'text-purple-600 dark:text-purple-400'
+                                  : category.color === 'amber'
+                                    ? 'text-amber-600 dark:text-amber-400'
+                                    : category.color === 'blue'
+                                      ? 'text-blue-600 dark:text-blue-400'
+                                      : category.color === 'green'
+                                        ? 'text-green-600 dark:text-green-400'
+                                        : 'text-pink-600 dark:text-pink-400'
+                              }`}
                             />
                           </div>
                           <div className="flex-1">
-                            <h3 className="text-sm font-semibold text-foreground">{category.name}</h3>
+                            <h3 className="text-sm font-semibold text-foreground">
+                              {category.name}
+                            </h3>
                             <p className="text-xs text-muted-foreground">{category.description}</p>
                           </div>
                           <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -413,24 +419,26 @@ export default function VioletPage() {
                         <Card key={feature.id} className="border-border/50">
                           <CardContent className="flex items-start gap-3 p-4">
                             <div
-                              className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${feature.color === 'purple'
-                                ? 'bg-purple-100 dark:bg-purple-900/30'
-                                : feature.color === 'pink'
-                                  ? 'bg-pink-100 dark:bg-pink-900/30'
-                                  : feature.color === 'amber'
-                                    ? 'bg-amber-100 dark:bg-amber-900/30'
-                                    : 'bg-blue-100 dark:bg-blue-900/30'
-                                }`}
+                              className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${
+                                feature.color === 'purple'
+                                  ? 'bg-purple-100 dark:bg-purple-900/30'
+                                  : feature.color === 'pink'
+                                    ? 'bg-pink-100 dark:bg-pink-900/30'
+                                    : feature.color === 'amber'
+                                      ? 'bg-amber-100 dark:bg-amber-900/30'
+                                      : 'bg-blue-100 dark:bg-blue-900/30'
+                              }`}
                             >
                               <Icon
-                                className={`h-5 w-5 ${feature.color === 'purple'
-                                  ? 'text-purple-600 dark:text-purple-400'
-                                  : feature.color === 'pink'
-                                    ? 'text-pink-600 dark:text-pink-400'
-                                    : feature.color === 'amber'
-                                      ? 'text-amber-600 dark:text-amber-400'
-                                      : 'text-blue-600 dark:text-blue-400'
-                                  }`}
+                                className={`h-5 w-5 ${
+                                  feature.color === 'purple'
+                                    ? 'text-purple-600 dark:text-purple-400'
+                                    : feature.color === 'pink'
+                                      ? 'text-pink-600 dark:text-pink-400'
+                                      : feature.color === 'amber'
+                                        ? 'text-amber-600 dark:text-amber-400'
+                                        : 'text-blue-600 dark:text-blue-400'
+                                }`}
                               />
                             </div>
                             <div>
@@ -454,7 +462,9 @@ export default function VioletPage() {
                         </div>
                         <span className="font-semibold">Violet</span>
                       </div>
-                      <p className="whitespace-pre-wrap text-foreground">{violetResponse.response}</p>
+                      <p className="whitespace-pre-wrap text-foreground">
+                        {violetResponse.response}
+                      </p>
                       {violetResponse.suggestions && violetResponse.suggestions.length > 0 && (
                         <div className="mt-4 border-t border-purple-200 pt-4 dark:border-purple-800">
                           <p className="mb-2 text-sm font-medium">Follow-up suggestions:</p>
@@ -503,12 +513,13 @@ export default function VioletPage() {
                             <div className="flex-1">
                               <Badge
                                 variant="secondary"
-                                className={`mb-2 text-xs ${convo.moodColor === 'pink'
-                                  ? 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300'
-                                  : convo.moodColor === 'blue'
-                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                                    : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
-                                  }`}
+                                className={`mb-2 text-xs ${
+                                  convo.moodColor === 'pink'
+                                    ? 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300'
+                                    : convo.moodColor === 'blue'
+                                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                                      : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
+                                }`}
                               >
                                 {convo.mood}
                               </Badge>

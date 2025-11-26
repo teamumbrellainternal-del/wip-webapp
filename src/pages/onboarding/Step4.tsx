@@ -116,7 +116,7 @@ export default function OnboardingStep4() {
       navigate('/dashboard')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to complete onboarding'
-        setError(errorMessage)
+      setError(errorMessage)
       console.error('Error completing onboarding:', err)
     } finally {
       setIsLoading(false)
@@ -130,20 +130,20 @@ export default function OnboardingStep4() {
           {/* Header */}
           <div className="mb-8 text-center">
             <h1 className="text-heading-32 text-foreground">Build your credibility</h1>
-            <p className="mt-2 text-copy-16 text-muted-foreground">
+            <p className="text-copy-16 mt-2 text-muted-foreground">
               Add endorsements and showcase your experience
             </p>
           </div>
 
-            {/* Error Message */}
-            {error && (
-              <Alert variant="destructive" className="mb-6">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+          {/* Error Message */}
+          {error && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-            <Form {...form}>
+          <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Skills & Instruments */}
               <Card className="overflow-hidden border-border/50 bg-muted/30">
@@ -213,7 +213,7 @@ export default function OnboardingStep4() {
                   <CardContent className="flex flex-col items-center p-6 text-center">
                     <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
                       <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
-                          </div>
+                    </div>
                     <h4 className="font-semibold text-foreground">Verified Artist</h4>
                     <p className="mt-1 text-xs text-muted-foreground">
                       Complete verification process
@@ -225,7 +225,7 @@ export default function OnboardingStep4() {
                   <CardContent className="flex flex-col items-center p-6 text-center">
                     <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/30">
                       <Star className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-                        </div>
+                    </div>
                     <h4 className="font-semibold text-foreground">5.0 Rating</h4>
                     <p className="mt-1 text-xs text-muted-foreground">Average venue rating</p>
                   </CardContent>
@@ -235,12 +235,12 @@ export default function OnboardingStep4() {
                   <CardContent className="flex flex-col items-center p-6 text-center">
                     <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
                       <Music2 className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                          </div>
+                    </div>
                     <h4 className="font-semibold text-foreground">0 Gigs</h4>
                     <p className="mt-1 text-xs text-muted-foreground">Completed bookings</p>
                   </CardContent>
                 </Card>
-                        </div>
+              </div>
 
               {/* Professional Details */}
               <Card className="overflow-hidden border-border/50 bg-muted/30">
@@ -250,20 +250,20 @@ export default function OnboardingStep4() {
                   </h3>
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
+                    <FormField
+                      control={form.control}
                       name="response_time"
-                  render={({ field }) => (
-                    <FormItem>
+                      render={({ field }) => (
+                        <FormItem>
                           <FormLabel className="text-sm font-medium">
                             Typical Response Time
                           </FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
+                            <FormControl>
                               <SelectTrigger className="h-12 rounded-lg border-border bg-background">
                                 <SelectValue placeholder="Select response time" />
                               </SelectTrigger>
-                      </FormControl>
+                            </FormControl>
                             <SelectContent>
                               <SelectItem value="within_1_hour">Within 1 hour</SelectItem>
                               <SelectItem value="within_4_hours">Within 4 hours</SelectItem>
@@ -271,56 +271,56 @@ export default function OnboardingStep4() {
                               <SelectItem value="within_48_hours">Within 48 hours</SelectItem>
                             </SelectContent>
                           </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <FormField
-                  control={form.control}
+                    <FormField
+                      control={form.control}
                       name="average_gig_price"
-                  render={({ field }) => (
-                    <FormItem>
+                      render={({ field }) => (
+                        <FormItem>
                           <FormLabel className="text-sm font-medium">Average Gig Price</FormLabel>
-                      <FormControl>
+                          <FormControl>
                             <Input
                               placeholder="e.g. $500-1000"
                               className="h-12 rounded-lg border-border bg-background focus:border-purple-500 focus:ring-purple-500/20"
                               {...field}
                             />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                                </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Complete Button */}
               <div className="flex justify-end pt-4">
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
+                <Button
+                  type="submit"
+                  disabled={isLoading}
                   className="h-12 min-w-[180px] bg-purple-500 px-6 font-semibold hover:bg-purple-600"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Completing...
-                      </>
-                    ) : (
+                    </>
+                  ) : (
                     <>
                       <CheckCircle className="mr-2 h-4 w-4" />
                       Complete Profile
                     </>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </OnboardingLayout>
   )
 }
