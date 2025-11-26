@@ -85,8 +85,12 @@ export default function LoginPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-amber-50/50 via-white to-white dark:from-slate-950 dark:via-slate-900 dark:to-purple-950">
         <div className="text-center">
-          <div className="mb-4 inline-flex h-16 w-16 animate-pulse items-center justify-center rounded-2xl bg-purple-500">
-            <span className="text-2xl font-bold text-white">U</span>
+          <div className="mb-4 inline-flex h-16 w-16 animate-pulse items-center justify-center rounded-2xl bg-purple-100 dark:bg-purple-900/30">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 4C9 4 4 9 4 14c0 1 0.5 2 1.5 2s1.5-1 1.5-2c0-2 1-4 3-4s3 2 3 4c0 1 0.5 2 1 2s1-1 1-2c0-2 1-4 3-4s3 2 3 4c0 1 0.5 2 1.5 2s1.5-1 1.5-2c0-5-3-10-10-10z" fill="#9370DB"/>
+              <rect x="15" y="14" width="2" height="12" rx="1" fill="#9370DB"/>
+              <path d="M17 24c0 1-1 2-2 2s-2-1-2-2h4z" fill="#9370DB"/>
+            </svg>
           </div>
         </div>
       </div>
@@ -114,7 +118,13 @@ export default function LoginPage() {
         <div className="hidden w-full max-w-xl flex-col justify-center px-12 py-12 lg:flex xl:max-w-2xl xl:px-16">
           {/* Logo & Brand */}
           <div className="mb-8 flex items-center gap-3">
-            <img src="/icon.svg" alt="Umbrella" className="h-12 w-12 rounded-2xl" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-100 dark:bg-purple-900/30">
+              <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 4C9 4 4 9 4 14c0 1 0.5 2 1.5 2s1.5-1 1.5-2c0-2 1-4 3-4s3 2 3 4c0 1 0.5 2 1 2s1-1 1-2c0-2 1-4 3-4s3 2 3 4c0 1 0.5 2 1.5 2s1.5-1 1.5-2c0-5-3-10-10-10z" fill="#9370DB"/>
+                <rect x="15" y="14" width="2" height="12" rx="1" fill="#9370DB"/>
+                <path d="M17 24c0 1-1 2-2 2s-2-1-2-2h4z" fill="#9370DB"/>
+              </svg>
+            </div>
             <div>
               <h1 className="text-xl font-bold text-foreground">Umbrella</h1>
               <p className="text-sm text-muted-foreground">Artist Platform</p>
@@ -167,7 +177,13 @@ export default function LoginPage() {
           <div className="w-full max-w-md">
             {/* Mobile Logo - Only shows on mobile */}
             <div className="mb-8 flex items-center justify-center gap-3 lg:hidden">
-              <img src="/icon.svg" alt="Umbrella" className="h-12 w-12 rounded-2xl" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-100 dark:bg-purple-900/30">
+                <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M16 4C9 4 4 9 4 14c0 1 0.5 2 1.5 2s1.5-1 1.5-2c0-2 1-4 3-4s3 2 3 4c0 1 0.5 2 1 2s1-1 1-2c0-2 1-4 3-4s3 2 3 4c0 1 0.5 2 1.5 2s1.5-1 1.5-2c0-5-3-10-10-10z" fill="#9370DB"/>
+                  <rect x="15" y="14" width="2" height="12" rx="1" fill="#9370DB"/>
+                  <path d="M17 24c0 1-1 2-2 2s-2-1-2-2h4z" fill="#9370DB"/>
+                </svg>
+              </div>
               <div>
                 <h1 className="text-xl font-bold text-foreground">Umbrella</h1>
                 <p className="text-sm text-muted-foreground">Artist Platform</p>
