@@ -2,23 +2,29 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AppLayout from '@/components/layout/AppLayout'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   TrendingUp,
   DollarSign,
-  Eye,
   Calendar,
   Target,
   Award,
-  BarChart3,
   Users,
-  Zap,
-  ArrowUpRight,
-  ArrowDownRight,
-  Lightbulb,
+  ArrowLeft,
+  Star,
+  Plus,
+  Search,
+  Sparkles,
+  CheckCircle2,
+  Trophy,
+  Mic2,
+  Heart,
+  Building2,
+  Repeat,
 } from 'lucide-react'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
@@ -26,12 +32,38 @@ import { analyticsService } from '@/services/api'
 import type { DashboardMetrics, PerformanceData, Goal, Achievement } from '@/types'
 import { MetaTags } from '@/components/MetaTags'
 
-/**
- * Growth & Analytics Page
- *
- * Comprehensive analytics dashboard for tracking artist growth,
- * performance metrics, goals, and achievements.
- */
+// Mock data for Figma design elements not in API
+const MOCK_MONTHLY_DATA = [
+  { month: 'Jan', revenue: 1800, gigs: 5, fans: 120 },
+  { month: 'Feb', revenue: 2400, gigs: 8, fans: 180 },
+  { month: 'Mar', revenue: 2100, gigs: 6, fans: 220 },
+  { month: 'Apr', revenue: 3200, gigs: 12, fans: 320 },
+  { month: 'May', revenue: 2800, gigs: 9, fans: 380 },
+  { month: 'Jun', revenue: 3600, gigs: 14, fans: 450 },
+]
+
+const MOCK_ACHIEVEMENTS = [
+  { id: '1', title: 'First Gig', description: 'Complete your first booking', icon: Mic2, unlocked: true },
+  { id: '2', title: 'Five Star Rating', description: 'Maintain 5.0 rating for 5 gigs', icon: Star, unlocked: true },
+  { id: '3', title: 'Rising Star', description: 'Get 10 venue endorsements', icon: TrendingUp, unlocked: true },
+  { id: '4', title: 'Concert Hall', description: 'Perform at a 500+ capacity venue', icon: Building2, unlocked: false },
+  { id: '5', title: 'Monthly Regular', description: 'Book 10 gigs in one month', icon: Calendar, unlocked: false },
+  { id: '6', title: 'Collaboration Master', description: 'Complete 5 artist collaborations', icon: Repeat, unlocked: false },
+]
+
+const MOCK_SPOTLIGHT = [
+  { id: '1', name: 'Maya Chen', genre: 'Jazz Fusion', rating: 4.9, gigs: 24, rank: 1, image: null },
+  { id: '2', name: 'The Velvet Sounds', genre: 'Soul/R&B', rating: 4.8, gigs: 18, rank: 2, image: null },
+  { id: '3', name: 'Alex Rivers', genre: 'Acoustic Folk', rating: 4.7, gigs: 15, rank: 3, image: null },
+]
+
+const MOCK_GOALS = [
+  { id: '1', title: 'Increase monthly revenue to $5,000', current: 3200, target: 5000, unit: '$' },
+  { id: '2', title: 'Gain 100 new fans this quarter', current: 78, target: 100, unit: '' },
+  { id: '3', title: 'Achieve 50 total gig bookings', current: 20, target: 50, unit: '' },
+  { id: '4', title: 'Get verified artist status', current: 90, target: 100, unit: '%' },
+]
+
 export default function GrowthPage() {
   const navigate = useNavigate()
 
@@ -79,18 +111,6 @@ export default function GrowthPage() {
     }).format(amount)
   }
 
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('en-US').format(num)
-  }
-
-  const formatPercentage = (percentage: number) => {
-    const sign = percentage >= 0 ? '+' : ''
-    return `${sign}${percentage}%`
-  }
-
-  const isPositiveChange = (percentage: number) => percentage >= 0
-
-  // Loading State
   if (loading) {
     return (
       <AppLayout>
@@ -99,7 +119,6 @@ export default function GrowthPage() {
     )
   }
 
-  // Error State
   if (error) {
     return (
       <AppLayout>
@@ -108,9 +127,10 @@ export default function GrowthPage() {
     )
   }
 
-  const activeGoals = goals.filter((g) => g.status === 'active')
-  const completedGoals = goals.filter((g) => g.status === 'completed')
-  const unlockedAchievements = achievements.filter((a) => a.unlocked_at)
+  // Get peak values
+  const peakRevenue = Math.max(...MOCK_MONTHLY_DATA.map((d) => d.revenue))
+  const peakGigs = Math.max(...MOCK_MONTHLY_DATA.map((d) => d.gigs))
+  const peakFans = Math.max(...MOCK_MONTHLY_DATA.map((d) => d.fans))
 
   return (
     <AppLayout>
@@ -118,379 +138,361 @@ export default function GrowthPage() {
         title="Growth & Analytics"
         description="Track your performance, goals, and achievements"
         url="/growth"
+        noIndex={true}
       />
 
-      <div className="container mx-auto max-w-7xl space-y-8 py-8">
+      <div className="flex h-[calc(100vh-4rem)] flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Growth & Analytics</h1>
-            <p className="mt-2 text-muted-foreground">
-              Track your performance and reach your goals
-            </p>
+        <div className="border-b border-border/50 bg-background px-6 py-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+              onClick={() => navigate('/dashboard')}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-2xl font-bold text-foreground">Growth & Analytics</h1>
           </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Left Column - Main Analytics */}
+          <div className="flex-1 overflow-hidden">
+            <ScrollArea className="h-full">
+              <div className="p-6">
+                {/* Stats Cards */}
+                <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+                  {/* Total Revenue */}
+                  <Card className="border-border/50">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Total Revenue</p>
+                          <p className="text-2xl font-bold text-foreground">$9,520</p>
+                          <p className="text-xs text-green-600">+22% from last quarter</p>
+                        </div>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                          <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Gigs Completed */}
+                  <Card className="border-border/50">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Gigs Completed</p>
+                          <p className="text-2xl font-bold text-foreground">31</p>
+                          <p className="text-xs text-green-600">+8 this month</p>
+                        </div>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
+                          <Calendar className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Average Rating */}
+                  <Card className="border-border/50">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Average Rating</p>
+                          <p className="text-2xl font-bold text-foreground">4.8</p>
+                          <p className="text-xs text-green-600">+0.2 this month</p>
+                        </div>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+                          <Star className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Fan Reach */}
+                  <Card className="border-border/50">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Fan Reach</p>
+                          <p className="text-2xl font-bold text-foreground">840</p>
+                          <p className="text-xs text-green-600">+156 this month</p>
+                        </div>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+                          <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Performance Analytics */}
+                <Card className="mb-6 border-border/50">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">Performance Analytics</CardTitle>
           <div className="flex gap-2">
             <Button
               variant={timePeriod === 'monthly' ? 'default' : 'outline'}
+                          size="sm"
+                          className={timePeriod === 'monthly' ? 'bg-purple-500 hover:bg-purple-600' : ''}
               onClick={() => setTimePeriod('monthly')}
             >
               Monthly
             </Button>
             <Button
               variant={timePeriod === 'yearly' ? 'default' : 'outline'}
+                          size="sm"
+                          className={timePeriod === 'yearly' ? 'bg-purple-500 hover:bg-purple-600' : ''}
               onClick={() => setTimePeriod('yearly')}
             >
               Yearly
             </Button>
           </div>
         </div>
-
-        {/* Key Metrics Cards */}
-        {metrics && (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Earnings */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Monthly Earnings</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatCurrency(metrics.earnings.current_month)}
+                    {/* Chart Grid */}
+                    <div className="mb-4 grid grid-cols-6 gap-4">
+                      {MOCK_MONTHLY_DATA.map((data) => (
+                        <div key={data.month} className="text-center">
+                          <div className="mb-2 text-sm font-medium text-foreground">{data.month}</div>
+                          <div className="mb-1 rounded-lg bg-purple-100 px-2 py-1 dark:bg-purple-900/30">
+                            <span className="text-xs text-muted-foreground">Revenue</span>
+                            <p className="text-sm font-semibold text-purple-700 dark:text-purple-300">
+                              ${data.revenue.toLocaleString()}
+                            </p>
+                          </div>
+                          <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                            <div className="flex justify-between">
+                              <span>Gigs</span>
+                              <span className="font-medium text-foreground">{data.gigs}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Fans</span>
+                              <span className="font-medium text-foreground">{data.fans}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Peak Stats */}
+                    <div className="grid grid-cols-3 gap-4 border-t pt-4">
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Peak Revenue</p>
+                        <p className="text-lg font-bold text-foreground">${peakRevenue.toLocaleString()}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Peak Gigs</p>
+                        <p className="text-lg font-bold text-foreground">{peakGigs}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Peak Fans</p>
+                        <p className="text-lg font-bold text-foreground">{peakFans}</p>
                 </div>
-                <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                  {isPositiveChange(metrics.earnings.percentage_change) ? (
-                    <ArrowUpRight className="h-3 w-3 text-green-600" />
-                  ) : (
-                    <ArrowDownRight className="h-3 w-3 text-red-600" />
-                  )}
-                  <span
-                    className={
-                      isPositiveChange(metrics.earnings.percentage_change)
-                        ? 'text-green-600'
-                        : 'text-red-600'
-                    }
-                  >
-                    {formatPercentage(metrics.earnings.percentage_change)}
-                  </span>
-                  <span>from last month</span>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Gigs Booked */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Gigs Booked</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+                {/* Goals Section */}
+                <Card className="mb-6 border-border/50">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">Your Goals</CardTitle>
+                      <Button size="sm" variant="outline" className="gap-1.5">
+                        <Plus className="h-4 w-4" />
+                        Set New Goal
+                      </Button>
+                    </div>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{metrics.gigs_booked.count}</div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {metrics.gigs_booked.timeframe}
-                </p>
+                  <CardContent className="space-y-4">
+                    {MOCK_GOALS.map((goal) => {
+                      const percentage = Math.round((goal.current / goal.target) * 100)
+                      return (
+                        <div key={goal.id} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-sm font-medium">{goal.title}</h4>
+                            <span className="text-sm text-muted-foreground">
+                              {goal.unit === '$' ? `$${goal.current.toLocaleString()}` : goal.current}
+                              {' of '}
+                              {goal.unit === '$' ? `$${goal.target.toLocaleString()}` : goal.target}
+                              {goal.unit === '%' ? '%' : ''}
+                            </span>
+                          </div>
+                          <Progress value={percentage} className="h-2" />
+                          <p className="text-xs text-muted-foreground">{percentage}% complete</p>
+                        </div>
+                      )
+                    })}
               </CardContent>
             </Card>
 
-            {/* Profile Views */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Profile Views</CardTitle>
-                <Eye className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatNumber(metrics.profile_views.count)}
+                {/* Verified Status */}
+                <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50 dark:border-purple-800 dark:from-purple-950 dark:to-pink-950">
+                  <CardContent className="flex items-center gap-4 p-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-500">
+                      <CheckCircle2 className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-foreground">Your Verified Status</h3>
+                      <p className="text-sm text-muted-foreground">You're a verified artist on Umbrella!</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                          Identity Verified
+                        </Badge>
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                          Performance History
+                        </Badge>
+                        <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                          Quality Reviews
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="flex items-center gap-1">
+                        <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                        <span className="text-2xl font-bold">4.8</span>
                 </div>
-                <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                  {isPositiveChange(metrics.profile_views.percentage_change) ? (
-                    <ArrowUpRight className="h-3 w-3 text-green-600" />
-                  ) : (
-                    <ArrowDownRight className="h-3 w-3 text-red-600" />
-                  )}
-                  <span
-                    className={
-                      isPositiveChange(metrics.profile_views.percentage_change)
-                        ? 'text-green-600'
-                        : 'text-red-600'
-                    }
-                  >
-                    {formatPercentage(metrics.profile_views.percentage_change)}
-                  </span>
-                  <span>from last month</span>
+                      <p className="text-xs text-muted-foreground">avg rating</p>
                 </div>
               </CardContent>
             </Card>
           </div>
-        )}
+            </ScrollArea>
+          </div>
 
-        {/* Performance Charts */}
-        {performance && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Performance Trends
-              </CardTitle>
-              <CardDescription>
-                Track your growth over time (
-                {timePeriod === 'monthly' ? 'Last 12 months' : 'Last 5 years'})
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-8">
-              {/* Simple chart representation - can be replaced with recharts */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium">Earnings Trend</h4>
-                <div className="flex h-40 items-end gap-2">
-                  {performance.earnings.slice(0, 12).map((point, i) => {
-                    const maxValue = Math.max(...performance.earnings.map((p) => p.value))
-                    const height = maxValue > 0 ? (point.value / maxValue) * 100 : 0
+          {/* Right Sidebar */}
+          <div className="hidden w-80 flex-shrink-0 border-l border-border/50 bg-card/30 lg:block">
+            <ScrollArea className="h-full">
+              <div className="p-6 space-y-6">
+                {/* Achievements */}
+                <div>
+                  <div className="mb-4 flex items-center gap-2">
+                    <Trophy className="h-5 w-5 text-amber-500" />
+                    <h3 className="font-semibold">Achievements</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {MOCK_ACHIEVEMENTS.map((achievement) => {
+                      const Icon = achievement.icon
                     return (
-                      <div key={i} className="flex flex-1 flex-col items-center gap-1">
                         <div
-                          className="w-full rounded-t bg-primary transition-all hover:opacity-80"
-                          style={{ height: `${height}%` }}
-                          title={`${point.date}: ${formatCurrency(point.value)}`}
-                        />
-                        <span className="origin-left rotate-45 text-xs text-muted-foreground">
-                          {new Date(point.date).toLocaleDateString('en-US', { month: 'short' })}
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium">Profile Views Trend</h4>
-                <div className="flex h-40 items-end gap-2">
-                  {performance.profile_views.slice(0, 12).map((point, i) => {
-                    const maxValue = Math.max(...performance.profile_views.map((p) => p.value))
-                    const height = maxValue > 0 ? (point.value / maxValue) * 100 : 0
-                    return (
-                      <div key={i} className="flex flex-1 flex-col items-center gap-1">
+                          key={achievement.id}
+                          className={`flex items-center gap-3 rounded-lg p-3 ${
+                            achievement.unlocked
+                              ? 'bg-amber-50 dark:bg-amber-900/20'
+                              : 'bg-muted/50 opacity-60'
+                          }`}
+                        >
                         <div
-                          className="w-full rounded-t bg-blue-500 transition-all hover:opacity-80"
-                          style={{ height: `${height}%` }}
-                          title={`${point.date}: ${formatNumber(point.value)} views`}
+                            className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                              achievement.unlocked
+                                ? 'bg-amber-100 dark:bg-amber-900/30'
+                                : 'bg-muted'
+                            }`}
+                          >
+                            <Icon
+                              className={`h-5 w-5 ${
+                                achievement.unlocked
+                                  ? 'text-amber-600 dark:text-amber-400'
+                                  : 'text-muted-foreground'
+                              }`}
                         />
-                        <span className="origin-left rotate-45 text-xs text-muted-foreground">
-                          {new Date(point.date).toLocaleDateString('en-US', { month: 'short' })}
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Goals & Achievements Tabs */}
-        <Tabs defaultValue="goals" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="goals" className="gap-2">
-              <Target className="h-4 w-4" />
-              Goals ({activeGoals.length})
-            </TabsTrigger>
-            <TabsTrigger value="achievements" className="gap-2">
-              <Award className="h-4 w-4" />
-              Achievements ({unlockedAchievements.length})
-            </TabsTrigger>
-            <TabsTrigger value="insights" className="gap-2">
-              <Lightbulb className="h-4 w-4" />
-              Insights
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Goals Tab */}
-          <TabsContent value="goals" className="space-y-4">
-            {activeGoals.length === 0 && completedGoals.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Target className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                  <p className="text-muted-foreground">No goals set yet</p>
-                  <Button className="mt-4" variant="outline">
-                    Create Your First Goal
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <>
-                {activeGoals.map((goal) => {
-                  const progressPercent = (goal.current_value / goal.target_value) * 100
-                  return (
-                    <Card key={goal.id}>
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
+                          </div>
                           <div>
-                            <CardTitle>{goal.title}</CardTitle>
-                            {goal.description && (
-                              <CardDescription className="mt-1">{goal.description}</CardDescription>
-                            )}
+                            <h4 className="text-sm font-medium">{achievement.title}</h4>
+                            <p className="text-xs text-muted-foreground">{achievement.description}</p>
                           </div>
-                          <Badge variant="default">Active</Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <div className="mb-2 flex justify-between text-sm">
-                            <span>Progress</span>
-                            <span className="font-medium">
-                              {goal.current_value} / {goal.target_value} {goal.unit}
-                            </span>
-                          </div>
-                          <Progress value={progressPercent} className="h-2" />
-                        </div>
-                        {goal.deadline && (
-                          <p className="text-sm text-muted-foreground">
-                            Deadline: {new Date(goal.deadline).toLocaleDateString()}
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )
-                })}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
 
-                {completedGoals.length > 0 && (
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-muted-foreground">Completed Goals</h3>
-                    {completedGoals.map((goal) => (
-                      <Card key={goal.id} className="opacity-75">
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-base">{goal.title}</CardTitle>
-                            <Badge variant="secondary">Completed</Badge>
+                {/* Spotlight Artists */}
+                          <div>
+                  <div className="mb-4 flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-purple-500" />
+                    <h3 className="font-semibold">Spotlight Artists</h3>
                           </div>
-                        </CardHeader>
-                      </Card>
+                  <p className="mb-3 text-xs text-muted-foreground">Top performers this week</p>
+                  <div className="space-y-3">
+                    {MOCK_SPOTLIGHT.map((artist) => (
+                      <div key={artist.id} className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={artist.image || undefined} />
+                          <AvatarFallback className="bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">
+                            {artist.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium">{artist.name}</h4>
+                          <p className="text-xs text-muted-foreground">{artist.genre}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-0.5">
+                              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                              {artist.rating}
+                            </span>
+                            <span>•</span>
+                            <span>{artist.gigs} gigs</span>
+                          </div>
+                        </div>
+                        <Badge
+                          variant="secondary"
+                          className={`h-6 w-6 rounded-full p-0 text-center ${
+                            artist.rank === 1
+                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                              : artist.rank === 2
+                                ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                                : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
+                          }`}
+                        >
+                          {artist.rank}
+                        </Badge>
+                          </div>
                     ))}
                   </div>
-                )}
-              </>
-            )}
-          </TabsContent>
-
-          {/* Achievements Tab */}
-          <TabsContent value="achievements" className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {achievements.map((achievement) => {
-                const isUnlocked = !!achievement.unlocked_at
-                const hasProgress =
-                  achievement.progress_target && achievement.progress_current !== undefined
-
-                return (
-                  <Card key={achievement.id} className={!isUnlocked ? 'opacity-50' : ''}>
-                    <CardHeader>
-                      <div className="flex items-start gap-3">
-                        <div className="rounded-lg bg-primary/10 p-2">
-                          <Award
-                            className={`h-6 w-6 ${isUnlocked ? 'text-yellow-500' : 'text-muted-foreground'}`}
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <CardTitle className="text-base">{achievement.title}</CardTitle>
-                          <CardDescription className="mt-1">
-                            {achievement.description}
-                          </CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    {hasProgress && !isUnlocked && (
-                      <CardContent>
-                        <Progress
-                          value={
-                            (achievement.progress_current! / achievement.progress_target!) * 100
-                          }
-                          className="h-2"
-                        />
-                        <p className="mt-2 text-xs text-muted-foreground">
-                          {achievement.progress_current} / {achievement.progress_target}
-                        </p>
-                      </CardContent>
-                    )}
-                    {isUnlocked && (
-                      <CardContent>
-                        <p className="text-xs text-muted-foreground">
-                          Unlocked {new Date(achievement.unlocked_at!).toLocaleDateString()}
-                        </p>
-                      </CardContent>
-                    )}
-                  </Card>
-                )
-              })}
             </div>
-          </TabsContent>
 
-          {/* Insights Tab */}
-          <TabsContent value="insights" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-yellow-500" />
-                  Growth Recommendations
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3 rounded-lg bg-muted/50 p-4">
-                    <Lightbulb className="mt-0.5 h-5 w-5 text-primary" />
+                {/* Boost Your Growth */}
                     <div>
-                      <h4 className="mb-1 font-medium">Complete Your Profile</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Artists with complete profiles get 3x more gig opportunities. Add more
-                        media, update your bio, and showcase your best work.
-                      </p>
+                  <h3 className="mb-4 font-semibold">Boost Your Growth</h3>
+                  <div className="space-y-2">
                       <Button
-                        variant="link"
-                        className="mt-2 px-0"
-                        onClick={() => navigate('/profile/edit')}
+                      variant="outline"
+                      className="w-full justify-start gap-2 border-border/50"
+                      onClick={() => navigate('/marketplace/gigs')}
                       >
-                        Update Profile →
+                      <Search className="h-4 w-4" />
+                      Find More Gigs
                       </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 rounded-lg bg-muted/50 p-4">
-                    <Users className="mt-0.5 h-5 w-5 text-primary" />
-                    <div>
-                      <h4 className="mb-1 font-medium">Engage With Your Audience</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Share updates and connect with fans through broadcast messages. Regular
-                        engagement leads to higher booking rates.
-                      </p>
                       <Button
-                        variant="link"
-                        className="mt-2 px-0"
-                        onClick={() => navigate('/tools/message-fans')}
+                      variant="outline"
+                      className="w-full justify-start gap-2 border-border/50"
+                      onClick={() => navigate('/violet')}
                       >
-                        Send Update →
+                      <Sparkles className="h-4 w-4" />
+                      Get AI Insights
                       </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 rounded-lg bg-muted/50 p-4">
-                    <TrendingUp className="mt-0.5 h-5 w-5 text-primary" />
-                    <div>
-                      <h4 className="mb-1 font-medium">Apply to More Gigs</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Active artists who apply to 5+ gigs per week are 2x more likely to land
-                        bookings. Check out the marketplace for new opportunities.
-                      </p>
                       <Button
-                        variant="link"
-                        className="mt-2 px-0"
-                        onClick={() => navigate('/marketplace/gigs')}
+                      variant="outline"
+                      className="w-full justify-start gap-2 border-border/50"
+                      onClick={() => navigate('/marketplace?tab=artists')}
                       >
-                        Browse Gigs →
+                      <Users className="h-4 w-4" />
+                      Network & Collaborate
                       </Button>
-                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              </div>
+            </ScrollArea>
+          </div>
+        </div>
       </div>
     </AppLayout>
   )
