@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { apiClient } from '@/lib/api-client'
+import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
@@ -47,6 +48,7 @@ const SKILL_OPTIONS = [
 
 export default function OnboardingStep4() {
   const navigate = useNavigate()
+  const { checkSession } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedSkills, setSelectedSkills] = useState<string[]>([])
@@ -111,6 +113,9 @@ export default function OnboardingStep4() {
         paid_fairly_performing: true,
         understands_royalties: true,
       })
+
+      // Refresh user data to update onboarding_complete status
+      await checkSession()
 
       // Navigate to dashboard on success
       navigate('/dashboard')
