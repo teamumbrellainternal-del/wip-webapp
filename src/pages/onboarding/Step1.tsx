@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -162,6 +163,13 @@ export default function OnboardingStep1() {
                   name="location"
                   rules={{
                     required: 'Location is required',
+                    validate: (value) => {
+                      const parts = value.split(',').map((p) => p.trim())
+                      if (parts.length < 2 || !parts[1]) {
+                        return 'Please enter location as "City, State" (e.g., San Francisco, CA)'
+                      }
+                      return true
+                    },
                   }}
                   render={({ field }) => (
                     <FormItem>
@@ -178,6 +186,9 @@ export default function OnboardingStep1() {
                           />
                         </div>
                       </FormControl>
+                      <FormDescription className="text-xs text-muted-foreground">
+                        Format: City, State (e.g., Los Angeles, CA)
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
