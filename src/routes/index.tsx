@@ -15,7 +15,6 @@ import OnboardingGuard from '@/components/auth/OnboardingGuard'
 import Step2 from '@/pages/onboarding/Step2'
 import Step3 from '@/pages/onboarding/Step3'
 import Step4 from '@/pages/onboarding/Step4'
-import Step5 from '@/pages/onboarding/Step5'
 import OnboardingStep1 from '@/pages/onboarding/Step1'
 import TermsPage from '@/pages/legal/TermsPage'
 import PrivacyPage from '@/pages/legal/PrivacyPage'
@@ -126,12 +125,9 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    // Step 5 removed - redirect to Step 4 for backward compatibility
     path: '/onboarding/artists/step5',
-    element: (
-      <ProtectedRoute>
-        <Step5 />
-      </ProtectedRoute>
-    ),
+    element: <Navigate to="/onboarding/artists/step4" replace />,
   },
 
   // Main Application Routes (Protected + OnboardingGuard)

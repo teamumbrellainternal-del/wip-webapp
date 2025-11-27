@@ -103,7 +103,7 @@ migrations_dir = "db/migrations"
 
 [[env.preview.kv_namespaces]]
 binding = "KV"
-id = "04fceb9a09054bbd991d5252a9a169cf"
+id = "ef9530c365f94b12adcc128acf23e821"
 
 # R2 Storage Configuration (Task 10.7 - D-028: 24-hour download links)
 # Create bucket via: wrangler r2 bucket create umbrella-dev-media
@@ -113,32 +113,7 @@ id = "04fceb9a09054bbd991d5252a9a169cf"
 # binding = "BUCKET"
 # bucket_name = "umbrella-dev-media"
 
-# Development environment (for local testing)
-[env.dev]
-name = "umbrella-api-dev"
-
-[env.dev.vars]
-USE_MOCKS = "true"
-ENVIRONMENT = "development"
-
-[[env.dev.d1_databases]]
-binding = "DB"
-database_name = "umbrella-dev-db"
-database_id = "4fbcb5f8-5fe5-4bb1-b56f-0de1e80d6e8a"
-migrations_dir = "db/migrations"
-
-[[env.dev.kv_namespaces]]
-binding = "KV"
-id = "04fceb9a09054bbd991d5252a9a169cf"
-
-# R2 Storage Configuration (Task 10.7 - D-028: 24-hour download links)
-# Create bucket via: wrangler r2 bucket create umbrella-dev-media
-# Uncomment when R2 is available (requires billing)
-[[env.dev.r2_buckets]]
-binding = "BUCKET"
-bucket_name = "umbrella-dev-media"
-
-# Staging environment (for future use)
+# Staging environment
 [env.staging]
 name = "umbrella-api-staging"
 
@@ -155,7 +130,7 @@ migrations_dir = "db/migrations"
 
 [[env.staging.kv_namespaces]]
 binding = "KV"
-id = "04fceb9a09054bbd991d5252a9a169cf"
+id = "24fee37dca904d53b87f403e6d9945da"
 
 # Production environment
 [env.production]
@@ -172,7 +147,7 @@ name = "umbrella-prod"
 #                   TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, CLAUDE_API_KEY
 USE_MOCKS = "false"  # Use real services in production (requires secrets)
 ENVIRONMENT = "production"
-AUTHORIZED_ORIGINS = "https://umbrella-prod.teamumbrellainternal.workers.dev"
+AUTHORIZED_ORIGINS = "https://app.umbrellalive.com,https://umbrella-prod.teamumbrellainternal.workers.dev"
 
 [[env.production.d1_databases]]
 binding = "DB"
@@ -183,10 +158,7 @@ migrations_dir = "db/migrations"
 # Production KV namespace binding
 [[env.production.kv_namespaces]]
 binding = "KV"
-# TODO: Replace with actual production KV namespace ID after creating via:
-# wrangler kv:namespace create KV --env production
-# Using dev KV namespace temporarily for initial deployment
-id = "04fceb9a09054bbd991d5252a9a169cf"
+id = "d712547ed2b3478997506be4f97bc12a"
 
 # Production R2 bucket binding
 # Uncomment after creating the bucket via: wrangler r2 bucket create umbrella-prod

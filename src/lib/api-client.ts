@@ -368,20 +368,6 @@ class APIClient {
     })
   }
 
-  async submitOnboardingStep5(data: {
-    currently_making_music: boolean
-    confident_online_presence: boolean
-    struggles_creative_niche: boolean
-    knows_where_find_gigs: boolean
-    paid_fairly_performing: boolean
-    understands_royalties: boolean
-  }): Promise<{ message: string; artist: any }> {
-    return this.request<{ message: string; artist: any }>('/onboarding/artists/step5', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    })
-  }
-
   // Avatar upload endpoints
   async getAvatarUploadUrl(data: {
     filename: string

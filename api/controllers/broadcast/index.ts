@@ -10,7 +10,7 @@ import { successResponse, errorResponse } from '../../utils/response'
 import { ErrorCodes } from '../../utils/error-codes'
 import { generateUUIDv4 } from '../../utils/uuid'
 import { createResendService } from '../../services/resend'
-import { createTwilioService } from '../../services/twilio'
+import { getSMSService } from '../../mocks'
 
 /**
  * List broadcasts
@@ -245,19 +245,14 @@ export const createBroadcast: RouteHandler = async (ctx) => {
       emailsSent = emailResult.successCount + emailResult.queuedCount
     }
 
-    // Send SMS via Twilio (rate limited: 10/sec)
+    // Send SMS via SMS service (falls back to mock when Twilio not configured)
     if (smsRecipients.length > 0) {
-      const twilioService = createTwilioService(
-        ctx.env.TWILIO_ACCOUNT_SID,
-        ctx.env.TWILIO_AUTH_TOKEN,
-        ctx.env.TWILIO_PHONE_NUMBER,
-        ctx.env.DB
-      )
+      const smsService = getSMSService(ctx.env)
 
       // Add opt-out instructions to SMS (required by Twilio)
       const smsMessage = `${messageBody}\n\n- ${artist.stage_name}\n\nReply STOP to unsubscribe`
 
-      const smsResult = await twilioService.sendBroadcast({
+      const smsResult = await smsService.sendBroadcast({
         recipients: smsRecipients,
         message: smsMessage,
         artistId: artist.id,
