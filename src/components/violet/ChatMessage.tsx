@@ -81,7 +81,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
         {/* Message content with markdown rendering */}
         <div className="rounded-2xl rounded-tl-md bg-muted/50 px-4 py-3">
-          <div className="prose prose-sm dark:prose-invert max-w-none text-foreground prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-ul:text-foreground prose-li:text-foreground">
+          <div className="prose prose-sm max-w-none text-foreground dark:prose-invert prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-ul:text-foreground prose-li:text-foreground">
             <ReactMarkdown>{message.content}</ReactMarkdown>
           </div>
         </div>

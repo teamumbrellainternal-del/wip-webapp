@@ -37,7 +37,9 @@ export default function VioletChatPage() {
   // Scroll to bottom when messages change
   useEffect(() => {
     if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]')
+      const scrollContainer = scrollAreaRef.current.querySelector(
+        '[data-radix-scroll-area-viewport]'
+      )
       if (scrollContainer) {
         scrollContainer.scrollTop = scrollContainer.scrollHeight
       }
@@ -163,7 +165,12 @@ export default function VioletChatPage() {
   if (loading) {
     return (
       <div className="flex h-screen flex-col bg-background">
-        <MetaTags title="Violet AI Chat" description="Chat with Violet AI" url="/violet/chat" noIndex={true} />
+        <MetaTags
+          title="Violet AI Chat"
+          description="Chat with Violet AI"
+          url="/violet/chat"
+          noIndex={true}
+        />
         <ChatHeader onBack={handleBack} />
         <div className="flex flex-1 items-center justify-center">
           <div className="flex flex-col items-center gap-4">
@@ -179,7 +186,12 @@ export default function VioletChatPage() {
   if (error) {
     return (
       <div className="flex h-screen flex-col bg-background">
-        <MetaTags title="Violet AI Chat" description="Chat with Violet AI" url="/violet/chat" noIndex={true} />
+        <MetaTags
+          title="Violet AI Chat"
+          description="Chat with Violet AI"
+          url="/violet/chat"
+          noIndex={true}
+        />
         <ChatHeader onBack={handleBack} />
         <div className="flex flex-1 items-center justify-center">
           <div className="flex flex-col items-center gap-4 text-center">
@@ -223,8 +235,8 @@ export default function VioletChatPage() {
                 Start a conversation with Violet
               </h2>
               <p className="max-w-md text-sm text-muted-foreground">
-                Ask me anything about your music career - from booking gigs to songwriting tips,
-                I'm here to help you succeed.
+                Ask me anything about your music career - from booking gigs to songwriting tips, I'm
+                here to help you succeed.
               </p>
             </div>
           ) : (
@@ -261,4 +273,3 @@ export default function VioletChatPage() {
     </div>
   )
 }
-

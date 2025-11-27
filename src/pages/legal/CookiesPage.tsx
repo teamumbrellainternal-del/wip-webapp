@@ -29,7 +29,7 @@ export default function CookiesPage() {
             <CardHeader>
               <CardTitle>What Are Cookies?</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 Cookies are small text files that are placed on your device when you visit a
                 website. They are widely used to make websites work more efficiently and provide
@@ -46,7 +46,7 @@ export default function CookiesPage() {
             <CardHeader>
               <CardTitle>Types of Cookies We Use</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <h3 className="mb-2 text-lg font-semibold">Essential Cookies</h3>
               <p>
                 These cookies are necessary for the website to function properly. They enable core
@@ -123,7 +123,7 @@ export default function CookiesPage() {
             <CardHeader>
               <CardTitle>How to Control Cookies</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>You can control and manage cookies in several ways:</p>
 
               <h3 className="mb-2 text-lg font-semibold">Browser Settings</h3>
@@ -161,7 +161,7 @@ export default function CookiesPage() {
             <CardHeader>
               <CardTitle>Third-Party Cookies</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>Some cookies are placed by third-party services that appear on our pages:</p>
               <ul>
                 <li>
@@ -206,7 +206,7 @@ export default function CookiesPage() {
             <CardHeader>
               <CardTitle>Updates to This Policy</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 We may update this Cookie Policy from time to time to reflect changes in our
                 practices or for other operational, legal, or regulatory reasons. Please check this

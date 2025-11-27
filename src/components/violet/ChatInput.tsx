@@ -69,7 +69,7 @@ export function ChatInput({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={disabled || isLoading}
-            className="min-h-[44px] max-h-[120px] resize-none pr-12 text-sm"
+            className="max-h-[120px] min-h-[44px] resize-none pr-12 text-sm"
             rows={1}
           />
         </div>
@@ -81,22 +81,15 @@ export function ChatInput({
           className="h-11 w-11 shrink-0 rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:from-purple-600 hover:to-fuchsia-600"
           aria-label="Send message"
         >
-          {isLoading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <Send className="h-5 w-5" />
-          )}
+          {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
         </Button>
       </div>
 
       {/* Footer text */}
       <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
         <span>From your next gig to your next song, I've got you covered. 💜</span>
-        {remainingPrompts !== undefined && (
-          <span>{remainingPrompts} prompts remaining today</span>
-        )}
+        {remainingPrompts !== undefined && <span>{remainingPrompts} prompts remaining today</span>}
       </div>
     </div>
   )
 }
-

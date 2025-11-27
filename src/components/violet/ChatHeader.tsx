@@ -49,4 +49,3 @@ export function ChatHeader({ onBack }: ChatHeaderProps) {
     </header>
   )
 }
-
