@@ -51,18 +51,18 @@ export function validatePriceFormat(value: string): string | true {
   if (!value || value.trim().length === 0) {
     return true // Empty is valid for optional fields
   }
-  
+
   // Remove $ symbols and whitespace for validation
   const cleaned = value.replace(/[$\s]/g, '')
-  
+
   // Check for single number or range format
   const singleNumberPattern = /^\d+$/
   const rangePattern = /^\d+-\d+$/
-  
+
   if (!singleNumberPattern.test(cleaned) && !rangePattern.test(cleaned)) {
     return 'Please enter a valid price (e.g., 500 or 500-1000)'
   }
-  
+
   return true
 }
 
@@ -73,7 +73,7 @@ export function validateUrl(value: string): string | true {
   if (!value || value.trim().length === 0) {
     return true // Empty is valid for optional fields
   }
-  
+
   try {
     new URL(value)
     return true
@@ -95,4 +95,3 @@ export const VALIDATION_LIMITS = {
   CITY: 100,
   STATE: 50,
 } as const
-

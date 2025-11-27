@@ -203,8 +203,7 @@ export default function OnboardingStep1() {
                   control={form.control}
                   name="primary_genre"
                   rules={{
-                    validate: (value) =>
-                      validateMaxLength(value, VALIDATION_LIMITS.GENRE, 'Genre'),
+                    validate: (value) => validateMaxLength(value, VALIDATION_LIMITS.GENRE, 'Genre'),
                   }}
                   render={({ field }) => (
                     <FormItem>
@@ -227,8 +226,7 @@ export default function OnboardingStep1() {
                 control={form.control}
                 name="bio"
                 rules={{
-                  validate: (value) =>
-                    validateMaxLength(value, VALIDATION_LIMITS.BIO, 'Bio'),
+                  validate: (value) => validateMaxLength(value, VALIDATION_LIMITS.BIO, 'Bio'),
                 }}
                 render={({ field }) => (
                   <FormItem>
