@@ -1,11 +1,13 @@
 /**
  * Violet Chat Message Component
  * Displays user and assistant messages with proper styling per Figma
+ * Uses react-markdown for rendering formatted AI responses
  */
 
 import { Sparkles } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import ReactMarkdown from 'react-markdown'
 import type { VioletMessage } from '@/types'
 
 interface ChatMessageProps {
@@ -58,7 +60,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
     )
   }
 
-  // Assistant (Violet) message - left-aligned with avatar
+  // Assistant (Violet) message - left-aligned with avatar and markdown rendering
   return (
     <div className="flex gap-3">
       {/* Violet Avatar */}
@@ -77,9 +79,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
           )}
         </div>
 
-        {/* Message content */}
+        {/* Message content with markdown rendering */}
         <div className="rounded-2xl rounded-tl-md bg-muted/50 px-4 py-3">
-          <p className="whitespace-pre-wrap text-sm text-foreground">{message.content}</p>
+          <div className="prose prose-sm dark:prose-invert max-w-none text-foreground prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-ul:text-foreground prose-li:text-foreground">
+            <ReactMarkdown>{message.content}</ReactMarkdown>
+          </div>
         </div>
 
         {/* Timestamp */}
@@ -88,4 +92,3 @@ export function ChatMessage({ message }: ChatMessageProps) {
     </div>
   )
 }
-

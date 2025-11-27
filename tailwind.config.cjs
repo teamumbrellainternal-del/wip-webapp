@@ -11,5 +11,5 @@ module.exports = {
     './src/**/*.{ts,tsx}',
     './index.html',
   ],
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 }
