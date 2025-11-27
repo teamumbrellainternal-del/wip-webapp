@@ -368,7 +368,6 @@ class APIClient {
     })
   }
 
-
   // Avatar upload endpoints
   async getAvatarUploadUrl(data: {
     filename: string
