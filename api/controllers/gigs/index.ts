@@ -424,7 +424,7 @@ export const applyToGig: RouteHandler = async (ctx) => {
 
   const { generateUUIDv4 } = await import('../../utils/uuid')
   const { createResendService } = await import('../../services/resend')
-  const { createTwilioService } = await import('../../services/twilio')
+  const { getSMSService } = await import('../../mocks')
 
   try {
     // 1. Fetch artist profile for the authenticated user
@@ -587,16 +587,11 @@ export const applyToGig: RouteHandler = async (ctx) => {
       .first()
 
     if (venueArtist && venueArtist.phone_number) {
-      const twilioService = createTwilioService(
-        ctx.env.TWILIO_ACCOUNT_SID,
-        ctx.env.TWILIO_AUTH_TOKEN,
-        ctx.env.TWILIO_PHONE_NUMBER,
-        ctx.env.DB
-      )
+      const smsService = getSMSService(ctx.env)
 
       const venueSmsMessage = `New gig application from ${artistName} for "${gigTitle}". Check your email for details.`
 
-      await twilioService.sendSMS({
+      await smsService.sendSMS({
         to: venueArtist.phone_number as string,
         message: venueSmsMessage,
         messageType: 'notification',
@@ -629,16 +624,11 @@ export const applyToGig: RouteHandler = async (ctx) => {
 
     // 11. Send confirmation SMS to artist (if phone available)
     if (artist.phone_number) {
-      const twilioService = createTwilioService(
-        ctx.env.TWILIO_ACCOUNT_SID,
-        ctx.env.TWILIO_AUTH_TOKEN,
-        ctx.env.TWILIO_PHONE_NUMBER,
-        ctx.env.DB
-      )
+      const smsService = getSMSService(ctx.env)
 
       const artistSmsMessage = `Application submitted for "${gigTitle}" on ${gigDate}. The venue will review and respond soon. Good luck!`
 
-      await twilioService.sendSMS({
+      await smsService.sendSMS({
         to: artist.phone_number as string,
         message: artistSmsMessage,
         messageType: 'notification',

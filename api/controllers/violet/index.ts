@@ -99,11 +99,13 @@ export const sendPrompt: RouteHandler = async (ctx) => {
       )
     }
 
-    // Create Claude API service (placeholder mode for Release 1)
+    // Create Claude API service
+    // Use real API when not in mock mode (production/staging use real API)
+    const useRealAPI = ctx.env.USE_MOCKS !== 'true' && !!ctx.env.CLAUDE_API_KEY
     const claudeService = createClaudeService(
-      ctx.env.ANTHROPIC_API_KEY || '',
+      ctx.env.CLAUDE_API_KEY || '',
       ctx.env.DB,
-      false // useRealAPI = false for Release 1
+      useRealAPI
     )
 
     // Generate AI response

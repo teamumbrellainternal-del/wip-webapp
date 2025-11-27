@@ -20,7 +20,7 @@ import {
  * Resend API configuration
  */
 const RESEND_API_URL = 'https://api.resend.com/emails'
-const DEFAULT_FROM_EMAIL = 'noreply@umbrella.app'
+const DEFAULT_FROM_EMAIL = 'noreply@notifications.umbrellalive.com'
 const BROADCAST_BATCH_SIZE = 1000 // Per Resend docs: max 1000 recipients per batch
 
 /**

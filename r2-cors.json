@@ -1,10 +1,12 @@
 [
   {
     "AllowedOrigins": [
-      "https://umbrella.app",
-      "https://www.umbrella.app",
-      "https://preview.umbrella.app",
-      "https://staging.umbrella.app",
+      "https://app.umbrellalive.com",
+      "https://umbrellalive.com",
+      "https://www.umbrellalive.com",
+      "https://umbrella-prod.teamumbrellainternal.workers.dev",
+      "https://umbrella-api-staging.teamumbrellainternal.workers.dev",
+      "https://umbrella-api-preview.teamumbrellainternal.workers.dev",
       "http://localhost:5173",
       "http://localhost:3000",
       "http://127.0.0.1:5173",
