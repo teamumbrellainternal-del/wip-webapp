@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,6 +26,7 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, AlertCircle, CheckCircle, Star, Music2, X } from 'lucide-react'
 import OnboardingLayout from '@/components/onboarding/OnboardingLayout'
+import { validatePriceFormat, VALIDATION_LIMITS } from '@/lib/validation'
 
 interface Step4FormData {
   response_time: string
@@ -61,11 +63,27 @@ export default function OnboardingStep4() {
     },
   })
 
+  const [skillError, setSkillError] = useState<string | null>(null)
+
   const addSkill = (skill: string) => {
-    if (skill && !selectedSkills.includes(skill) && selectedSkills.length < 10) {
-      setSelectedSkills([...selectedSkills, skill])
-      setSkillInput('')
+    setSkillError(null)
+    if (!skill) return
+
+    if (skill.length > VALIDATION_LIMITS.SKILL_NAME) {
+      setSkillError(`Skill must be ${VALIDATION_LIMITS.SKILL_NAME} characters or less`)
+      return
     }
+    if (selectedSkills.includes(skill)) {
+      setSkillError('This skill is already added')
+      return
+    }
+    if (selectedSkills.length >= 10) {
+      setSkillError('Maximum 10 skills allowed')
+      return
+    }
+
+    setSelectedSkills([...selectedSkills, skill])
+    setSkillInput('')
   }
 
   const removeSkill = (skill: string) => {
@@ -171,16 +189,29 @@ export default function OnboardingStep4() {
                   <Input
                     placeholder="Add a skill or instrument..."
                     value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
+                    onChange={(e) => {
+                      setSkillInput(e.target.value)
+                      setSkillError(null)
+                    }}
                     onKeyDown={handleSkillInputKeyDown}
                     className="h-12 rounded-lg border-border bg-background focus:border-purple-500 focus:ring-purple-500/20"
                     list="skill-suggestions"
+                    maxLength={VALIDATION_LIMITS.SKILL_NAME}
                   />
                   <datalist id="skill-suggestions">
                     {SKILL_OPTIONS.filter((s) => !selectedSkills.includes(s)).map((skill) => (
                       <option key={skill} value={skill} />
                     ))}
                   </datalist>
+                  <div className="mt-1 flex items-center justify-between">
+                    {skillError ? (
+                      <p className="text-xs font-medium text-destructive">{skillError}</p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        {selectedSkills.length}/10 skills added
+                      </p>
+                    )}
+                  </div>
 
                   {/* Quick Add Buttons */}
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -274,6 +305,9 @@ export default function OnboardingStep4() {
                     <FormField
                       control={form.control}
                       name="average_gig_price"
+                      rules={{
+                        validate: validatePriceFormat,
+                      }}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-sm font-medium">Average Gig Price</FormLabel>
@@ -284,6 +318,9 @@ export default function OnboardingStep4() {
                               {...field}
                             />
                           </FormControl>
+                          <FormDescription className="text-xs text-muted-foreground">
+                            Enter a price (e.g., 500) or range (e.g., 500-1000)
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}

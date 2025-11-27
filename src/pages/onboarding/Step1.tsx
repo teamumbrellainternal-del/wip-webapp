@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/form'
 import { Loader2, AlertCircle, MapPin, ArrowRight } from 'lucide-react'
 import OnboardingLayout from '@/components/onboarding/OnboardingLayout'
+import { validateMaxLength, VALIDATION_LIMITS } from '@/lib/validation'
 
 interface Step1FormData {
   full_name: string
@@ -113,6 +114,10 @@ export default function OnboardingStep1() {
                 <FormField
                   control={form.control}
                   name="full_name"
+                  rules={{
+                    validate: (value) =>
+                      validateMaxLength(value, VALIDATION_LIMITS.FULL_NAME, 'Full name'),
+                  }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium">Full Name</FormLabel>
@@ -197,6 +202,10 @@ export default function OnboardingStep1() {
                 <FormField
                   control={form.control}
                   name="primary_genre"
+                  rules={{
+                    validate: (value) =>
+                      validateMaxLength(value, VALIDATION_LIMITS.GENRE, 'Genre'),
+                  }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium">Primary Genre</FormLabel>
@@ -217,6 +226,10 @@ export default function OnboardingStep1() {
               <FormField
                 control={form.control}
                 name="bio"
+                rules={{
+                  validate: (value) =>
+                    validateMaxLength(value, VALIDATION_LIMITS.BIO, 'Bio'),
+                }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-medium">Bio</FormLabel>
@@ -227,6 +240,9 @@ export default function OnboardingStep1() {
                         {...field}
                       />
                     </FormControl>
+                    <FormDescription className="text-xs text-muted-foreground">
+                      {field.value?.length || 0}/{VALIDATION_LIMITS.BIO} characters
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

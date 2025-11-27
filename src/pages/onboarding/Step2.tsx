@@ -4,9 +4,17 @@ import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent } from '@/components/ui/card'
-import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/components/ui/form'
 import { Loader2, ArrowRight, MapPin, Users, Sparkles, Music, Mic2 } from 'lucide-react'
 import OnboardingLayout from '@/components/onboarding/OnboardingLayout'
+import { validateMaxLength, VALIDATION_LIMITS } from '@/lib/validation'
 
 interface Step2FormData {
   notable_venue: string
@@ -102,6 +110,10 @@ export default function OnboardingStep2() {
                       key={prompt.id}
                       control={form.control}
                       name={prompt.id as keyof Step2FormData}
+                      rules={{
+                        validate: (value) =>
+                          validateMaxLength(value, VALIDATION_LIMITS.PROMPT_TEXT, prompt.title),
+                      }}
                       render={({ field }) => (
                         <FormItem>
                           <Card className="overflow-hidden border-border/50 bg-muted/30 transition-all hover:border-purple-300 hover:bg-muted/50 dark:hover:border-purple-700">
@@ -121,6 +133,12 @@ export default function OnboardingStep2() {
                                   {...field}
                                 />
                               </FormControl>
+                              <div className="mt-2 flex items-center justify-between">
+                                <FormMessage className="text-xs" />
+                                <FormDescription className="text-xs text-muted-foreground">
+                                  {field.value?.length || 0}/{VALIDATION_LIMITS.PROMPT_TEXT}
+                                </FormDescription>
+                              </div>
                             </CardContent>
                           </Card>
                         </FormItem>
@@ -134,6 +152,10 @@ export default function OnboardingStep2() {
               <FormField
                 control={form.control}
                 name="favorite_instrument"
+                rules={{
+                  validate: (value) =>
+                    validateMaxLength(value, VALIDATION_LIMITS.PROMPT_TEXT, 'Favorite instrument'),
+                }}
                 render={({ field }) => {
                   const prompt = prompts[4]
                   const Icon = prompt.icon
@@ -156,6 +178,12 @@ export default function OnboardingStep2() {
                               {...field}
                             />
                           </FormControl>
+                          <div className="mt-2 flex items-center justify-between">
+                            <FormMessage className="text-xs" />
+                            <FormDescription className="text-xs text-muted-foreground">
+                              {field.value?.length || 0}/{VALIDATION_LIMITS.PROMPT_TEXT}
+                            </FormDescription>
+                          </div>
                         </CardContent>
                       </Card>
                     </FormItem>

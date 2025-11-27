@@ -4,9 +4,18 @@ import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
-import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Loader2, ArrowRight, Upload, Music2, Image } from 'lucide-react'
 import OnboardingLayout from '@/components/onboarding/OnboardingLayout'
+import { validateSpotifyUrl, validateAppleMusicUrl } from '@/lib/validation'
 
 interface Step3FormData {
   spotify_profile: string
@@ -146,6 +155,9 @@ export default function OnboardingStep3() {
                 <FormField
                   control={form.control}
                   name="spotify_profile"
+                  rules={{
+                    validate: validateSpotifyUrl,
+                  }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium">Spotify Profile</FormLabel>
@@ -156,6 +168,10 @@ export default function OnboardingStep3() {
                           {...field}
                         />
                       </FormControl>
+                      <FormDescription className="text-xs text-muted-foreground">
+                        Your Spotify artist profile URL
+                      </FormDescription>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -163,6 +179,9 @@ export default function OnboardingStep3() {
                 <FormField
                   control={form.control}
                   name="apple_music"
+                  rules={{
+                    validate: validateAppleMusicUrl,
+                  }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium">Apple Music</FormLabel>
@@ -173,6 +192,10 @@ export default function OnboardingStep3() {
                           {...field}
                         />
                       </FormControl>
+                      <FormDescription className="text-xs text-muted-foreground">
+                        Your Apple Music artist profile URL
+                      </FormDescription>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
