@@ -94,8 +94,7 @@ export default function OnboardingStep4() {
         })
       )
 
-      // Call API to mark onboarding as complete
-      // Using existing step4 and step5 endpoints
+      // Call API to complete onboarding (Step 4 is now the final step)
       await apiClient.submitOnboardingStep4({
         largest_show_capacity: 100, // Default values
         base_rate_flat: parseInt(data.average_gig_price) || 500,
@@ -103,15 +102,6 @@ export default function OnboardingStep4() {
         time_split_creative: 60,
         time_split_logistics: 40,
         available_dates: [],
-      })
-
-      await apiClient.submitOnboardingStep5({
-        currently_making_music: true,
-        confident_online_presence: true,
-        struggles_creative_niche: false,
-        knows_where_find_gigs: true,
-        paid_fairly_performing: true,
-        understands_royalties: true,
       })
 
       // Refresh user data to update onboarding_complete status

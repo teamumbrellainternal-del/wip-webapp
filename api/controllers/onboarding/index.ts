@@ -906,109 +906,7 @@ export const submitArtistStep4: RouteHandler = async (ctx) => {
       )
       .run()
 
-    // Fetch updated artist profile
-    const artist = await ctx.env.DB.prepare(
-      'SELECT * FROM artists WHERE user_id = ?'
-    )
-      .bind(ctx.userId)
-      .first()
-
-    return successResponse(
-      {
-        message: 'Step 4 completed successfully',
-        artist,
-      },
-      200,
-      ctx.requestId
-    )
-  } catch (error) {
-    console.error('Error submitting artist step 4:', error)
-    return errorResponse(
-      ErrorCodes.DATABASE_ERROR,
-      'Failed to submit step 4',
-      500,
-      undefined,
-      ctx.requestId
-    )
-  }
-}
-
-/**
- * Submit step 5 for artists: Quick Questions
- * POST /v1/onboarding/artists/step5
- * This is the final step - updates the artist profile in D1 and marks onboarding as complete
- */
-export const submitArtistStep5: RouteHandler = async (ctx) => {
-  if (!ctx.userId) {
-    return errorResponse(
-      ErrorCodes.AUTHENTICATION_FAILED,
-      'Authentication required',
-      401,
-      undefined,
-      ctx.requestId
-    )
-  }
-
-  try {
-    const body = await ctx.request.json()
-
-    // Validate step 5 data
-    const validation = validateStep5(body)
-    if (!validation.valid) {
-      return errorResponse(
-        ErrorCodes.VALIDATION_ERROR,
-        JSON.stringify(validation.errors),
-        400,
-        undefined,
-        ctx.requestId
-      )
-    }
-
-    const now = new Date().toISOString()
-
-    // Check if artist record exists for this user
-    const existingArtist = await ctx.env.DB.prepare(
-      'SELECT id FROM artists WHERE user_id = ?'
-    )
-      .bind(ctx.userId)
-      .first<{ id: string }>()
-
-    if (!existingArtist) {
-      return errorResponse(
-        ErrorCodes.VALIDATION_ERROR,
-        'Step 4 must be completed first',
-        400,
-        undefined,
-        ctx.requestId
-      )
-    }
-
-    // Update existing artist record with step 5 data
-    await ctx.env.DB.prepare(
-      `UPDATE artists SET
-        currently_making_music = ?,
-        confident_online_presence = ?,
-        struggles_creative_niche = ?,
-        knows_where_find_gigs = ?,
-        paid_fairly_performing = ?,
-        understands_royalties = ?,
-        step_5_complete = 1,
-        updated_at = ?
-      WHERE user_id = ?`
-    )
-      .bind(
-        body.currently_making_music ? 1 : 0,
-        body.confident_online_presence ? 1 : 0,
-        body.struggles_creative_niche ? 1 : 0,
-        body.knows_where_find_gigs ? 1 : 0,
-        body.paid_fairly_performing ? 1 : 0,
-        body.understands_royalties ? 1 : 0,
-        now,
-        ctx.userId
-      )
-      .run()
-
-    // Update user's onboarding_complete flag
+    // Mark onboarding as complete (Step 4 is now the final step)
     await ctx.env.DB.prepare('UPDATE users SET onboarding_complete = 1, updated_at = ? WHERE id = ?')
       .bind(now, ctx.userId)
       .run()
@@ -1038,7 +936,7 @@ export const submitArtistStep5: RouteHandler = async (ctx) => {
     return successResponse(
       {
         message: 'Onboarding completed successfully',
-        step_completed: 5,
+        step_completed: 4,
         complete: true,
         artistId: existingArtist.id,
         artist,
@@ -1047,10 +945,80 @@ export const submitArtistStep5: RouteHandler = async (ctx) => {
       ctx.requestId
     )
   } catch (error) {
-    console.error('Error submitting artist step 5:', error)
+    console.error('Error submitting artist step 4:', error)
     return errorResponse(
       ErrorCodes.DATABASE_ERROR,
-      'Failed to submit step 5',
+      'Failed to submit step 4',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
+ * Submit step 5 for artists: Quick Questions
+ * POST /v1/onboarding/artists/step5
+ * 
+ * DEPRECATED: Step 5 has been removed. Onboarding now completes at Step 4.
+ * This endpoint is kept for backward compatibility and returns success if
+ * the user has already completed onboarding via Step 4.
+ */
+export const submitArtistStep5: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    // Check if user has already completed onboarding (via Step 4)
+    const user = await ctx.env.DB.prepare(
+      'SELECT onboarding_complete FROM users WHERE id = ?'
+    )
+      .bind(ctx.userId)
+      .first<{ onboarding_complete: number }>()
+
+    if (user?.onboarding_complete) {
+      // Already completed - return success for backward compatibility
+      const artist = await ctx.env.DB.prepare(
+        'SELECT * FROM artists WHERE user_id = ?'
+      )
+        .bind(ctx.userId)
+        .first()
+
+      return successResponse(
+        {
+          message: 'Onboarding already completed',
+          step_completed: 5,
+          complete: true,
+          artistId: artist?.id,
+          artist,
+          deprecated: true,
+          deprecation_notice: 'Step 5 has been removed. Onboarding now completes at Step 4.',
+        },
+        200,
+        ctx.requestId
+      )
+    }
+
+    // Not completed - tell them to use Step 4
+    return errorResponse(
+      ErrorCodes.VALIDATION_ERROR,
+      'Step 5 has been removed. Please complete onboarding via Step 4.',
+      400,
+      undefined,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error in deprecated step 5:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to process request',
       500,
       undefined,
       ctx.requestId
