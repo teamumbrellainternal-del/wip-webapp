@@ -1,6 +1,7 @@
 /**
  * Violet AI Chat Page
  * Full chat interface for conversations with Violet AI per Figma design
+ * Supports multi-turn conversations with 30 message context window
  */
 
 import { useState, useEffect, useRef } from 'react'
