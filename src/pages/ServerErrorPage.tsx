@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { AlertCircle } from 'lucide-react'
+import UmbrellaIcon from '@brand/assets/logos/umbrella-icon.svg'
 
 interface ServerErrorPageProps {
   error?: Error
@@ -21,9 +22,7 @@ export default function ServerErrorPage({ error, showDetails = false }: ServerEr
       <div className="w-full max-w-2xl space-y-8 text-center">
         {/* Logo */}
         <div className="flex justify-center">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-purple-600">
-            <span className="text-2xl font-bold text-white">U</span>
-          </div>
+          <img src={UmbrellaIcon} alt="Umbrella" className="h-16 w-16 rounded-lg" />
         </div>
 
         {/* Error Icon */}

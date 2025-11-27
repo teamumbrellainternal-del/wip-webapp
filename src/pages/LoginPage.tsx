@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { SignIn, useAuth } from '@clerk/clerk-react'
 import { MetaTags } from '../components/MetaTags'
 import { Check } from 'lucide-react'
-import UmbrellaLogo from '../../brand/assets/logos/umbrella-logo-light.svg'
+import UmbrellaIcon from '@brand/assets/logos/umbrella-icon.svg'
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
@@ -69,9 +69,7 @@ export default function LoginPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 to-slate-50 p-4 dark:from-slate-950 dark:to-purple-950">
         <div className="w-full max-w-md space-y-6 text-center">
-          <div className="mb-2 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-500">
-            <span className="text-2xl font-bold text-white">U</span>
-          </div>
+          <img src={UmbrellaIcon} alt="Umbrella" className="mx-auto mb-2 h-16 w-16 rounded-2xl" />
           <h1 className="text-3xl font-bold tracking-tight">Demo Mode</h1>
           <p className="text-muted-foreground">
             You are already logged in as the demo user. Redirecting you to the dashboard...
@@ -87,7 +85,7 @@ export default function LoginPage() {
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-amber-50/50 via-white to-white dark:from-slate-950 dark:via-slate-900 dark:to-purple-950">
         <div className="text-center">
           <div className="mb-4 animate-pulse">
-            <img src={UmbrellaLogo} alt="Umbrella" className="h-12" />
+            <img src={UmbrellaIcon} alt="Umbrella" className="h-12 rounded-lg" />
           </div>
         </div>
       </div>
@@ -115,7 +113,7 @@ export default function LoginPage() {
         <div className="hidden w-full max-w-xl flex-col justify-center px-12 py-12 lg:flex xl:max-w-2xl xl:px-16">
           {/* Logo & Brand */}
           <div className="mb-8">
-            <img src={UmbrellaLogo} alt="Umbrella" className="h-12" />
+            <img src={UmbrellaIcon} alt="Umbrella" className="h-12 rounded-lg" />
             <p className="mt-1 text-sm text-muted-foreground">Artist Platform</p>
           </div>
 
@@ -165,7 +163,7 @@ export default function LoginPage() {
           <div className="w-full max-w-md">
             {/* Mobile Logo - Only shows on mobile */}
             <div className="mb-8 flex flex-col items-center justify-center lg:hidden">
-              <img src={UmbrellaLogo} alt="Umbrella" className="h-10" />
+              <img src={UmbrellaIcon} alt="Umbrella" className="h-10 rounded-lg" />
               <p className="mt-1 text-sm text-muted-foreground">Artist Platform</p>
             </div>
 

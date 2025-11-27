@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import UmbrellaIcon from '@brand/assets/logos/umbrella-icon.svg'
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
@@ -9,9 +10,7 @@ export function Footer() {
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           {/* Left side: Brand */}
           <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary">
-              <span className="text-sm">☂</span>
-            </div>
+            <img src={UmbrellaIcon} alt="Umbrella" className="h-6 w-6 rounded-lg" />
             <span className="text-sm text-muted-foreground">
               © {currentYear} Umbrella. All rights reserved.
             </span>

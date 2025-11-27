@@ -11,6 +11,7 @@
 
 import { Link, useLocation } from 'react-router-dom'
 import { Search, Bell } from 'lucide-react'
+import UmbrellaIcon from '@brand/assets/logos/umbrella-icon.svg'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ProfileDropdown } from './ProfileDropdown'
@@ -54,9 +55,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             <div className="flex items-center gap-8">
               {/* Logo */}
               <Link to="/dashboard" className="flex flex-shrink-0 items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
-                  <span className="text-lg">☂</span>
-                </div>
+                <img src={UmbrellaIcon} alt="Umbrella" className="h-8 w-8 rounded-lg" />
                 <span className="hidden text-lg font-bold sm:inline">Umbrella</span>
               </Link>
 
