@@ -147,6 +147,20 @@ export interface ClaudeParams {
 }
 
 /**
+ * Claude API request parameters with conversation context
+ */
+export interface ClaudeParamsWithContext extends ClaudeParams {
+  previousMessages: Array<{ role: string; content: string }>
+}
+
+/**
+ * Claude API response with mood for chat interface
+ */
+export interface ClaudeResultWithMood extends ClaudeResult {
+  mood?: string // 'professional', 'caring', 'playful'
+}
+
+/**
  * Claude API response (placeholder for Release 1)
  */
 export interface ClaudeResult {

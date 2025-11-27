@@ -9,6 +9,7 @@ import MarketplacePage from '@/pages/MarketplacePage'
 import TestAuthPage from '@/pages/TestAuthPage'
 import MessagesPage from '@/pages/MessagesPage'
 import VioletPage from '@/pages/VioletPage'
+import VioletChatPage from '@/pages/VioletChatPage'
 import NotFoundPage from '@/pages/NotFoundPage'
 import ProtectedRoute from '@/components/auth/ProtectedRoute'
 import OnboardingGuard from '@/components/auth/OnboardingGuard'
@@ -241,6 +242,28 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <OnboardingGuard>
           <VioletPage />
+        </OnboardingGuard>
+      </ProtectedRoute>
+    ),
+  },
+
+  // Violet AI Chat Interface
+  {
+    path: '/violet/chat',
+    element: (
+      <ProtectedRoute>
+        <OnboardingGuard>
+          <VioletChatPage />
+        </OnboardingGuard>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/violet/chat/:conversationId',
+    element: (
+      <ProtectedRoute>
+        <OnboardingGuard>
+          <VioletChatPage />
         </OnboardingGuard>
       </ProtectedRoute>
     ),
