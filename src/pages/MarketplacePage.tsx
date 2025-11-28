@@ -114,9 +114,6 @@ export default function MarketplacePage() {
   // Favorites state (in-memory for MVP)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
-  // Apply to gig loading state
-  const [applyingGigId, setApplyingGigId] = useState<string | null>(null)
-
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -248,17 +245,11 @@ export default function MarketplacePage() {
     setSelectedGig(null)
   }
 
-  // Handle gig application
-  const handleApplyToGig = async (gigId: string) => {
-    try {
-      setApplyingGigId(gigId)
-      await gigsService.apply(gigId)
-      toast.success('Application submitted successfully!')
-    } catch {
-      toast.error('Failed to apply to gig')
-    } finally {
-      setApplyingGigId(null)
-    }
+  // Handle gig application - coming soon for MVP
+  const handleApplyToGig = async (_gigId: string) => {
+    toast.info('Gig applications coming soon!', {
+      description: 'Browse gigs to see what opportunities are available.',
+    })
   }
 
   // Handle favorite toggle
@@ -866,13 +857,9 @@ export default function MarketplacePage() {
                   <div className="flex gap-2">
                     <Button
                       className="flex-1 bg-purple-500 hover:bg-purple-600"
-                      disabled={applyingGigId === selectedGig.id}
                       onClick={() => handleApplyToGig(selectedGig.id)}
                     >
-                      {applyingGigId === selectedGig.id && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      )}
-                      {applyingGigId === selectedGig.id ? 'Applying...' : 'Apply Now'}
+                      Apply Now
                     </Button>
                     <Button
                       variant="outline"

@@ -24,10 +24,12 @@ import { analyticsService } from '@/services/api'
 import { apiClient } from '@/lib/api-client'
 import type { DashboardMetrics } from '@/types'
 import { MetaTags } from '@/components/MetaTags'
+import { useToast } from '@/hooks/use-toast'
 
 export default function DashboardPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { toast } = useToast()
   const [data, setData] = useState<DashboardMetrics | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
@@ -334,7 +336,10 @@ export default function DashboardPage() {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation()
-                            navigate(`/marketplace/gigs/${opportunity.id}`)
+                            toast({
+                              title: 'Gig applications coming soon!',
+                              description: 'Browse gigs to see what opportunities are available.',
+                            })
                           }}
                         >
                           Apply
