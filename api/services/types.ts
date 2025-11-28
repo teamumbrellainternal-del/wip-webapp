@@ -40,6 +40,7 @@ export const DEFAULT_RETRY_CONFIG: RetryConfig = {
  */
 export type EmailTemplate =
   | 'welcome'
+  | 'signup_welcome'
   | 'booking_confirmation'
   | 'message_notification'
   | 'review_invitation'

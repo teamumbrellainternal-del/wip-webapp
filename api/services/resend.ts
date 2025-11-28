@@ -417,6 +417,106 @@ export class ResendEmailService {
           text: `Welcome to Umbrella, ${data.artistName}! We're excited to have you join our community. Get started by completing your profile: ${data.profileUrl}`,
         }
 
+      case 'signup_welcome':
+        return {
+          subject: 'Welcome to Umbrella — You\'re In!',
+          html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Welcome to Umbrella — You're In!</title>
+  <div style="display: none; max-height: 0px; overflow: hidden;">
+    You've officially stepped under the Umbrella — let's make some noise together! 🎤
+  </div>
+</head>
+<body style="margin: 0; padding: 0; font-family: Inter, Arial, sans-serif; background-color: #f5f5f5;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f5f5f5;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; max-width: 600px;">
+          <!-- Purple Header Bar -->
+          <tr>
+            <td style="background-color: #9370DB; height: 60px; text-align: center; padding: 20px;">
+              <h1 style="margin: 0; color: #ffffff; font-family: Inter, Arial, sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">Umbrella</h1>
+            </td>
+          </tr>
+          <!-- Email Body -->
+          <tr>
+            <td style="padding: 40px 32px;">
+              <h2 style="margin: 0 0 24px 0; font-family: Inter, Arial, sans-serif; font-size: 24px; font-weight: 700; color: #0a0a0a; letter-spacing: -0.5px;">
+                Hey ${data.artistName},
+              </h2>
+              <p style="margin: 0 0 16px 0; font-family: Inter, Arial, sans-serif; font-size: 16px; line-height: 24px; color: #0a0a0a;">
+                You've officially stepped under the Umbrella — and we couldn't be more excited to have you here.
+              </p>
+              <p style="margin: 0 0 16px 0; font-family: Inter, Arial, sans-serif; font-size: 16px; line-height: 24px; color: #0a0a0a;">
+                Umbrella was built for creators like you — the ones who see art not as a hobby, but as a heartbeat. Inside, you'll discover tools to:
+              </p>
+              <p style="margin: 0 0 8px 0; font-family: Inter, Arial, sans-serif; font-size: 16px; line-height: 24px; color: #0a0a0a;">
+                🎤 Connect directly with venues and other artists
+              </p>
+              <p style="margin: 0 0 8px 0; font-family: Inter, Arial, sans-serif; font-size: 16px; line-height: 24px; color: #0a0a0a;">
+                🎨 Collaborate and get discovered
+              </p>
+              <p style="margin: 0 0 24px 0; font-family: Inter, Arial, sans-serif; font-size: 16px; line-height: 24px; color: #0a0a0a;">
+                💡 Turn your creativity into opportunity
+              </p>
+              <p style="margin: 0 0 16px 0; font-family: Inter, Arial, sans-serif; font-size: 16px; line-height: 24px; color: #0a0a0a;">
+                We're opening early access this week — make sure your profile is complete so we can match you with upcoming opportunities first.
+              </p>
+              <p style="margin: 0 0 32px 0; font-family: Inter, Arial, sans-serif; font-size: 16px; line-height: 24px; color: #0a0a0a;">
+                <strong style="font-weight: 600;">Let's make some noise together.</strong>
+              </p>
+              <!-- CTA Button -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 0 32px 0;">
+                <tr>
+                  <td style="text-align: center;">
+                    <a href="${data.profileUrl}" style="display: inline-block; background-color: #ffffff; border: 2px solid #9370DB; color: #000000; padding: 12px 32px; border-radius: 8px; font-family: Inter, Arial, sans-serif; font-size: 16px; font-weight: 600; text-decoration: none; text-align: center;">→ Complete your profile</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #fafafa; padding: 32px; text-align: center; border-top: 1px solid #e5e5e5;">
+              <p style="margin: 0 0 16px 0; font-family: Inter, Arial, sans-serif; font-size: 14px; line-height: 20px; color: #737373;">
+                ☂️ Umbrella — Create. Connect. Perform.
+              </p>
+              <p style="margin: 0; font-family: Inter, Arial, sans-serif; font-size: 12px; line-height: 18px; color: #a3a3a3;">
+                <a href="${data.unsubscribeUrl || '#'}" style="color: #a3a3a3; text-decoration: underline;">Unsubscribe</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+          `,
+          text: `Hey ${data.artistName},
+
+You've officially stepped under the Umbrella — and we couldn't be more excited to have you here.
+
+Umbrella was built for creators like you — the ones who see art not as a hobby, but as a heartbeat. Inside, you'll discover tools to:
+
+🎤 Connect directly with venues and other artists
+🎨 Collaborate and get discovered
+💡 Turn your creativity into opportunity
+
+We're opening early access this week — make sure your profile is complete so we can match you with upcoming opportunities first.
+
+Let's make some noise together.
+
+→ Complete your profile: ${data.profileUrl}
+
+☂️ Umbrella — Create. Connect. Perform.`,
+        }
+
       case 'booking_confirmation':
         return {
           subject: `Booking Confirmed: ${data.gigTitle}`,
