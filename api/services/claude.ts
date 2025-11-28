@@ -7,7 +7,9 @@
 import { generateUUIDv4 } from '../utils/uuid'
 import {
   ClaudeParams,
+  ClaudeParamsWithContext,
   ClaudeResult,
+  ClaudeResultWithMood,
   ClaudePromptType,
   ServiceResult,
   VIOLET_DAILY_LIMIT,
@@ -18,7 +20,7 @@ import {
  * NOTE: API key is stored but not used in Release 1
  */
 const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages'
-const CLAUDE_MODEL = 'claude-sonnet-4-5-20250929'
+const CLAUDE_MODEL = 'claude-haiku-4-5'
 const DEFAULT_MAX_TOKENS = 1024
 const DEFAULT_TEMPERATURE = 0.7
 
@@ -119,7 +121,9 @@ Guidelines:
 - Keep it concise (3-4 sentences)
 - Professional but engaging tone`,
 
-  general: `You are Violet, an AI assistant helping musicians with their careers.
+  general: `You are Violet, Umbrella's AI creative copilot for artists.
+You help artists with their music careers - from booking gigs to songwriting advice.
+
 Provide helpful advice for this question:
 
 {prompt}
@@ -128,7 +132,9 @@ Guidelines:
 - Be supportive and constructive
 - Provide actionable advice
 - Keep it concise
-- Stay on topic`,
+- Stay on topic
+- Never discuss your underlying AI model or technical specifications
+- You are Violet, not Claude - stay in character`,
 }
 
 /**
@@ -182,6 +188,145 @@ export class ClaudeAPIService {
     return {
       success: true,
       data: response,
+    }
+  }
+
+  /**
+   * Generate AI response with conversation context (multi-turn)
+   * @param params - Claude API parameters with previous messages
+   * @returns Service result with AI response
+   */
+  async generateResponseWithContext(
+    params: ClaudeParamsWithContext
+  ): Promise<ServiceResult<ClaudeResultWithMood>> {
+    // Check daily usage limit (50 prompts/day per D-062)
+    const usageCheck = await this.checkDailyLimit(params.artistId)
+    if (!usageCheck.allowed) {
+      return {
+        success: false,
+        error: {
+          code: 'DAILY_LIMIT_EXCEEDED',
+          message: `Daily limit of ${VIOLET_DAILY_LIMIT} prompts exceeded. Resets at midnight UTC.`,
+          retryable: false,
+        },
+      }
+    }
+
+    // Generate response (with or without context)
+    let response: ClaudeResultWithMood
+
+    if (this.useRealAPI) {
+      response = await this.callClaudeAPIWithContext(params)
+    } else {
+      response = this.getPlaceholderResponseWithMood(params)
+    }
+
+    // Track usage
+    await this.trackUsage(params.artistId, params.promptType, params.prompt, response.tokensUsed)
+
+    return {
+      success: true,
+      data: response,
+    }
+  }
+
+  /**
+   * Get placeholder response with mood for chat interface
+   * @param params - Claude API parameters
+   * @returns Placeholder response with mood
+   */
+  private getPlaceholderResponseWithMood(params: ClaudeParamsWithContext): ClaudeResultWithMood {
+    const responses = PLACEHOLDER_RESPONSES[params.promptType] || PLACEHOLDER_RESPONSES.general
+    const randomResponse = responses[Math.floor(Math.random() * responses.length)]
+
+    // Estimate tokens
+    const estimatedTokens = Math.ceil(randomResponse.length / 4)
+
+    // Determine mood based on prompt type and content
+    let mood = 'professional'
+    if (params.promptType === 'songwriting' || params.promptType === 'career_advice') {
+      mood = 'caring'
+    } else if (params.prompt.toLowerCase().includes('fun') || params.prompt.toLowerCase().includes('creative')) {
+      mood = 'playful'
+    }
+
+    return {
+      response: randomResponse,
+      tokensUsed: estimatedTokens,
+      promptType: params.promptType,
+      isPlaceholder: true,
+      mood,
+    }
+  }
+
+  /**
+   * Call real Claude API with conversation context
+   * @param params - Claude API parameters with previous messages
+   * @returns Real API response with mood
+   */
+  private async callClaudeAPIWithContext(params: ClaudeParamsWithContext): Promise<ClaudeResultWithMood> {
+    // Build system prompt
+    const systemPrompt = PROMPT_TEMPLATES[params.promptType] || PROMPT_TEMPLATES.general
+
+    // Build messages array with conversation history
+    const messages: Array<{ role: string; content: string }> = []
+
+    // Add previous messages
+    for (const msg of params.previousMessages) {
+      messages.push({
+        role: msg.role === 'assistant' ? 'assistant' : 'user',
+        content: msg.content,
+      })
+    }
+
+    // Add current user message
+    messages.push({
+      role: 'user',
+      content: params.prompt,
+    })
+
+    const payload = {
+      model: CLAUDE_MODEL,
+      max_tokens: params.maxTokens || DEFAULT_MAX_TOKENS,
+      temperature: params.temperature || DEFAULT_TEMPERATURE,
+      system: systemPrompt.replace('{prompt}', ''),
+      messages,
+    }
+
+    const response = await fetch(CLAUDE_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': this.apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(
+        errorData.error?.message || `Claude API error: ${response.status} ${response.statusText}`
+      )
+    }
+
+    const data = await response.json()
+
+    // Analyze response for mood
+    const responseText = data.content[0].text
+    let mood = 'professional'
+    if (responseText.includes('💜') || responseText.includes('here for you') || responseText.includes('support')) {
+      mood = 'caring'
+    } else if (responseText.includes('🎉') || responseText.includes('awesome') || responseText.includes('let\'s')) {
+      mood = 'playful'
+    }
+
+    return {
+      response: responseText,
+      tokensUsed: data.usage.output_tokens,
+      promptType: params.promptType,
+      isPlaceholder: false,
+      mood,
     }
   }
 

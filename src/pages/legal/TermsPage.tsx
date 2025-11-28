@@ -21,7 +21,7 @@ export default function TermsPage() {
             <CardHeader>
               <CardTitle>1. Acceptance of Terms</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 By accessing and using Umbrella ("the Service"), you accept and agree to be bound by
                 the terms and provisions of this agreement. If you do not agree to these Terms of
@@ -34,7 +34,7 @@ export default function TermsPage() {
             <CardHeader>
               <CardTitle>2. User Accounts</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 To access certain features of the Service, you must register for an account. You are
                 responsible for maintaining the confidentiality of your account credentials and for
@@ -55,7 +55,7 @@ export default function TermsPage() {
             <CardHeader>
               <CardTitle>3. Service Description</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 Umbrella is a platform connecting independent artists with opportunities, providing
                 tools for profile management, file storage, messaging, AI-powered assistance, and
@@ -68,7 +68,7 @@ export default function TermsPage() {
             <CardHeader>
               <CardTitle>4. Content Ownership and Rights</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 You retain all rights to content you upload to the Service. By uploading content,
                 you grant Umbrella a worldwide, non-exclusive, royalty-free license to use,
@@ -86,7 +86,7 @@ export default function TermsPage() {
             <CardHeader>
               <CardTitle>5. Prohibited Uses</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>You agree not to use the Service to:</p>
               <ul>
                 <li>Violate any laws or regulations</li>
@@ -105,7 +105,7 @@ export default function TermsPage() {
             <CardHeader>
               <CardTitle>6. Termination</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 We reserve the right to suspend or terminate your account at any time, with or
                 without notice, for conduct that we believe violates these Terms of Service or is
@@ -123,7 +123,7 @@ export default function TermsPage() {
             <CardHeader>
               <CardTitle>7. Disclaimers</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND,
                 EITHER EXPRESS OR IMPLIED. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED,
@@ -137,7 +137,7 @@ export default function TermsPage() {
             <CardHeader>
               <CardTitle>8. Limitation of Liability</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 TO THE MAXIMUM EXTENT PERMITTED BY LAW, UMBRELLA SHALL NOT BE LIABLE FOR ANY
                 INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF
@@ -151,7 +151,7 @@ export default function TermsPage() {
             <CardHeader>
               <CardTitle>9. Governing Law</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 These Terms of Service shall be governed by and construed in accordance with the
                 laws of the United States, without regard to its conflict of law provisions. Any
@@ -165,7 +165,7 @@ export default function TermsPage() {
             <CardHeader>
               <CardTitle>10. Changes to Terms</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 We reserve the right to modify these Terms of Service at any time. We will notify
                 users of any material changes by posting a notice on the Service or by email. Your

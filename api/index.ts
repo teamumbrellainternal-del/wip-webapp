@@ -242,6 +242,15 @@ function setupRouter(): Router {
   router.get('/v1/violet/suggestions', violetController.getSuggestions, [authMiddleware])
   router.delete('/v1/violet/history', violetController.clearHistory, [authMiddleware])
 
+  // Violet AI Conversation routes (chat interface)
+  router.get('/v1/violet/conversations', violetController.listConversations, [authMiddleware])
+  router.post('/v1/violet/conversations', violetController.createConversation, [authMiddleware])
+  router.get('/v1/violet/conversations/:id', violetController.getConversation, [authMiddleware])
+  router.post('/v1/violet/conversations/:id/messages', violetController.sendConversationMessage, [
+    authMiddleware,
+    violetRateLimitMiddleware,
+  ])
+
   // Search routes (auth required) - Task-5.5
   router.get('/v1/search', searchController.globalSearch, [authMiddleware])
   router.get('/v1/search/artists', searchController.searchArtists, [authMiddleware])

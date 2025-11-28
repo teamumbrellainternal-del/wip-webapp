@@ -22,6 +22,10 @@ import type {
   Achievement,
   VioletResponse,
   VioletUsage,
+  VioletConversation,
+  VioletMessage,
+  VioletConversationListItem,
+  VioletSendMessageResponse,
   FileMetadata,
   FileUploadResponse,
   OnboardingStep1Data,
@@ -516,6 +520,7 @@ export const profileService = {
 export const violetService = {
   /**
    * Send prompt to Violet AI (D-062: 50 prompts/day limit)
+   * Legacy endpoint - kept for backward compatibility (MessageFansPage)
    */
   sendPrompt: (prompt: string, context?: Record<string, unknown>) =>
     apiRequest<VioletResponse>('/violet/prompt', {
@@ -544,6 +549,45 @@ export const violetService = {
         }>
       }>
     >('/violet/categories'),
+
+  // ============================================================================
+  // CONVERSATION ENDPOINTS (Chat Interface)
+  // ============================================================================
+
+  /**
+   * List user's conversations
+   */
+  getConversations: (page = 1, limit = 20) =>
+    apiRequest<{
+      conversations: VioletConversationListItem[]
+      pagination: { page: number; limit: number; total: number; hasMore: boolean }
+    }>(`/violet/conversations?page=${page}&limit=${limit}`),
+
+  /**
+   * Create a new conversation
+   */
+  createConversation: (title?: string) =>
+    apiRequest<{ conversation: VioletConversation }>('/violet/conversations', {
+      method: 'POST',
+      body: { title },
+    }),
+
+  /**
+   * Get a conversation with its messages
+   */
+  getConversation: (conversationId: string) =>
+    apiRequest<{ conversation: VioletConversation; messages: VioletMessage[] }>(
+      `/violet/conversations/${conversationId}`
+    ),
+
+  /**
+   * Send a message in a conversation
+   */
+  sendMessage: (conversationId: string, content: string, context?: string) =>
+    apiRequest<VioletSendMessageResponse>(`/violet/conversations/${conversationId}/messages`, {
+      method: 'POST',
+      body: { content, context },
+    }),
 }
 
 // ============================================================================

@@ -212,13 +212,13 @@ export default function VioletPage() {
   }
 
   const handleQuickAction = (action: (typeof QUICK_ACTIONS)[0]) => {
-    setFreeFormPrompt(action.label)
-    setIntentModalOpen(true)
+    // Navigate to chat with prompt as query parameter
+    navigate(`/violet/chat?prompt=${encodeURIComponent(action.label)}`)
   }
 
   const handleSamplePrompt = (prompt: string) => {
-    setFreeFormPrompt(prompt)
-    setIntentModalOpen(true)
+    // Navigate to chat with prompt as query parameter
+    navigate(`/violet/chat?prompt=${encodeURIComponent(prompt)}`)
   }
 
   if (!user) return null
@@ -371,7 +371,7 @@ export default function VioletPage() {
                     <Button
                       size="lg"
                       className="gap-2 bg-purple-500 hover:bg-purple-600"
-                      onClick={() => setIntentModalOpen(true)}
+                      onClick={() => navigate('/violet/chat')}
                     >
                       <Sparkles className="h-5 w-5" />
                       Start Creating Together

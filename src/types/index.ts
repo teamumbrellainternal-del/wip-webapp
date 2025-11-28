@@ -336,6 +336,44 @@ export interface VioletUsage {
   reset_at: string
 }
 
+// Violet Conversation Types (Chat Interface)
+export interface VioletConversation {
+  id: string
+  artist_id: string
+  title: string | null
+  started_at: string
+  last_message_at: string
+  message_count: number
+  is_archived: number
+}
+
+export interface VioletMessage {
+  id: string
+  conversation_id: string
+  role: 'user' | 'assistant'
+  content: string
+  tokens_used: number | null
+  mood: string | null
+  context: string | null
+  created_at: string
+}
+
+export interface VioletConversationListItem {
+  id: string
+  title: string | null
+  started_at: string
+  last_message_at: string
+  message_count: number
+  preview?: string
+}
+
+export interface VioletSendMessageResponse {
+  user_message: VioletMessage
+  assistant_message: VioletMessage
+  remaining_prompts: number
+  is_placeholder: boolean
+}
+
 // ============================================================================
 // FILE UPLOAD TYPES
 // ============================================================================

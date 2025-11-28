@@ -1,7 +1,25 @@
 # Cursor Rules
 
 # Documentation Files
+
 NEVER create markdown files (.md) unless explicitly requested by the user.
 Do not create testing checklists, notes, or temporary documentation files.
 Provide instructions directly in the conversation instead of saving files.
 Only create .md files if the user explicitly asks for documentation to be saved.
+
+# Consistency in Bug Fixes (Backend/Frontend Interface)
+
+When fixing data type mismatches between Backend (API) and Frontend (Client):
+
+1. **Align to the Client Interface:** Check `src/lib/api-client.ts` and `src/types/index.ts` first. The Backend MUST return exactly what the Client expects.
+2. **Unwrap Objects:** If the Client expects an Array (`Track[]`), the Controller must return the Array directly (`[]`), NOT an object wrapping it (`{ tracks: [] }`).
+3. **Apply Globally:** Apply this pattern to all similar endpoints (reviews, tracks, gigs, etc.) to prevent identical regressions.
+
+# Git & Terminal Safety
+
+1. **Verify Directory:** Before running `git` or `npm` commands, ALWAYS verify the current working directory (`pwd`) and the active branch (`git branch --show-current`).
+2. **Worktree Awareness:** Be aware if you are in a Monorepo root or a specific Worktree folder (`wip-webapp` vs `wip-webapp-pr...`). Only execute commands in the target project folder.
+
+# Explanation Style
+
+DO NOT use analogies (kitchen, restaurant, warehouse, etc.) when explaining technical concepts. Use direct, literal explanations based on the actual technology and code structure.

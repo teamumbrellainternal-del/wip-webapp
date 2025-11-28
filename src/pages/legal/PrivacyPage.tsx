@@ -21,7 +21,7 @@ export default function PrivacyPage() {
             <CardHeader>
               <CardTitle>1. Information We Collect</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>We collect information you provide directly to us, including:</p>
               <ul>
                 <li>Account information (name, email address, password)</li>
@@ -38,7 +38,7 @@ export default function PrivacyPage() {
             <CardHeader>
               <CardTitle>2. How We Use Your Information</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>We use the information we collect to:</p>
               <ul>
                 <li>Provide, maintain, and improve our services</li>
@@ -57,7 +57,7 @@ export default function PrivacyPage() {
             <CardHeader>
               <CardTitle>3. Information Sharing</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 We do not sell your personal information. We may share your information in the
                 following circumstances:
@@ -80,7 +80,7 @@ export default function PrivacyPage() {
             <CardHeader>
               <CardTitle>4. Third-Party Services</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 We use the following third-party service providers to operate our platform. Each
                 service has its own privacy policy:
@@ -115,7 +115,7 @@ export default function PrivacyPage() {
             <CardHeader>
               <CardTitle>5. Data Storage and Security</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 We store your data on secure servers provided by Cloudflare (D1 database and R2
                 storage). We implement industry-standard security measures to protect your
@@ -133,7 +133,7 @@ export default function PrivacyPage() {
             <CardHeader>
               <CardTitle>6. Your Rights (California CCPA)</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 If you are a California resident, you have the following rights under the California
                 Consumer Privacy Act (CCPA):
@@ -170,7 +170,7 @@ export default function PrivacyPage() {
             <CardHeader>
               <CardTitle>7. Cookies and Tracking</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 We use cookies and similar tracking technologies to collect information about your
                 browsing activities. This includes:
@@ -194,7 +194,7 @@ export default function PrivacyPage() {
             <CardHeader>
               <CardTitle>8. Children's Privacy</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 Our Service is not directed to children under the age of 13. We do not knowingly
                 collect personal information from children under 13. If you become aware that a
@@ -209,7 +209,7 @@ export default function PrivacyPage() {
             <CardHeader>
               <CardTitle>9. Changes to This Policy</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>
                 We may update this Privacy Policy from time to time. We will notify you of any
                 changes by posting the new Privacy Policy on this page and updating the "Last
@@ -223,7 +223,7 @@ export default function PrivacyPage() {
             <CardHeader>
               <CardTitle>10. Contact Us</CardTitle>
             </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
+            <CardContent className="prose max-w-none dark:prose-invert">
               <p>If you have any questions about this Privacy Policy, please contact us at:</p>
               <ul>
                 <li>
