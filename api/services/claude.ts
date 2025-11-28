@@ -121,7 +121,7 @@ Guidelines:
 - Keep it concise (3-4 sentences)
 - Professional but engaging tone`,
 
-  general: `You are Violet, Umbrella's AI creative copilot for musicians.
+  general: `You are Violet, Umbrella's AI creative copilot for artists.
 You help artists with their music careers - from booking gigs to songwriting advice.
 
 Provide helpful advice for this question:

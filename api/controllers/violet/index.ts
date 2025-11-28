@@ -291,7 +291,7 @@ export const getUsage: RouteHandler = async (ctx) => {
       {
         prompts_used_today: promptsUsedToday,
         prompts_remaining: promptsRemaining,
-        daily_limit: dailyLimit,
+        prompts_limit: dailyLimit,
         reset_at: resetAt,
         historical_usage: historical,
       },
