@@ -242,24 +242,16 @@ export const getUsage: RouteHandler = async (ctx) => {
     // 2. Get today's date in YYYY-MM-DD format (UTC)
     const today = new Date().toISOString().split('T')[0]
 
-    // 3. Fetch current usage from KV: violet:{artist_id}:{date}
-    const kvKey = `violet:${artistId}:${today}`
-    const kvValue = await ctx.env.KV.get(kvKey)
-    const promptsUsedToday = kvValue ? parseInt(kvValue, 10) : 0
-
-    // 4. Calculate remaining prompts (D-062: 50 prompts/day limit)
+    // 3. Query D1 for today's usage count (single source of truth)
     const dailyLimit = 50
-    const promptsRemaining = Math.max(0, dailyLimit - promptsUsedToday)
-
-    // 5. Get current usage from KV
-    const rateLimitInfo = await checkRateLimit(
-      ctx.userId,
-      'rate_limit:violet',
-      50,
-      ctx.env.KV
+    const todayUsageResult = await ctx.env.DB.prepare(
+      `SELECT COUNT(*) as count FROM violet_usage WHERE artist_id = ? AND date = ?`
     )
+      .bind(artistId, today)
+      .first<{ count: number }>()
 
-    const promptsUsed = 50 - rateLimitInfo.remaining
+    const promptsUsedToday = todayUsageResult?.count || 0
+    const promptsRemaining = Math.max(0, dailyLimit - promptsUsedToday)
 
     // Calculate reset time (midnight UTC tomorrow)
     const tomorrow = new Date()
@@ -267,7 +259,7 @@ export const getUsage: RouteHandler = async (ctx) => {
     tomorrow.setUTCHours(0, 0, 0, 0)
     const resetAt = tomorrow.toISOString()
 
-    // 6. Query D1 for last 7 days usage (historical data)
+    // 4. Query D1 for last 7 days usage (historical data)
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
     const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0]
@@ -833,19 +825,23 @@ export const sendConversationMessage: RouteHandler = async (ctx) => {
       created_at: assistantNow,
     }
 
-    // Get updated rate limit info
-    const rateLimitInfo = await checkRateLimit(
-      ctx.userId,
-      'rate_limit:violet',
-      50,
-      ctx.env.KV
+    // Get updated usage count from D1 (single source of truth)
+    const today = new Date().toISOString().split('T')[0]
+    const dailyLimit = 50
+    const usageResult = await ctx.env.DB.prepare(
+      `SELECT COUNT(*) as count FROM violet_usage WHERE artist_id = ? AND date = ?`
     )
+      .bind(artist.id, today)
+      .first<{ count: number }>()
+
+    const promptsUsedToday = usageResult?.count || 0
+    const remainingPrompts = Math.max(0, dailyLimit - promptsUsedToday)
 
     return successResponse(
       {
         user_message: userMessage,
         assistant_message: assistantMessage,
-        remaining_prompts: rateLimitInfo.remaining,
+        remaining_prompts: remainingPrompts,
         is_placeholder: result.data.isPlaceholder,
       },
       201,

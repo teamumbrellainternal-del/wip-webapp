@@ -269,6 +269,7 @@ export default function VioletChatPage() {
         disabled={!conversation}
         isLoading={sending}
         remainingPrompts={remainingPrompts}
+        resetAt={usage?.reset_at}
       />
     </div>
   )
