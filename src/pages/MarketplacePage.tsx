@@ -247,7 +247,7 @@ export default function MarketplacePage() {
 
   // Handle gig application - coming soon for MVP
   const handleApplyToGig = async (_gigId: string) => {
-    toast.info('Gig applications coming soon!', {
+    toast('Gig applications coming soon!', {
       description: 'Browse gigs to see what opportunities are available.',
     })
   }
@@ -376,9 +376,8 @@ export default function MarketplacePage() {
         {gigs.map((gig, index) => (
           <Card
             key={gig.id}
-            className={`cursor-pointer overflow-hidden border-border/50 transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700 ${
-              selectedGig?.id === gig.id ? 'border-purple-500 ring-1 ring-purple-500' : ''
-            }`}
+            className={`cursor-pointer overflow-hidden border-border/50 transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700 ${selectedGig?.id === gig.id ? 'border-purple-500 ring-1 ring-purple-500' : ''
+              }`}
             onClick={() => handleGigClick(gig)}
           >
             <div className="flex">
@@ -463,11 +462,10 @@ export default function MarketplacePage() {
                       }}
                     >
                       <Bookmark
-                        className={`h-4 w-4 ${
-                          favorites.has(gig.id)
-                            ? 'fill-purple-500 text-purple-500'
-                            : 'text-muted-foreground'
-                        }`}
+                        className={`h-4 w-4 ${favorites.has(gig.id)
+                          ? 'fill-purple-500 text-purple-500'
+                          : 'text-muted-foreground'
+                          }`}
                       />
                     </Button>
                     <Button
@@ -534,9 +532,8 @@ export default function MarketplacePage() {
         {artists.map((artist) => (
           <Card
             key={artist.id}
-            className={`cursor-pointer overflow-hidden border-border/50 transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700 ${
-              selectedArtist?.id === artist.id ? 'border-purple-500 ring-1 ring-purple-500' : ''
-            }`}
+            className={`cursor-pointer overflow-hidden border-border/50 transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700 ${selectedArtist?.id === artist.id ? 'border-purple-500 ring-1 ring-purple-500' : ''
+              }`}
             onClick={() => handleArtistClick(artist)}
           >
             <CardContent className="flex items-center gap-4 p-4">
@@ -759,11 +756,10 @@ export default function MarketplacePage() {
               <Badge
                 key={filter.id}
                 variant={activeQuickFilters.has(filter.id) ? 'default' : 'secondary'}
-                className={`cursor-pointer px-3 py-1.5 text-sm transition-colors ${
-                  activeQuickFilters.has(filter.id)
-                    ? 'bg-purple-500 text-white hover:bg-purple-600'
-                    : 'bg-muted/50 text-foreground hover:bg-muted'
-                }`}
+                className={`cursor-pointer px-3 py-1.5 text-sm transition-colors ${activeQuickFilters.has(filter.id)
+                  ? 'bg-purple-500 text-white hover:bg-purple-600'
+                  : 'bg-muted/50 text-foreground hover:bg-muted'
+                  }`}
                 onClick={() => handleQuickFilterToggle(filter.id)}
               >
                 {filter.label}
@@ -867,11 +863,10 @@ export default function MarketplacePage() {
                       onClick={() => handleToggleFavorite(selectedGig.id)}
                     >
                       <Bookmark
-                        className={`h-4 w-4 ${
-                          favorites.has(selectedGig.id)
-                            ? 'fill-purple-500 text-purple-500'
-                            : 'text-muted-foreground'
-                        }`}
+                        className={`h-4 w-4 ${favorites.has(selectedGig.id)
+                          ? 'fill-purple-500 text-purple-500'
+                          : 'text-muted-foreground'
+                          }`}
                       />
                     </Button>
                   </div>
