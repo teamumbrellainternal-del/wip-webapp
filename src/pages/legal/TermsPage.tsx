@@ -178,8 +178,8 @@ export default function TermsPage() {
           <div className="mt-8 rounded-lg bg-muted p-6">
             <p className="text-sm text-muted-foreground">
               If you have any questions about these Terms of Service, please contact us at{' '}
-              <a href="mailto:legal@umbrella.app" className="text-primary hover:underline">
-                legal@umbrella.app
+              <a href="mailto:legal@umbrellalive.com" className="text-primary hover:underline">
+                legal@umbrellalive.com
               </a>
             </p>
           </div>

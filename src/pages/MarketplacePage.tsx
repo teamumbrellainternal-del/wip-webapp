@@ -114,9 +114,6 @@ export default function MarketplacePage() {
   // Favorites state (in-memory for MVP)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
-  // Apply to gig loading state
-  const [applyingGigId, setApplyingGigId] = useState<string | null>(null)
-
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -248,17 +245,11 @@ export default function MarketplacePage() {
     setSelectedGig(null)
   }
 
-  // Handle gig application
-  const handleApplyToGig = async (gigId: string) => {
-    try {
-      setApplyingGigId(gigId)
-      await gigsService.apply(gigId)
-      toast.success('Application submitted successfully!')
-    } catch {
-      toast.error('Failed to apply to gig')
-    } finally {
-      setApplyingGigId(null)
-    }
+  // Handle gig application - coming soon for MVP
+  const handleApplyToGig = async (_gigId: string) => {
+    toast('Gig applications coming soon!', {
+      description: 'Browse gigs to see what opportunities are available.',
+    })
   }
 
   // Handle favorite toggle
@@ -866,13 +857,9 @@ export default function MarketplacePage() {
                   <div className="flex gap-2">
                     <Button
                       className="flex-1 bg-purple-500 hover:bg-purple-600"
-                      disabled={applyingGigId === selectedGig.id}
                       onClick={() => handleApplyToGig(selectedGig.id)}
                     >
-                      {applyingGigId === selectedGig.id && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      )}
-                      {applyingGigId === selectedGig.id ? 'Applying...' : 'Apply Now'}
+                      Apply Now
                     </Button>
                     <Button
                       variant="outline"
@@ -974,9 +961,13 @@ export default function MarketplacePage() {
                   <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
                     <Search className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="mb-2 text-lg font-semibold">Select a gig</h3>
+                  <h3 className="mb-2 text-lg font-semibold">
+                    {activeTab === 'gigs' ? 'Select a gig' : 'Select an artist'}
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Click on a listing to view details and apply
+                    {activeTab === 'gigs'
+                      ? 'Click on a listing to view details and apply'
+                      : 'Click on an artist to view their profile'}
                   </p>
                 </div>
               )}

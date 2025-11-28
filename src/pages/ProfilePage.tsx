@@ -77,13 +77,8 @@ const InstagramIcon = () => (
   </svg>
 )
 
-// Mock endorsements data
-const MOCK_ENDORSEMENTS = [
-  { id: '1', label: '🔥 Dynamic Vocalist', count: 12 },
-  { id: '2', label: '🎸 Reliable Musician', count: 8 },
-  { id: '3', label: '⭐ Great Collaborator', count: 15 },
-  { id: '4', label: '🎤 Stage Presence', count: 9 },
-]
+// Endorsements will be fetched from API when implemented
+// For MVP, showing empty state
 
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>()
@@ -154,7 +149,10 @@ export default function ProfilePage() {
   }
 
   const handleBookArtist = () => {
-    navigate(`/messages/new?recipient=${id}&template=booking`)
+    toast({
+      title: 'Direct booking coming soon!',
+      description: 'For now, reach out via social links on their profile.',
+    })
   }
 
   const handleShare = () => {
@@ -518,23 +516,13 @@ export default function ProfilePage() {
                     <CardContent className="p-6">
                       <div className="mb-4 flex items-center justify-between">
                         <h3 className="text-lg font-semibold">Endorsements</h3>
-                        <Button variant="link" className="gap-1 text-purple-600">
-                          View All
-                          <ArrowLeft className="h-4 w-4 rotate-180" />
-                        </Button>
                       </div>
-                      <div className="space-y-3">
-                        {MOCK_ENDORSEMENTS.map((endorsement) => (
-                          <div
-                            key={endorsement.id}
-                            className="flex items-center justify-between rounded-lg bg-muted/50 px-4 py-3"
-                          >
-                            <span className="text-sm">{endorsement.label}</span>
-                            <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                              {endorsement.count}
-                            </Badge>
-                          </div>
-                        ))}
+                      <div className="py-6 text-center">
+                        <Star className="mx-auto mb-3 h-10 w-10 text-muted-foreground opacity-50" />
+                        <p className="text-sm text-muted-foreground">No endorsements yet</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Endorsements from collaborators will appear here
+                        </p>
                       </div>
                     </CardContent>
                   </Card>

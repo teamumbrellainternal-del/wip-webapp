@@ -212,8 +212,8 @@ export const artistsService = {
    * Unfollow an artist
    */
   unfollow: (id: string) =>
-    apiRequest<void>(`/artists/${id}/unfollow`, {
-      method: 'POST',
+    apiRequest<void>(`/artists/${id}/follow`, {
+      method: 'DELETE',
     }),
 }
 
