@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
@@ -40,33 +39,8 @@ const CONVERSATION_STARTERS = [
   { text: 'Dream collaboration?', icon: Heart },
 ]
 
-// Mock notifications for the Figma design
-const MOCK_NOTIFICATIONS = [
-  {
-    id: '1',
-    icon: '🎤',
-    title: 'New Gig Opportunity',
-    message: 'The Blue Note is looking for artists on Feb 15, 2025',
-    action: 'View Details',
-    type: 'gig',
-  },
-  {
-    id: '2',
-    icon: '💌',
-    title: 'Message from Sarah Chen',
-    message: 'Loved your latest track! Want to collab?',
-    action: 'Reply',
-    type: 'message',
-  },
-  {
-    id: '3',
-    icon: '📈',
-    title: 'Milestone Reached!',
-    message: "You've reached 850 followers!",
-    action: null,
-    type: 'milestone',
-  },
-]
+// Empty for MVP launch - will be populated when notifications are implemented
+const _notifications: never[] = []
 
 export default function MessagesPage() {
   const { conversationId } = useParams<{ conversationId: string }>()
@@ -575,36 +549,12 @@ export default function MessagesPage() {
               </div>
 
               <ScrollArea className="flex-1">
-                <div className="space-y-3 p-4">
-                  {MOCK_NOTIFICATIONS.map((notification) => (
-                    <Card key={notification.id} className="border-border/50">
-                      <CardContent className="p-3">
-                        <div className="flex items-start gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-sm dark:bg-purple-900/30">
-                            {notification.icon}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium">{notification.title}</p>
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                              {notification.message}
-                            </p>
-                            {notification.action && (
-                              <Button
-                                variant="link"
-                                size="sm"
-                                className="mt-1 h-auto p-0 text-xs text-purple-600 dark:text-purple-400"
-                              >
-                                {notification.action}
-                              </Button>
-                            )}
-                          </div>
-                          <Button variant="ghost" size="icon" className="h-6 w-6">
-                            <X className="h-3 w-3 text-muted-foreground" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                <div className="flex h-full flex-col items-center justify-center p-4 text-center">
+                  <Bell className="mb-3 h-10 w-10 text-muted-foreground opacity-50" />
+                  <p className="text-sm font-medium text-foreground">No notifications yet</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    We'll notify you when something happens
+                  </p>
                 </div>
               </ScrollArea>
             </div>

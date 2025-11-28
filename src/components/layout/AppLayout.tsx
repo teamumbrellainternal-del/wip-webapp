@@ -13,7 +13,6 @@ import { Link, useLocation } from 'react-router-dom'
 import { Search, Bell } from 'lucide-react'
 import UmbrellaIcon from '@brand/assets/logos/umbrella-icon.svg'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { ProfileDropdown } from './ProfileDropdown'
 import { SearchModal } from './SearchModal'
 import { NotificationPanel } from './NotificationPanel'
@@ -30,16 +29,12 @@ const navigationTabs = [
   { label: 'Discover', path: '/marketplace/gigs' },
   { label: 'Messages', path: '/messages' },
   { label: 'Violet', path: '/violet' },
-  { label: 'Growth', path: '/growth' },
+  // { label: 'Growth', path: '/growth' }, // Hidden for launch - page still exists at /growth
 ]
 
 export default function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation()
   const [searchOpen, setSearchOpen] = useState(false)
-  const [notificationsOpen, setNotificationsOpen] = useState(false)
-
-  // Mock notification count (replace with real data later)
-  const unreadCount = 2
 
   const isActiveTab = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`)
@@ -95,24 +90,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 <span className="sr-only">Search artists or gigs</span>
               </Button>
 
-              {/* Notification Bell */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="relative"
-              >
-                <Bell className="h-5 w-5" />
-                {unreadCount > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center p-0 text-xs"
-                  >
-                    {unreadCount}
-                  </Badge>
-                )}
-                <span className="sr-only">Notifications</span>
-              </Button>
+              {/* Notification Bell with Dropdown */}
+              <NotificationPanel>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell className="h-5 w-5" />
+                  <span className="sr-only">Notifications</span>
+                </Button>
+              </NotificationPanel>
 
               {/* Profile Dropdown - D-098: Settings access */}
               <ProfileDropdown />
@@ -155,9 +139,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
       {/* Search Modal - D-071 */}
       <SearchModal open={searchOpen} onOpenChange={setSearchOpen} />
-
-      {/* Notification Panel */}
-      <NotificationPanel open={notificationsOpen} onOpenChange={setNotificationsOpen} />
     </div>
   )
 }

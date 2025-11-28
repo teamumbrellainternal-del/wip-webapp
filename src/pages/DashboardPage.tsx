@@ -12,7 +12,6 @@ import {
   Sparkles,
   Search,
   Users,
-  BarChart3,
   Star,
   DollarSign,
   ArrowRight,
@@ -22,6 +21,7 @@ import AppLayout from '@/components/layout/AppLayout'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
 import { analyticsService } from '@/services/api'
+import { apiClient } from '@/lib/api-client'
 import type { DashboardMetrics } from '@/types'
 import { MetaTags } from '@/components/MetaTags'
 
@@ -31,10 +31,26 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardMetrics | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
+  const [artistName, setArtistName] = useState<string | null>(null)
 
   useEffect(() => {
     fetchDashboardData()
+    fetchArtistName()
   }, [])
+
+  const fetchArtistName = async () => {
+    try {
+      const profile = await apiClient.getProfile()
+      // Backend returns stage_name, frontend types expect artist_name
+      const name = (profile as any).stage_name || profile?.artist_name
+      if (name) {
+        setArtistName(name)
+      }
+    } catch (error) {
+      // Silently fail - will use fallback
+      console.debug('Could not fetch artist name for welcome:', error)
+    }
+  }
 
   const fetchDashboardData = async () => {
     try {
@@ -148,7 +164,7 @@ export default function DashboardPage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h1 className="text-heading-32 font-bold tracking-tight text-foreground">
-                  Welcome back, {user.name?.split(' ')[0] || 'Artist'}!
+                  Welcome back, {artistName || user.name?.split(' ')[0] || 'Artist'}!
                 </h1>
                 <p className="text-copy-16 text-muted-foreground">
                   Here's what's happening in your music world
@@ -478,18 +494,10 @@ export default function DashboardPage() {
                   <Button
                     variant="outline"
                     className="w-full justify-start border-border/50 hover:bg-purple-50 hover:text-purple-700 dark:hover:bg-purple-950 dark:hover:text-purple-300"
-                    onClick={() => navigate('/marketplace/artists')}
+                    onClick={() => navigate('/marketplace/gigs?tab=artists')}
                   >
                     <Users className="mr-3 h-4 w-4" />
                     Find Collaborators
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start border-border/50 hover:bg-purple-50 hover:text-purple-700 dark:hover:bg-purple-950 dark:hover:text-purple-300"
-                    onClick={() => navigate('/growth')}
-                  >
-                    <BarChart3 className="mr-3 h-4 w-4" />
-                    View Analytics
                   </Button>
                 </div>
               </CardContent>

@@ -974,9 +974,13 @@ export default function MarketplacePage() {
                   <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
                     <Search className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="mb-2 text-lg font-semibold">Select a gig</h3>
+                  <h3 className="mb-2 text-lg font-semibold">
+                    {activeTab === 'gigs' ? 'Select a gig' : 'Select an artist'}
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Click on a listing to view details and apply
+                    {activeTab === 'gigs'
+                      ? 'Click on a listing to view details and apply'
+                      : 'Click on an artist to view their profile'}
                   </p>
                 </div>
               )}

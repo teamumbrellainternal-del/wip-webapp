@@ -218,8 +218,8 @@ export default function CookiesPage() {
           <div className="mt-8 rounded-lg bg-muted p-6">
             <p className="text-sm text-muted-foreground">
               If you have any questions about our use of cookies, please contact us at{' '}
-              <a href="mailto:privacy@umbrella.app" className="text-primary hover:underline">
-                privacy@umbrella.app
+              <a href="mailto:privacy@umbrellalive.com" className="text-primary hover:underline">
+                privacy@umbrellalive.com
               </a>
             </p>
           </div>

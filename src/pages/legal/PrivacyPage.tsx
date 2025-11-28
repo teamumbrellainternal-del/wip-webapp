@@ -158,8 +158,8 @@ export default function PrivacyPage() {
               </ul>
               <p>
                 To exercise these rights, please contact us at{' '}
-                <a href="mailto:privacy@umbrella.app" className="text-primary hover:underline">
-                  privacy@umbrella.app
+                <a href="mailto:privacy@umbrellalive.com" className="text-primary hover:underline">
+                  privacy@umbrellalive.com
                 </a>{' '}
                 or use the account deletion feature in your account settings.
               </p>
@@ -228,14 +228,20 @@ export default function PrivacyPage() {
               <ul>
                 <li>
                   Email:{' '}
-                  <a href="mailto:privacy@umbrella.app" className="text-primary hover:underline">
-                    privacy@umbrella.app
+                  <a
+                    href="mailto:privacy@umbrellalive.com"
+                    className="text-primary hover:underline"
+                  >
+                    privacy@umbrellalive.com
                   </a>
                 </li>
                 <li>
                   General inquiries:{' '}
-                  <a href="mailto:support@umbrella.app" className="text-primary hover:underline">
-                    support@umbrella.app
+                  <a
+                    href="mailto:support@umbrellalive.com"
+                    className="text-primary hover:underline"
+                  >
+                    support@umbrellalive.com
                   </a>
                 </li>
               </ul>
