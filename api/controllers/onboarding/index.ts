@@ -29,6 +29,8 @@ import {
   sanitizeHandle,
 } from '../../utils/validation'
 import { serializeArrayField } from '../../models/artist'
+import { createResendService } from '../../services/resend'
+import { logger } from '../../utils/logger'
 
 /**
  * Onboarding session stored in KV (temporary data, deleted after completion or timeout)
@@ -1172,6 +1174,52 @@ export const submitArtistStep1: RouteHandler = async (ctx) => {
           now
         )
         .run()
+
+      // Send welcome email to new user (awaited to ensure it executes before Worker terminates)
+      try {
+        const user = await ctx.env.DB.prepare('SELECT email FROM users WHERE id = ?')
+          .bind(ctx.userId)
+          .first<{ email: string }>()
+
+        if (user?.email && ctx.env.RESEND_API_KEY) {
+          const resendService = createResendService(ctx.env.RESEND_API_KEY, ctx.env.DB)
+          const profileUrl = 'https://app.umbrellalive.com/profile/view'
+
+          const result = await resendService.sendTransactional('signup_welcome', user.email, {
+            artistName: body.stage_name,
+            profileUrl,
+          })
+
+          if (result.success) {
+            logger.info('Welcome email sent successfully', {
+              requestId: ctx.requestId,
+              userId: ctx.userId,
+              email: user.email,
+              messageId: result.data?.messageId,
+            })
+          } else {
+            logger.warn('Welcome email failed to send', {
+              requestId: ctx.requestId,
+              userId: ctx.userId,
+              error: result.error?.message,
+            })
+          }
+        } else {
+          logger.warn('Welcome email skipped - missing email or API key', {
+            requestId: ctx.requestId,
+            userId: ctx.userId,
+            hasEmail: !!user?.email,
+            hasApiKey: !!ctx.env.RESEND_API_KEY,
+          })
+        }
+      } catch (emailError) {
+        // Log but don't fail the onboarding flow
+        logger.error('Failed to send welcome email', {
+          requestId: ctx.requestId,
+          userId: ctx.userId,
+          error: emailError instanceof Error ? emailError.message : String(emailError),
+        })
+      }
 
       // Fetch created artist profile
       const artist = await ctx.env.DB.prepare(
