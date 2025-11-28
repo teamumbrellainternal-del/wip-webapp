@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useUser, useClerk, useSession } from '@clerk/clerk-react'
+import { usePostHog } from 'posthog-js/react'
 import { logger } from '@/utils/logger'
 import { apiClient } from '@/lib/api-client'
 
@@ -26,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { user: clerkUser, isLoaded: clerkLoaded } = useUser()
   const { session } = useSession()
   const { signOut: clerkSignOut, openSignIn } = useClerk()
+  const posthog = usePostHog()
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -113,6 +115,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: clerkUser?.fullName || clerkUser?.primaryEmailAddress?.emailAddress || '',
             onboarding_complete: data.user.onboarding_complete,
           })
+
+          // Identify user in PostHog for analytics
+          posthog?.identify(data.user.id, {
+            email: data.user.email,
+            name: clerkUser?.fullName || clerkUser?.primaryEmailAddress?.emailAddress || '',
+          })
         } else {
           logger.error('Invalid response format: missing user data', { requestId, data: json })
           setUser(null)
@@ -160,6 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signOut = async () => {
+    posthog?.reset() // Reset PostHog identity on logout
     await clerkSignOut()
     setUser(null)
   }

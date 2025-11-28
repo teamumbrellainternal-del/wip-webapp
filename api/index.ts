@@ -35,7 +35,9 @@ import * as contactsController from './controllers/contacts'
 import * as violetController from './controllers/violet'
 import * as searchController from './controllers/search'
 import * as accountController from './controllers/account'
+import * as adminController from './controllers/admin'
 import { aggregateAnalytics, handleAnalyticsCron } from './controllers/cron/analytics'
+import { requireAdmin } from './middleware/admin'
 
 /**
  * Worker environment bindings
@@ -72,6 +74,28 @@ async function authMiddleware(ctx: any, next: () => Promise<Response>): Promise<
       ErrorCodes.AUTHENTICATION_FAILED,
       error instanceof Error ? error.message : 'Authentication failed',
       401,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
+ * Admin authorization middleware wrapper
+ * Requires authentication + admin role in Clerk publicMetadata
+ */
+async function adminMiddleware(ctx: any, next: () => Promise<Response>): Promise<Response> {
+  try {
+    const adminUser = await requireAdmin(ctx.request, ctx.env)
+    ctx.userId = adminUser.id
+    ctx.isAdmin = true
+    return next()
+  } catch (error) {
+    const statusCode = error instanceof Error && error.message.includes('Admin') ? 403 : 401
+    return errorResponse(
+      statusCode === 403 ? ErrorCodes.AUTHORIZATION_FAILED : ErrorCodes.AUTHENTICATION_FAILED,
+      error instanceof Error ? error.message : 'Authorization failed',
+      statusCode,
       undefined,
       ctx.requestId
     )
@@ -257,6 +281,16 @@ function setupRouter(): Router {
   router.get('/v1/search/gigs', searchController.searchGigs, [authMiddleware])
   router.get('/v1/search/tracks', searchController.searchTracks, [authMiddleware])
   router.get('/v1/search/suggestions', searchController.getSearchSuggestions, [authMiddleware])
+
+  // Admin routes (admin role required) - For Retool integration
+  router.get('/v1/admin/stats', adminController.getStats, [adminMiddleware])
+  router.get('/v1/admin/users', adminController.getUsers, [adminMiddleware])
+  router.get('/v1/admin/artists', adminController.getArtists, [adminMiddleware])
+  router.get('/v1/admin/violet-usage', adminController.getVioletUsage, [adminMiddleware])
+  router.get('/v1/admin/gigs', adminController.getGigs, [adminMiddleware])
+  router.get('/v1/admin/gig-applications', adminController.getGigApplications, [adminMiddleware])
+  router.get('/v1/admin/reviews', adminController.getReviews, [adminMiddleware])
+  router.get('/v1/admin/messages', adminController.getMessages, [adminMiddleware])
 
   // Cron routes (manual trigger with ?force=true)
   router.get('/cron/analytics', async (ctx) => handleAnalyticsCron(ctx.request, ctx.env))
