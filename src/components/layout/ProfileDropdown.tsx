@@ -55,14 +55,14 @@ function ProfileDropdownProduction() {
       try {
         const profile = await apiClient.getProfile()
         // Backend returns stage_name, frontend types expect artist_name
-        const name = (profile as any).stage_name || profile?.artist_name
+        const profileData = profile as Record<string, unknown>
+        const name = (profileData.stage_name as string) || profile?.artist_name
         if (name) {
           setArtistName(name)
         }
         // Set avatar URL from profile
-        const avatar = (profile as any).avatar_url
-        if (avatar) {
-          setAvatarUrl(avatar)
+        if (profile?.avatar_url) {
+          setAvatarUrl(profile.avatar_url)
         }
       } catch {
         // Silently fail - will use fallback

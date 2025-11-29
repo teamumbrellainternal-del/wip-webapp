@@ -53,7 +53,7 @@ import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
 import { MetaTags } from '@/components/MetaTags'
 
-import { SocialLinksBar } from '@/components/common/SocialIcons'
+import { SocialLinksBar, type SocialLinksData } from '@/components/common/SocialIcons'
 
 // Endorsements will be fetched from API when implemented
 // For MVP, showing empty state
@@ -387,7 +387,7 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Social Links */}
-                <SocialLinksBar data={artist as any} />
+                <SocialLinksBar data={artist as unknown as SocialLinksData} />
               </div>
             </div>
           </div>

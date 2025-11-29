@@ -30,7 +30,7 @@ import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
 import { MetaTags } from '@/components/MetaTags'
 
-import { SocialLinksBar } from '@/components/common/SocialIcons'
+import { SocialLinksBar, type SocialLinksData } from '@/components/common/SocialIcons'
 
 // Profile completion calculator
 function calculateProfileCompletion(artist: Artist): number {
@@ -280,7 +280,7 @@ export default function ProfileViewPage() {
                 </div>
 
                 {/* Social Links */}
-                <SocialLinksBar data={artist as any} />
+                <SocialLinksBar data={artist as unknown as SocialLinksData} />
               </div>
             </div>
           </div>
