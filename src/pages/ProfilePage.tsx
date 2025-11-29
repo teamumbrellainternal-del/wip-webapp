@@ -95,6 +95,15 @@ export default function ProfilePage() {
 
         const reviewsData = await artistsService.getReviews(id)
         setReviews(reviewsData)
+
+        // Fetch follow status (works for both authenticated and unauthenticated users)
+        try {
+          const followStatus = await artistsService.getFollowStatus(id)
+          setIsFollowing(followStatus.is_following)
+        } catch {
+          // If follow status fetch fails, default to not following
+          setIsFollowing(false)
+        }
       } catch (err) {
         console.error('Error fetching profile:', err)
         setError('Failed to load profile. Please try again.')
@@ -110,20 +119,25 @@ export default function ProfilePage() {
     if (!id) return
     try {
       if (isFollowing) {
-        await artistsService.unfollow(id)
-        setIsFollowing(false)
+        const response = await artistsService.unfollow(id)
+        setIsFollowing(response.is_following)
         if (artist) {
-          setArtist({ ...artist, follower_count: artist.follower_count - 1 })
+          setArtist({ ...artist, follower_count: response.follower_count })
         }
       } else {
-        await artistsService.follow(id)
-        setIsFollowing(true)
+        const response = await artistsService.follow(id)
+        setIsFollowing(response.is_following)
         if (artist) {
-          setArtist({ ...artist, follower_count: artist.follower_count + 1 })
+          setArtist({ ...artist, follower_count: response.follower_count })
         }
       }
     } catch (err) {
       console.error('Error toggling follow:', err)
+      toast({
+        title: 'Error',
+        description: isFollowing ? 'Failed to unfollow artist' : 'Failed to follow artist',
+        variant: 'destructive',
+      })
     }
   }
 

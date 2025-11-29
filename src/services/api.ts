@@ -201,20 +201,34 @@ export const artistsService = {
   getReviews: (id: string) => apiRequest<Review[]>(`/artists/${id}/reviews`),
 
   /**
+   * Get follow status for an artist
+   */
+  getFollowStatus: (id: string) =>
+    apiRequest<{ artistId: string; is_following: boolean; follower_count: number }>(
+      `/artists/${id}/follow`
+    ),
+
+  /**
    * Follow an artist
    */
   follow: (id: string) =>
-    apiRequest<void>(`/artists/${id}/follow`, {
-      method: 'POST',
-    }),
+    apiRequest<{ artistId: string; is_following: boolean; follower_count: number }>(
+      `/artists/${id}/follow`,
+      {
+        method: 'POST',
+      }
+    ),
 
   /**
    * Unfollow an artist
    */
   unfollow: (id: string) =>
-    apiRequest<void>(`/artists/${id}/follow`, {
-      method: 'DELETE',
-    }),
+    apiRequest<{ artistId: string; is_following: boolean; follower_count: number }>(
+      `/artists/${id}/follow`,
+      {
+        method: 'DELETE',
+      }
+    ),
 }
 
 // ============================================================================
