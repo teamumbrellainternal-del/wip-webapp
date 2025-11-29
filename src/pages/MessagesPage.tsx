@@ -55,8 +55,8 @@ export default function MessagesPage() {
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Pusher real-time connection
-  const { 
-    connectionState, 
+  const {
+    connectionState,
     isConnected: isPusherConnected,
     subscribeToConversation,
     unsubscribeFromConversation,
@@ -97,14 +97,12 @@ export default function MessagesPage() {
     try {
       const conversation = await messagesService.getThread(convId)
       setSelectedConversation(conversation)
-      
+
       if (mergeOnly) {
         // Merge mode: only add messages we don't have yet (preserves optimistic updates)
         setMessages((prev) => {
           const existingIds = new Set(prev.map((m) => m.id))
-          const newMessages = (conversation.messages || []).filter(
-            (m) => !existingIds.has(m.id)
-          )
+          const newMessages = (conversation.messages || []).filter((m) => !existingIds.has(m.id))
           if (newMessages.length === 0) return prev
           // Merge and sort by timestamp
           return [...prev, ...newMessages].sort(
@@ -164,7 +162,7 @@ export default function MessagesPage() {
           const newMessage = pusherEventToMessage(event)
           setMessages((prev) => {
             // Avoid duplicates
-            if (prev.some(m => m.id === newMessage.id)) return prev
+            if (prev.some((m) => m.id === newMessage.id)) return prev
             return [...prev, newMessage]
           })
           setTimeout(scrollToBottom, 100)
@@ -182,7 +180,13 @@ export default function MessagesPage() {
     return () => {
       unsubscribeFromConversation(conversationId)
     }
-  }, [conversationId, isPusherConnected, user?.id, subscribeToConversation, unsubscribeFromConversation])
+  }, [
+    conversationId,
+    isPusherConnected,
+    user?.id,
+    subscribeToConversation,
+    unsubscribeFromConversation,
+  ])
 
   // Subscribe to user's personal channel for conversation list updates
   useEffect(() => {
@@ -191,24 +195,32 @@ export default function MessagesPage() {
     subscribeToUserChannel(user.id, (event) => {
       // Update conversation list when we receive a new message
       setConversations((prev) => {
-        return prev.map((conv) => {
-          if (conv.id === event.conversation_id) {
-            return {
-              ...conv,
-              last_message_preview: event.last_message_preview,
-              updated_at: event.updated_at,
-              unread_count: conv.id === conversationId ? 0 : (conv.unread_count || 0) + 1,
+        return prev
+          .map((conv) => {
+            if (conv.id === event.conversation_id) {
+              return {
+                ...conv,
+                last_message_preview: event.last_message_preview,
+                updated_at: event.updated_at,
+                unread_count: conv.id === conversationId ? 0 : (conv.unread_count || 0) + 1,
+              }
             }
-          }
-          return conv
-        }).sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+            return conv
+          })
+          .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
       })
     })
 
     return () => {
       unsubscribeFromUserChannel(user.id)
     }
-  }, [user?.id, isPusherConnected, conversationId, subscribeToUserChannel, unsubscribeFromUserChannel])
+  }, [
+    user?.id,
+    isPusherConnected,
+    conversationId,
+    subscribeToUserChannel,
+    unsubscribeFromUserChannel,
+  ])
 
   // Fallback polling for when Pusher is unavailable or as safety net
   useEffect(() => {
@@ -397,7 +409,9 @@ export default function MessagesPage() {
                   <span>Connecting...</span>
                 </div>
               )}
-              {(connectionState === 'disconnected' || connectionState === 'unavailable' || connectionState === 'failed') && (
+              {(connectionState === 'disconnected' ||
+                connectionState === 'unavailable' ||
+                connectionState === 'failed') && (
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <WifiOff className="h-3.5 w-3.5" />
                   <span>Offline</span>

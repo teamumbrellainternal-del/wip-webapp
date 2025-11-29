@@ -1,6 +1,6 @@
 /**
  * Pusher WebSocket Hook for Real-time Messaging
- * 
+ *
  * Manages Pusher connection, channel subscriptions, and connection status.
  * Falls back gracefully if Pusher is unavailable.
  */
@@ -20,7 +20,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787'
 /**
  * Connection state for UI display
  */
-export type PusherConnectionState = 
+export type PusherConnectionState =
   | 'connecting'
   | 'connected'
   | 'disconnected'
@@ -87,11 +87,11 @@ export interface UsePusherReturn {
 
 /**
  * Pusher WebSocket hook for real-time messaging
- * 
+ *
  * @example
  * ```tsx
  * const { connectionState, isConnected, subscribeToConversation } = usePusher()
- * 
+ *
  * useEffect(() => {
  *   if (conversationId && isConnected) {
  *     subscribeToConversation(
@@ -209,53 +209,56 @@ export function usePusher(): UsePusherReturn {
   /**
    * Subscribe to a conversation channel
    */
-  const subscribeToConversation = useCallback((
-    conversationId: string,
-    onMessage: (message: PusherMessageEvent) => void,
-    onRead?: (event: PusherReadEvent) => void
-  ) => {
-    const pusher = pusherRef.current
-    if (!pusher || connectionState === 'unavailable' || connectionState === 'failed') {
-      console.warn('[usePusher] Cannot subscribe - Pusher not available')
-      return
-    }
+  const subscribeToConversation = useCallback(
+    (
+      conversationId: string,
+      onMessage: (message: PusherMessageEvent) => void,
+      onRead?: (event: PusherReadEvent) => void
+    ) => {
+      const pusher = pusherRef.current
+      if (!pusher || connectionState === 'unavailable' || connectionState === 'failed') {
+        console.warn('[usePusher] Cannot subscribe - Pusher not available')
+        return
+      }
 
-    const channelName = `private-conversation-${conversationId}`
-    
-    // Don't re-subscribe if already subscribed
-    if (channelsRef.current.has(channelName)) {
-      console.log(`[usePusher] Already subscribed to ${channelName}`)
-      return
-    }
+      const channelName = `private-conversation-${conversationId}`
 
-    console.log(`[usePusher] Subscribing to ${channelName}`)
-    const channel = pusher.subscribe(channelName)
-    
-    // Bind to new message event
-    channel.bind('new-message', (data: PusherMessageEvent) => {
-      console.log('[usePusher] New message received:', data.id)
-      onMessage(data)
-    })
+      // Don't re-subscribe if already subscribed
+      if (channelsRef.current.has(channelName)) {
+        console.log(`[usePusher] Already subscribed to ${channelName}`)
+        return
+      }
 
-    // Bind to read receipt event
-    if (onRead) {
-      channel.bind('message-read', (data: PusherReadEvent) => {
-        console.log('[usePusher] Read receipt received:', data.read_by)
-        onRead(data)
+      console.log(`[usePusher] Subscribing to ${channelName}`)
+      const channel = pusher.subscribe(channelName)
+
+      // Bind to new message event
+      channel.bind('new-message', (data: PusherMessageEvent) => {
+        console.log('[usePusher] New message received:', data.id)
+        onMessage(data)
       })
-    }
 
-    // Bind to typing events (optional, for future use)
-    channel.bind('typing-start', (data: { user_id: string }) => {
-      console.log('[usePusher] User started typing:', data.user_id)
-    })
+      // Bind to read receipt event
+      if (onRead) {
+        channel.bind('message-read', (data: PusherReadEvent) => {
+          console.log('[usePusher] Read receipt received:', data.read_by)
+          onRead(data)
+        })
+      }
 
-    channel.bind('typing-stop', (data: { user_id: string }) => {
-      console.log('[usePusher] User stopped typing:', data.user_id)
-    })
+      // Bind to typing events (optional, for future use)
+      channel.bind('typing-start', (data: { user_id: string }) => {
+        console.log('[usePusher] User started typing:', data.user_id)
+      })
 
-    channelsRef.current.set(channelName, channel)
-  }, [connectionState])
+      channel.bind('typing-stop', (data: { user_id: string }) => {
+        console.log('[usePusher] User stopped typing:', data.user_id)
+      })
+
+      channelsRef.current.set(channelName, channel)
+    },
+    [connectionState]
+  )
 
   /**
    * Unsubscribe from a conversation channel
@@ -265,7 +268,7 @@ export function usePusher(): UsePusherReturn {
     if (!pusher) return
 
     const channelName = `private-conversation-${conversationId}`
-    
+
     if (channelsRef.current.has(channelName)) {
       console.log(`[usePusher] Unsubscribing from ${channelName}`)
       pusher.unsubscribe(channelName)
@@ -276,34 +279,34 @@ export function usePusher(): UsePusherReturn {
   /**
    * Subscribe to user's personal channel for conversation list updates
    */
-  const subscribeToUserChannel = useCallback((
-    userId: string,
-    onConversationUpdate: (event: PusherConversationUpdateEvent) => void
-  ) => {
-    const pusher = pusherRef.current
-    if (!pusher || connectionState === 'unavailable' || connectionState === 'failed') {
-      console.warn('[usePusher] Cannot subscribe - Pusher not available')
-      return
-    }
+  const subscribeToUserChannel = useCallback(
+    (userId: string, onConversationUpdate: (event: PusherConversationUpdateEvent) => void) => {
+      const pusher = pusherRef.current
+      if (!pusher || connectionState === 'unavailable' || connectionState === 'failed') {
+        console.warn('[usePusher] Cannot subscribe - Pusher not available')
+        return
+      }
 
-    const channelName = `private-user-${userId}`
-    
-    // Don't re-subscribe if already subscribed
-    if (channelsRef.current.has(channelName)) {
-      console.log(`[usePusher] Already subscribed to ${channelName}`)
-      return
-    }
+      const channelName = `private-user-${userId}`
 
-    console.log(`[usePusher] Subscribing to user channel ${channelName}`)
-    const channel = pusher.subscribe(channelName)
-    
-    channel.bind('conversation-updated', (data: PusherConversationUpdateEvent) => {
-      console.log('[usePusher] Conversation updated:', data.conversation_id)
-      onConversationUpdate(data)
-    })
+      // Don't re-subscribe if already subscribed
+      if (channelsRef.current.has(channelName)) {
+        console.log(`[usePusher] Already subscribed to ${channelName}`)
+        return
+      }
 
-    channelsRef.current.set(channelName, channel)
-  }, [connectionState])
+      console.log(`[usePusher] Subscribing to user channel ${channelName}`)
+      const channel = pusher.subscribe(channelName)
+
+      channel.bind('conversation-updated', (data: PusherConversationUpdateEvent) => {
+        console.log('[usePusher] Conversation updated:', data.conversation_id)
+        onConversationUpdate(data)
+      })
+
+      channelsRef.current.set(channelName, channel)
+    },
+    [connectionState]
+  )
 
   /**
    * Unsubscribe from user's personal channel
@@ -313,7 +316,7 @@ export function usePusher(): UsePusherReturn {
     if (!pusher) return
 
     const channelName = `private-user-${userId}`
-    
+
     if (channelsRef.current.has(channelName)) {
       console.log(`[usePusher] Unsubscribing from ${channelName}`)
       pusher.unsubscribe(channelName)
@@ -344,13 +347,16 @@ export function pusherEventToMessage(event: PusherMessageEvent): Message {
     content: event.content,
     timestamp: event.created_at,
     read_status: false,
-    attachments: event.attachment_url ? [{
-      id: `${event.id}-attachment`,
-      filename: event.attachment_filename || 'attachment',
-      url: event.attachment_url,
-      file_type: 'unknown',
-      file_size: 0,
-    }] : undefined,
+    attachments: event.attachment_url
+      ? [
+          {
+            id: `${event.id}-attachment`,
+            filename: event.attachment_filename || 'attachment',
+            url: event.attachment_url,
+            file_type: 'unknown',
+            file_size: 0,
+          },
+        ]
+      : undefined,
   }
 }
-
