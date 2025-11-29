@@ -64,7 +64,7 @@ function ProfileDropdownProduction() {
         if (avatar) {
           setAvatarUrl(avatar)
         }
-      } catch (error) {
+      } catch {
         // Silently fail - will use fallback
       }
     }
