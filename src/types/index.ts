@@ -38,6 +38,7 @@ export interface SocialLinks {
 
 export interface Artist {
   id: string
+  user_id?: string // User ID for starting conversations
   artist_name: string
   full_name: string
   bio?: string

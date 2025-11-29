@@ -61,6 +61,21 @@ AUTHORIZED_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173"
 #   - Token limit: 25,000/month per user (D-059)
 # Note: AI generation will be mocked when USE_MOCKS="true"
 
+# Pusher Configuration (Real-time WebSocket Messaging)
+# Sign up at: https://pusher.com (free tier: 200k messages/day)
+# Get credentials from: https://dashboard.pusher.com -> App Keys
+# Set secrets via:
+#   wrangler secret put PUSHER_APP_ID --env production
+#   wrangler secret put PUSHER_KEY --env production
+#   wrangler secret put PUSHER_SECRET --env production
+#   wrangler secret put PUSHER_CLUSTER --env production
+# Secrets required:
+#   - PUSHER_APP_ID: App ID from Pusher dashboard
+#   - PUSHER_KEY: Key from Pusher dashboard
+#   - PUSHER_SECRET: Secret from Pusher dashboard
+#   - PUSHER_CLUSTER: Cluster region (e.g., us2, eu, ap1)
+# Note: Real-time messaging will gracefully degrade to polling if Pusher unavailable
+
 # Sentry Configuration (Error Tracking - Optional)
 # Sign up at: https://sentry.io
 # Get DSN from: https://sentry.io/settings/projects/

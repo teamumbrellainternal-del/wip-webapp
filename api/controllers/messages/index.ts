@@ -12,6 +12,8 @@ import { validateMessageLength } from '../../models/message'
 import type { Conversation } from '../../models/conversation'
 import type { Message } from '../../models/message'
 import { createResendService } from '../../services/resend'
+import { createPusherServiceFromEnv } from '../../services/pusher'
+import { logger } from '../../utils/logger'
 
 /**
  * List conversations
@@ -101,15 +103,16 @@ export const listConversations: RouteHandler = async (ctx) => {
       }>()
 
     // Create a map of user_id -> participant info
+    // Field names must match frontend ConversationParticipant type: id, name, avatar_url, role
     const participantMap = new Map<string, any>()
     participants.results?.forEach((p) => {
       participantMap.set(p.user_id, {
-        userId: p.user_id,
+        id: p.user_id,           // Frontend expects "id" not "userId"
         email: p.email,
         artistId: p.artist_id,
         name: p.stage_name || p.email.split('@')[0],
-        avatarUrl: p.avatar_url,
-        type: p.artist_type ? JSON.parse(p.artist_type)[0] || 'Artist' : 'User',
+        avatar_url: p.avatar_url, // Frontend expects snake_case
+        role: p.artist_type ? JSON.parse(p.artist_type)[0] || 'Artist' : 'User',
       })
     })
 
@@ -136,12 +139,12 @@ export const listConversations: RouteHandler = async (ctx) => {
           participantMap.get(conv.participant_2_id),
         ].filter(Boolean),
         otherParticipant,
-        contextType: otherParticipant?.type || 'User',
-        lastMessagePreview: conv.last_message_preview,
-        lastMessageAt: conv.last_message_at,
-        unreadCount,
-        createdAt: conv.created_at,
-        updatedAt: conv.updated_at,
+        context_type: otherParticipant?.role || 'User', // Frontend expects snake_case
+        last_message_preview: conv.last_message_preview,
+        last_message_at: conv.last_message_at,
+        unread_count: unreadCount,
+        created_at: conv.created_at,
+        updated_at: conv.updated_at,
       }
     })
 
@@ -249,19 +252,20 @@ export const getConversation: RouteHandler = async (ctx) => {
       }>()
 
     // Format participant data
+    // Field names must match frontend ConversationParticipant type: id, name, avatar_url, role
     const formattedParticipants =
       participants.results?.map((p) => ({
-        userId: p.user_id,
+        id: p.user_id,           // Frontend expects "id" not "userId"
         email: p.email,
         artistId: p.artist_id,
         name: p.stage_name || p.email.split('@')[0],
-        avatarUrl: p.avatar_url,
-        type: p.artist_type ? JSON.parse(p.artist_type)[0] || 'Artist' : 'User',
+        avatar_url: p.avatar_url, // Frontend expects snake_case
+        role: p.artist_type ? JSON.parse(p.artist_type)[0] || 'Artist' : 'User',
       })) || []
 
     // Determine the other participant
     const otherParticipant = formattedParticipants.find(
-      (p) => p.userId !== ctx.userId
+      (p) => p.id !== ctx.userId
     )
 
     // Determine unread count for current user
@@ -270,17 +274,71 @@ export const getConversation: RouteHandler = async (ctx) => {
         ? conversation.unread_count_p1
         : conversation.unread_count_p2
 
+    // Fetch messages for this conversation
+    const messagesResult = await ctx.env.DB.prepare(`
+      SELECT 
+        m.id,
+        m.conversation_id,
+        m.sender_id,
+        m.content,
+        m.attachment_url,
+        m.attachment_filename,
+        m.attachment_size,
+        m.read,
+        m.created_at,
+        COALESCE(a.stage_name, u.email) as sender_name,
+        a.avatar_url as sender_avatar_url
+      FROM messages m
+      LEFT JOIN users u ON m.sender_id = u.id
+      LEFT JOIN artists a ON u.id = a.user_id
+      WHERE m.conversation_id = ?
+      ORDER BY m.created_at ASC
+    `).bind(id).all<{
+      id: string
+      conversation_id: string
+      sender_id: string
+      content: string
+      attachment_url: string | null
+      attachment_filename: string | null
+      attachment_size: number | null
+      read: number
+      created_at: string
+      sender_name: string | null
+      sender_avatar_url: string | null
+    }>()
+
+    // Transform messages to match frontend Message type
+    // Frontend expects: timestamp (not created_at), read_status (not read), sender_avatar_url
+    const messages = (messagesResult.results || []).map((m) => ({
+      id: m.id,
+      conversation_id: m.conversation_id,
+      sender_id: m.sender_id,
+      sender_name: m.sender_name || 'Unknown',
+      sender_avatar_url: m.sender_avatar_url || undefined,
+      content: m.content,
+      timestamp: m.created_at,
+      read_status: m.read === 1,
+      attachments: m.attachment_url ? [{
+        id: `${m.id}-attachment`,
+        filename: m.attachment_filename || 'attachment',
+        url: m.attachment_url,
+        file_type: 'unknown',
+        file_size: m.attachment_size || 0,
+      }] : [],
+    }))
+
     return successResponse(
       {
         id: conversation.id,
         participants: formattedParticipants,
         otherParticipant,
-        contextType: otherParticipant?.type || 'User',
-        lastMessagePreview: conversation.last_message_preview,
-        lastMessageAt: conversation.last_message_at,
-        unreadCount,
-        createdAt: conversation.created_at,
-        updatedAt: conversation.updated_at,
+        context_type: otherParticipant?.role || 'User', // Frontend expects snake_case
+        last_message_preview: conversation.last_message_preview,
+        last_message_at: conversation.last_message_at,
+        unread_count: unreadCount,
+        created_at: conversation.created_at,
+        updated_at: conversation.updated_at,
+        messages, // Include messages in the response
       },
       200,
       ctx.requestId
@@ -434,21 +492,29 @@ export const startConversation: RouteHandler = async (ctx) => {
   }
 
   try {
-    // Parse request body
-    const body = await ctx.request.json() as { participantId: string }
+    // Parse request body - accept both camelCase and snake_case for flexibility
+    const body = await ctx.request.json() as {
+      participantId?: string
+      participant_id?: string
+      initial_message?: string
+      context_type?: 'artist' | 'venue' | 'producer' | 'band'
+    }
 
-    if (!body.participantId) {
+    // Normalize participant ID (accept both formats)
+    const participantId = body.participantId || body.participant_id
+
+    if (!participantId) {
       return errorResponse(
         ErrorCodes.VALIDATION_ERROR,
         'Participant ID is required',
         400,
-        'participantId',
+        'participant_id',
         ctx.requestId
       )
     }
 
     // Validate participant cannot be the current user
-    if (body.participantId === ctx.userId) {
+    if (participantId === ctx.userId) {
       return errorResponse(
         ErrorCodes.VALIDATION_ERROR,
         'Cannot create conversation with yourself',
@@ -462,7 +528,7 @@ export const startConversation: RouteHandler = async (ctx) => {
     const participant = await ctx.env.DB.prepare(
       'SELECT id FROM users WHERE id = ?'
     )
-      .bind(body.participantId)
+      .bind(participantId)
       .first<{ id: string }>()
 
     if (!participant) {
@@ -483,7 +549,7 @@ export const startConversation: RouteHandler = async (ctx) => {
        WHERE (participant_1_id = ? AND participant_2_id = ?)
        OR (participant_1_id = ? AND participant_2_id = ?)`
     )
-      .bind(ctx.userId, body.participantId, body.participantId, ctx.userId)
+      .bind(ctx.userId, participantId, participantId, ctx.userId)
       .first<{ id: string }>()
 
     if (existingConversation) {
@@ -597,7 +663,7 @@ export const startConversation: RouteHandler = async (ctx) => {
       .bind(
         conversationId,
         ctx.userId,
-        body.participantId,
+        participantId,
         null,
         null,
         0,
@@ -620,7 +686,7 @@ export const startConversation: RouteHandler = async (ctx) => {
       LEFT JOIN artists a ON a.user_id = u.id
       WHERE u.id IN (?, ?)`
     )
-      .bind(ctx.userId, body.participantId)
+      .bind(ctx.userId, participantId)
       .all<{
         user_id: string
         email: string
@@ -644,6 +710,72 @@ export const startConversation: RouteHandler = async (ctx) => {
       (p) => p.userId !== ctx.userId
     )
 
+    // If initial_message provided, send it automatically
+    let lastMessagePreview: string | null = null
+    let lastMessageAt: string | null = null
+    let initialMessageId: string | null = null
+
+    if (body.initial_message && body.initial_message.trim()) {
+      const messageContent = body.initial_message.trim().substring(0, 2000) // Enforce 2000 char limit
+      initialMessageId = generateUUIDv4()
+      lastMessagePreview = messageContent.substring(0, 100)
+      lastMessageAt = now
+
+      // Insert the initial message
+      await ctx.env.DB.prepare(
+        `INSERT INTO messages (id, conversation_id, sender_id, content, read, created_at)
+         VALUES (?, ?, ?, ?, 0, ?)`
+      )
+        .bind(initialMessageId, conversationId, ctx.userId, messageContent, now)
+        .run()
+
+      // Update conversation with last message info and unread count for recipient
+      await ctx.env.DB.prepare(
+        `UPDATE conversations
+         SET last_message_at = ?,
+             last_message_preview = ?,
+             unread_count_p2 = 1,
+             updated_at = ?
+         WHERE id = ?`
+      )
+        .bind(now, lastMessagePreview, now, conversationId)
+        .run()
+
+      // Trigger Pusher notification for the initial message
+      try {
+        const pusherService = createPusherServiceFromEnv(ctx.env)
+        const currentUser = formattedParticipants.find((p) => p.userId === ctx.userId)
+
+        await pusherService.triggerNewMessage(conversationId, {
+          id: initialMessageId,
+          conversation_id: conversationId,
+          sender_id: ctx.userId,
+          sender_name: currentUser?.name || 'Unknown',
+          sender_avatar: currentUser?.avatarUrl || null,
+          content: messageContent,
+          created_at: now,
+          attachment_url: null,
+          attachment_filename: null,
+        })
+
+        await pusherService.triggerConversationUpdate(
+          participantId,
+          conversationId,
+          lastMessagePreview
+        )
+
+        logger.info('MessagesController', 'startConversation', 'Initial message sent with Pusher notification', {
+          conversationId,
+          messageId: initialMessageId,
+        })
+      } catch (pusherError) {
+        logger.error('MessagesController', 'startConversation', 'Failed to trigger Pusher for initial message', {
+          error: pusherError instanceof Error ? pusherError.message : 'Unknown error',
+          conversationId,
+        })
+      }
+    }
+
     return successResponse(
       {
         conversation: {
@@ -651,13 +783,14 @@ export const startConversation: RouteHandler = async (ctx) => {
           participants: formattedParticipants,
           otherParticipant,
           contextType: otherParticipant?.type || 'User',
-          lastMessagePreview: null,
-          lastMessageAt: null,
+          lastMessagePreview,
+          lastMessageAt,
           unreadCount: 0,
           createdAt: now,
           updatedAt: now,
         },
         isNew: true,
+        initialMessageId,
       },
       201,
       ctx.requestId
@@ -841,9 +974,64 @@ export const sendMessage: RouteHandler = async (ctx) => {
       .bind(messageId)
       .first()
 
+    // Trigger Pusher real-time event for instant message delivery
+    try {
+      const pusherService = createPusherServiceFromEnv(ctx.env)
+      
+      // Notify the conversation channel (both participants)
+      await pusherService.triggerNewMessage(conversationId, {
+        id: messageId,
+        conversation_id: conversationId,
+        sender_id: ctx.userId,
+        sender_name: (createdMessage as any)?.sender_name || (createdMessage as any)?.sender_email || 'Unknown',
+        sender_avatar: (createdMessage as any)?.sender_avatar || null,
+        content: content,
+        created_at: now,
+        attachment_url: attachment_url || null,
+        attachment_filename: attachment_filename || null,
+      })
+
+      // Notify the recipient's user channel (for conversation list updates)
+      await pusherService.triggerConversationUpdate(
+        recipientId,
+        conversationId,
+        messagePreview
+      )
+
+      logger.info('MessagesController', 'sendMessage', 'Pusher events triggered', {
+        conversationId,
+        messageId,
+        recipientId,
+      })
+    } catch (pusherError) {
+      // Log but don't fail the request if Pusher fails
+      // The message was already saved, recipient can still see it via polling
+      logger.error('MessagesController', 'sendMessage', 'Failed to trigger Pusher event', {
+        error: pusherError instanceof Error ? pusherError.message : 'Unknown error',
+        conversationId,
+        messageId,
+      })
+    }
+
+    // Return the message in the format the frontend Message type expects
+    // Frontend uses: timestamp (not created_at), sender_avatar_url (not sender_avatar), read_status (not read)
     return successResponse(
       {
-        message: createdMessage,
+        id: (createdMessage as any)?.id || messageId,
+        conversation_id: conversationId,
+        sender_id: ctx.userId,
+        sender_name: (createdMessage as any)?.sender_name || 'You',
+        sender_avatar_url: (createdMessage as any)?.sender_avatar || undefined,
+        content: content,
+        timestamp: now,
+        read_status: false,
+        attachments: attachment_url ? [{
+          id: `${messageId}-attachment`,
+          filename: attachment_filename || 'attachment',
+          url: attachment_url,
+          file_type: 'unknown',
+          file_size: attachment_size || 0,
+        }] : [],
       },
       201,
       ctx.requestId
@@ -939,6 +1127,23 @@ export const markAsRead: RouteHandler = async (ctx) => {
     )
       .bind(new Date().toISOString(), conversationId)
       .run()
+
+    // Trigger Pusher event to notify sender that messages were read
+    try {
+      const pusherService = createPusherServiceFromEnv(ctx.env)
+      await pusherService.triggerMessageRead(conversationId, ctx.userId)
+      
+      logger.info('MessagesController', 'markAsRead', 'Read receipt sent via Pusher', {
+        conversationId,
+        readByUserId: ctx.userId,
+      })
+    } catch (pusherError) {
+      // Log but don't fail - read status was already updated in DB
+      logger.error('MessagesController', 'markAsRead', 'Failed to trigger Pusher read event', {
+        error: pusherError instanceof Error ? pusherError.message : 'Unknown error',
+        conversationId,
+      })
+    }
 
     return successResponse(
       {

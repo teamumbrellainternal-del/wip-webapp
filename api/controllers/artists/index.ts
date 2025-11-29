@@ -44,6 +44,7 @@ export const discoverArtists: RouteHandler = async (ctx) => {
     let query = `
       SELECT
         a.id,
+        a.user_id,
         a.stage_name,
         a.verified,
         a.primary_genre,
@@ -99,6 +100,7 @@ export const discoverArtists: RouteHandler = async (ctx) => {
       .bind(...bindings)
       .all<{
         id: string
+        user_id: string
         stage_name: string
         verified: number
         primary_genre: string | null
@@ -169,6 +171,7 @@ export const discoverArtists: RouteHandler = async (ctx) => {
 
       return {
         id: artist.id,
+        user_id: artist.user_id, // User ID for starting conversations
         artist_name: artist.stage_name,
         full_name: artist.stage_name, // Using stage_name as legal_name may be null
         bio: bioPreview,
@@ -238,6 +241,7 @@ export const getArtist: RouteHandler = async (ctx) => {
     const artist = await ctx.env.DB.prepare(`
       SELECT
         a.id,
+        a.user_id,
         a.stage_name,
         a.legal_name,
         a.verified,
@@ -255,6 +259,7 @@ export const getArtist: RouteHandler = async (ctx) => {
       WHERE a.id = ?
     `).bind(id).first<{
       id: string
+      user_id: string
       stage_name: string
       legal_name: string | null
       verified: number
@@ -305,6 +310,7 @@ export const getArtist: RouteHandler = async (ctx) => {
     return successResponse(
       {
         id: artist.id,
+        user_id: artist.user_id, // User ID for starting conversations
         artist_name: artist.stage_name,
         full_name: artist.legal_name || artist.stage_name,
         bio: artist.bio || undefined,

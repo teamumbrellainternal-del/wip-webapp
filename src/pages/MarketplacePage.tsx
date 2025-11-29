@@ -28,10 +28,11 @@ import {
   ArrowLeft,
   Share2,
   Bookmark,
+  MessageCircle,
 } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import ErrorState from '@/components/common/ErrorState'
-import { gigsService, artistsService } from '@/services/api'
+import { gigsService, artistsService, messagesService } from '@/services/api'
 import type { Gig, Artist, GigSearchParams, ArtistSearchParams } from '@/types'
 import { toast } from 'sonner'
 import { MetaTags } from '@/components/MetaTags'
@@ -113,6 +114,9 @@ export default function MarketplacePage() {
 
   // Favorites state (in-memory for MVP)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
+
+  // Conversation state
+  const [startingConversation, setStartingConversation] = useState(false)
 
   // Debounce search input
   useEffect(() => {
@@ -267,6 +271,37 @@ export default function MarketplacePage() {
     })
   }
 
+  // Handle starting a conversation with an artist
+  const handleMessageArtist = async (artist: Artist) => {
+    if (!artist.user_id) {
+      toast.error('Unable to message this artist')
+      return
+    }
+
+    setStartingConversation(true)
+
+    try {
+      const response = await messagesService.startConversation({
+        participant_id: artist.user_id,
+        context_type: 'artist',
+      })
+
+      if (response.conversation?.id) {
+        navigate(`/messages/${response.conversation.id}`)
+        toast.success(
+          response.isNew
+            ? `Conversation started with ${artist.artist_name}`
+            : `Opening conversation with ${artist.artist_name}`
+        )
+      }
+    } catch (err) {
+      console.error('Error starting conversation:', err)
+      toast.error('Failed to start conversation. Please try again.')
+    } finally {
+      setStartingConversation(false)
+    }
+  }
+
   // Handle quick filter toggle
   const handleQuickFilterToggle = (filterId: string) => {
     setActiveQuickFilters((prev) => {
@@ -376,9 +411,8 @@ export default function MarketplacePage() {
         {gigs.map((gig, index) => (
           <Card
             key={gig.id}
-            className={`cursor-pointer overflow-hidden border-border/50 transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700 ${
-              selectedGig?.id === gig.id ? 'border-purple-500 ring-1 ring-purple-500' : ''
-            }`}
+            className={`cursor-pointer overflow-hidden border-border/50 transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700 ${selectedGig?.id === gig.id ? 'border-purple-500 ring-1 ring-purple-500' : ''
+              }`}
             onClick={() => handleGigClick(gig)}
           >
             <div className="flex">
@@ -463,11 +497,10 @@ export default function MarketplacePage() {
                       }}
                     >
                       <Bookmark
-                        className={`h-4 w-4 ${
-                          favorites.has(gig.id)
-                            ? 'fill-purple-500 text-purple-500'
-                            : 'text-muted-foreground'
-                        }`}
+                        className={`h-4 w-4 ${favorites.has(gig.id)
+                          ? 'fill-purple-500 text-purple-500'
+                          : 'text-muted-foreground'
+                          }`}
                       />
                     </Button>
                     <Button
@@ -534,9 +567,8 @@ export default function MarketplacePage() {
         {artists.map((artist) => (
           <Card
             key={artist.id}
-            className={`cursor-pointer overflow-hidden border-border/50 transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700 ${
-              selectedArtist?.id === artist.id ? 'border-purple-500 ring-1 ring-purple-500' : ''
-            }`}
+            className={`cursor-pointer overflow-hidden border-border/50 transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700 ${selectedArtist?.id === artist.id ? 'border-purple-500 ring-1 ring-purple-500' : ''
+              }`}
             onClick={() => handleArtistClick(artist)}
           >
             <CardContent className="flex items-center gap-4 p-4">
@@ -759,11 +791,10 @@ export default function MarketplacePage() {
               <Badge
                 key={filter.id}
                 variant={activeQuickFilters.has(filter.id) ? 'default' : 'secondary'}
-                className={`cursor-pointer px-3 py-1.5 text-sm transition-colors ${
-                  activeQuickFilters.has(filter.id)
-                    ? 'bg-purple-500 text-white hover:bg-purple-600'
-                    : 'bg-muted/50 text-foreground hover:bg-muted'
-                }`}
+                className={`cursor-pointer px-3 py-1.5 text-sm transition-colors ${activeQuickFilters.has(filter.id)
+                  ? 'bg-purple-500 text-white hover:bg-purple-600'
+                  : 'bg-muted/50 text-foreground hover:bg-muted'
+                  }`}
                 onClick={() => handleQuickFilterToggle(filter.id)}
               >
                 {filter.label}
@@ -867,11 +898,10 @@ export default function MarketplacePage() {
                       onClick={() => handleToggleFavorite(selectedGig.id)}
                     >
                       <Bookmark
-                        className={`h-4 w-4 ${
-                          favorites.has(selectedGig.id)
-                            ? 'fill-purple-500 text-purple-500'
-                            : 'text-muted-foreground'
-                        }`}
+                        className={`h-4 w-4 ${favorites.has(selectedGig.id)
+                          ? 'fill-purple-500 text-purple-500'
+                          : 'text-muted-foreground'
+                          }`}
                       />
                     </Button>
                   </div>
@@ -948,12 +978,32 @@ export default function MarketplacePage() {
                     </div>
                   )}
 
-                  <Button
-                    className="w-full bg-purple-500 hover:bg-purple-600"
-                    onClick={() => navigate(`/artist/${selectedArtist.id}`)}
-                  >
-                    View Full Profile
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1 gap-2"
+                      onClick={() => handleMessageArtist(selectedArtist)}
+                      disabled={startingConversation}
+                    >
+                      {startingConversation ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Starting...
+                        </>
+                      ) : (
+                        <>
+                          <MessageCircle className="h-4 w-4" />
+                          Message
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      className="flex-1 bg-purple-500 hover:bg-purple-600"
+                      onClick={() => navigate(`/artist/${selectedArtist.id}`)}
+                    >
+                      View Profile
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 // Empty State

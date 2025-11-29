@@ -378,7 +378,20 @@ export const messagesService = {
     context_type: 'artist' | 'venue' | 'producer' | 'band'
     initial_message?: string
   }) =>
-    apiRequest<Conversation>('/conversations', {
+    apiRequest<{
+      conversation: Conversation & {
+        otherParticipant?: {
+          userId: string
+          email: string
+          artistId: string | null
+          name: string
+          avatarUrl: string | null
+          type: string
+        }
+      }
+      isNew: boolean
+      initialMessageId?: string | null
+    }>('/conversations', {
       method: 'POST',
       body: params,
     }),

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
-import { artistsService, tracksService } from '@/services/api'
+import { artistsService, tracksService, messagesService } from '@/services/api'
 import type { Artist, Track, Review } from '@/types'
 import AppLayout from '@/components/layout/AppLayout'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -41,6 +41,7 @@ import {
   Camera,
   UserPlus,
   UserMinus,
+  Loader2,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -97,6 +98,7 @@ export default function ProfilePage() {
   const [reportDialogOpen, setReportDialogOpen] = useState(false)
   const [reportReason, setReportReason] = useState('spam')
   const [reportDetails, setReportDetails] = useState('')
+  const [startingConversation, setStartingConversation] = useState(false)
 
   const isOwnProfile = user?.id === id
 
@@ -148,11 +150,44 @@ export default function ProfilePage() {
     }
   }
 
-  const handleBookArtist = () => {
-    toast({
-      title: 'Direct booking coming soon!',
-      description: 'For now, reach out via social links on their profile.',
-    })
+  const handleBookArtist = async () => {
+    if (!artist?.user_id) {
+      toast({
+        title: 'Unable to message this artist',
+        description: 'Artist profile information is incomplete.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setStartingConversation(true)
+
+    try {
+      const response = await messagesService.startConversation({
+        participant_id: artist.user_id,
+        context_type: 'artist',
+      })
+
+      // Navigate to the conversation
+      if (response.conversation?.id) {
+        navigate(`/messages/${response.conversation.id}`)
+        toast({
+          title: response.isNew ? 'Conversation started!' : 'Opening conversation',
+          description: response.isNew
+            ? `You can now message ${artist.artist_name}`
+            : `Continuing conversation with ${artist.artist_name}`,
+        })
+      }
+    } catch (err) {
+      console.error('Error starting conversation:', err)
+      toast({
+        title: 'Failed to start conversation',
+        description: 'Please try again later.',
+        variant: 'destructive',
+      })
+    } finally {
+      setStartingConversation(false)
+    }
   }
 
   const handleShare = () => {
@@ -333,9 +368,19 @@ export default function ProfilePage() {
                       <Button
                         className="gap-2 bg-purple-500 hover:bg-purple-600"
                         onClick={handleBookArtist}
+                        disabled={startingConversation}
                       >
-                        <MessageCircle className="h-4 w-4" />
-                        Book Artist
+                        {startingConversation ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Starting...
+                          </>
+                        ) : (
+                          <>
+                            <MessageCircle className="h-4 w-4" />
+                            Book Artist
+                          </>
+                        )}
                       </Button>
                     </div>
                   )}
@@ -615,9 +660,22 @@ export default function ProfilePage() {
                   <p className="mb-4 text-muted-foreground">
                     Reach out to book this artist for your next event
                   </p>
-                  <Button className="bg-purple-500 hover:bg-purple-600" onClick={handleBookArtist}>
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    Send Booking Inquiry
+                  <Button
+                    className="bg-purple-500 hover:bg-purple-600"
+                    onClick={handleBookArtist}
+                    disabled={startingConversation}
+                  >
+                    {startingConversation ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Starting...
+                      </>
+                    ) : (
+                      <>
+                        <MessageCircle className="mr-2 h-4 w-4" />
+                        Send Booking Inquiry
+                      </>
+                    )}
                   </Button>
                 </CardContent>
               </Card>

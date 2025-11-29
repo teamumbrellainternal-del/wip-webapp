@@ -20,7 +20,11 @@ import {
   Star,
   X,
   Bell,
+  Wifi,
+  WifiOff,
+  Loader2,
 } from 'lucide-react'
+import { usePusher, pusherEventToMessage, type PusherMessageEvent } from '@/hooks/use-pusher'
 import AppLayout from '@/components/layout/AppLayout'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
@@ -29,7 +33,8 @@ import type { Conversation, Message } from '@/types'
 import { cn } from '@/lib/utils'
 import { MetaTags } from '@/components/MetaTags'
 
-const POLLING_INTERVAL = 5000 // 5 seconds
+const POLLING_INTERVAL = 5000 // 5 seconds - only used as fallback when Pusher unavailable
+const FALLBACK_POLLING_INTERVAL = 30000 // 30 seconds - slower polling when Pusher connected (safety net)
 
 // Quick conversation starters with icons
 const CONVERSATION_STARTERS = [
@@ -48,6 +53,16 @@ export default function MessagesPage() {
   const { user } = useAuth()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Pusher real-time connection
+  const { 
+    connectionState, 
+    isConnected: isPusherConnected,
+    subscribeToConversation,
+    unsubscribeFromConversation,
+    subscribeToUserChannel,
+    unsubscribeFromUserChannel,
+  } = usePusher()
 
   // State
   const [conversations, setConversations] = useState<Conversation[]>([])
@@ -77,11 +92,29 @@ export default function MessagesPage() {
   }, [])
 
   // Fetch messages for a conversation
-  const fetchMessages = useCallback(async (convId: string) => {
+  // If mergeOnly is true, only add new messages (don't replace existing) - used for polling
+  const fetchMessages = useCallback(async (convId: string, mergeOnly = false) => {
     try {
       const conversation = await messagesService.getThread(convId)
       setSelectedConversation(conversation)
-      setMessages(conversation.messages || [])
+      
+      if (mergeOnly) {
+        // Merge mode: only add messages we don't have yet (preserves optimistic updates)
+        setMessages((prev) => {
+          const existingIds = new Set(prev.map((m) => m.id))
+          const newMessages = (conversation.messages || []).filter(
+            (m) => !existingIds.has(m.id)
+          )
+          if (newMessages.length === 0) return prev
+          // Merge and sort by timestamp
+          return [...prev, ...newMessages].sort(
+            (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+          )
+        })
+      } else {
+        // Initial load: replace all messages
+        setMessages(conversation.messages || [])
+      }
       setError(null)
 
       // Mark as read
@@ -92,8 +125,10 @@ export default function MessagesPage() {
         prev.map((conv) => (conv.id === convId ? { ...conv, unread_count: 0 } : conv))
       )
 
-      // Scroll to bottom after messages load
-      setTimeout(scrollToBottom, 100)
+      // Scroll to bottom after messages load (only on initial load)
+      if (!mergeOnly) {
+        setTimeout(scrollToBottom, 100)
+      }
     } catch (err) {
       console.error('Error fetching messages:', err)
       setError(err as Error)
@@ -116,22 +151,86 @@ export default function MessagesPage() {
     loadData()
   }, [conversationId, fetchConversations, fetchMessages])
 
-  // Polling for new messages
+  // Subscribe to Pusher channels for real-time updates
   useEffect(() => {
+    if (!conversationId || !isPusherConnected) return
+
+    // Subscribe to conversation channel for new messages
+    subscribeToConversation(
+      conversationId,
+      (event: PusherMessageEvent) => {
+        // Only add message if it's from someone else (our own messages are added immediately)
+        if (event.sender_id !== user?.id) {
+          const newMessage = pusherEventToMessage(event)
+          setMessages((prev) => {
+            // Avoid duplicates
+            if (prev.some(m => m.id === newMessage.id)) return prev
+            return [...prev, newMessage]
+          })
+          setTimeout(scrollToBottom, 100)
+        }
+      },
+      // Read receipt handler
+      (readEvent) => {
+        if (readEvent.read_by !== user?.id) {
+          // Other user read our messages - could update UI to show "seen"
+          console.log('Messages read by other user at:', readEvent.read_at)
+        }
+      }
+    )
+
+    return () => {
+      unsubscribeFromConversation(conversationId)
+    }
+  }, [conversationId, isPusherConnected, user?.id, subscribeToConversation, unsubscribeFromConversation])
+
+  // Subscribe to user's personal channel for conversation list updates
+  useEffect(() => {
+    if (!user?.id || !isPusherConnected) return
+
+    subscribeToUserChannel(user.id, (event) => {
+      // Update conversation list when we receive a new message
+      setConversations((prev) => {
+        return prev.map((conv) => {
+          if (conv.id === event.conversation_id) {
+            return {
+              ...conv,
+              last_message_preview: event.last_message_preview,
+              updated_at: event.updated_at,
+              unread_count: conv.id === conversationId ? 0 : (conv.unread_count || 0) + 1,
+            }
+          }
+          return conv
+        }).sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+      })
+    })
+
+    return () => {
+      unsubscribeFromUserChannel(user.id)
+    }
+  }, [user?.id, isPusherConnected, conversationId, subscribeToUserChannel, unsubscribeFromUserChannel])
+
+  // Fallback polling for when Pusher is unavailable or as safety net
+  useEffect(() => {
+    // Use faster polling when Pusher unavailable, slower when connected (safety net)
+    const interval = isPusherConnected ? FALLBACK_POLLING_INTERVAL : POLLING_INTERVAL
+
     pollingIntervalRef.current = setInterval(async () => {
       await fetchConversations()
 
-      if (conversationId) {
-        await fetchMessages(conversationId)
+      // When Pusher is connected, don't refetch messages (trust real-time updates)
+      // When Pusher is disconnected, use merge mode to avoid wiping optimistic updates
+      if (conversationId && !isPusherConnected) {
+        await fetchMessages(conversationId, true) // mergeOnly = true
       }
-    }, POLLING_INTERVAL)
+    }, interval)
 
     return () => {
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current)
       }
     }
-  }, [conversationId, fetchConversations, fetchMessages])
+  }, [conversationId, fetchConversations, fetchMessages, isPusherConnected])
 
   // Handle conversation selection
   const handleSelectConversation = (conversation: Conversation) => {
@@ -173,8 +272,13 @@ export default function MessagesPage() {
   }
 
   // Utility functions
-  const formatTimestamp = (timestamp: string) => {
+  const formatTimestamp = (timestamp: string | null | undefined) => {
+    if (!timestamp) return ''
+
     const date = new Date(timestamp)
+    // Check for invalid date
+    if (isNaN(date.getTime())) return ''
+
     const now = new Date()
     const diffMs = now.getTime() - date.getTime()
     const diffMins = Math.floor(diffMs / 60000)
@@ -192,8 +296,13 @@ export default function MessagesPage() {
     }).format(date)
   }
 
-  const formatMessageTime = (timestamp: string) => {
+  const formatMessageTime = (timestamp: string | null | undefined) => {
+    if (!timestamp) return ''
+
     const date = new Date(timestamp)
+    // Check for invalid date
+    if (isNaN(date.getTime())) return ''
+
     return new Intl.DateTimeFormat('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -261,17 +370,40 @@ export default function MessagesPage() {
       <div className="flex h-[calc(100vh-4rem)] flex-col">
         {/* Header */}
         <div className="border-b border-border/50 bg-background px-6 py-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2"
-              onClick={() => navigate('/dashboard')}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-2xl font-bold text-foreground">Messages & Collaboration</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+                onClick={() => navigate('/dashboard')}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Dashboard
+              </Button>
+              <h1 className="text-2xl font-bold text-foreground">Messages & Collaboration</h1>
+            </div>
+            {/* Connection Status Indicator */}
+            <div className="flex items-center gap-2">
+              {connectionState === 'connected' && (
+                <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
+                  <Wifi className="h-3.5 w-3.5" />
+                  <span>Live</span>
+                </div>
+              )}
+              {connectionState === 'connecting' && (
+                <div className="flex items-center gap-1.5 text-xs text-yellow-600 dark:text-yellow-400">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span>Connecting...</span>
+                </div>
+              )}
+              {(connectionState === 'disconnected' || connectionState === 'unavailable' || connectionState === 'failed') && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <WifiOff className="h-3.5 w-3.5" />
+                  <span>Offline</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
