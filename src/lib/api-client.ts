@@ -369,42 +369,63 @@ class APIClient {
   }
 
   // Avatar upload endpoints
-  async getAvatarUploadUrl(data: {
-    filename: string
-    fileSize: number
-    contentType: string
-  }): Promise<{
-    uploadId: string
-    uploadUrl: string
-    fileKey: string
-    expiresAt: string
-    maxFileSize: number
-  }> {
-    return this.request<{
-      uploadId: string
-      uploadUrl: string
-      fileKey: string
-      expiresAt: string
-      maxFileSize: number
-    }>('/profile/avatar/upload', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    })
-  }
-
-  async confirmAvatarUpload(uploadId: string): Promise<{
+  /**
+   * Upload profile avatar directly to R2 storage
+   * @param file - The image file to upload
+   * @returns The uploaded avatar URL and updated profile
+   */
+  async uploadProfileAvatar(file: File): Promise<{
     message: string
     avatarUrl: string
     profile: Artist
   }> {
-    return this.request<{
-      message: string
-      avatarUrl: string
-      profile: Artist
-    }>('/profile/avatar/confirm', {
+    // Demo mode - simulate upload with null avatar (shows initials fallback)
+    if (DEMO_MODE) {
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      return {
+        message: 'Avatar uploaded successfully',
+        avatarUrl: '', // Demo mode shows initials fallback
+        profile: MOCK_ARTIST,
+      }
+    }
+
+    // Create FormData with the file
+    const formData = new FormData()
+    formData.append('file', file)
+
+    // Get auth headers (without Content-Type - browser sets it for FormData)
+    const headers: HeadersInit = {}
+    if (this.getToken) {
+      const token = await this.getToken()
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+    } else {
+      const session = getSession()
+      if (session?.token) {
+        headers['Authorization'] = `Bearer ${session.token}`
+      }
+    }
+
+    const response = await fetch(`${this.baseURL}/profile/avatar`, {
       method: 'POST',
-      body: JSON.stringify({ uploadId }),
+      headers,
+      body: formData,
     })
+
+    if (response.status === 401) {
+      clearSession()
+      triggerSessionTimeout()
+      throw new Error('Session expired. Please log in again.')
+    }
+
+    const data = await response.json()
+
+    if (!data.success) {
+      throw new Error(data.error?.message || 'Failed to upload avatar')
+    }
+
+    return data.data
   }
 }
 

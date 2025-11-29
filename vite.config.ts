@@ -92,6 +92,10 @@ export default defineConfig({
         target: 'http://localhost:8787',  // Worker dev server
         changeOrigin: true,
       },
+      '/media': {
+        target: 'http://localhost:8787',  // Serve R2 media files from backend
+        changeOrigin: true,
+      },
     },
   },
 

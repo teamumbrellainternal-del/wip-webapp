@@ -675,9 +675,10 @@ function generateCompletionRecommendations(
 }
 
 /**
- * Get avatar upload signed URL
- * POST /v1/profile/avatar/upload
- * Generates R2 signed URL for avatar upload with 15-minute expiry
+ * Upload avatar directly to R2
+ * POST /v1/profile/avatar
+ * Accepts multipart/form-data with the image file
+ * Uploads to R2 and updates artist record
  */
 export const uploadAvatar: RouteHandler = async (ctx) => {
   if (!ctx.userId) {
@@ -690,19 +691,35 @@ export const uploadAvatar: RouteHandler = async (ctx) => {
     )
   }
 
-  try {
-    const body = await ctx.request.json()
-    const { filename, fileSize, contentType } = body
+  // Check if R2 storage is configured
+  if (!ctx.env.BUCKET) {
+    return errorResponse(
+      ErrorCodes.SERVICE_UNAVAILABLE,
+      'File storage is not configured',
+      503,
+      undefined,
+      ctx.requestId
+    )
+  }
 
-    if (!filename || !fileSize || !contentType) {
+  try {
+    // Parse multipart form data
+    const formData = await ctx.request.formData()
+    const file = formData.get('file') as File | null
+
+    if (!file) {
       return errorResponse(
         ErrorCodes.VALIDATION_ERROR,
-        'filename, fileSize, and contentType are required',
+        'No file provided. Send file in form-data with key "file"',
         400,
         undefined,
         ctx.requestId
       )
     }
+
+    const contentType = file.type
+    const fileSize = file.size
+    const filename = file.name
 
     // Get artist profile
     const artist = await ctx.env.DB.prepare(
@@ -724,7 +741,7 @@ export const uploadAvatar: RouteHandler = async (ctx) => {
     if (!allowedTypes.includes(contentType)) {
       return errorResponse(
         ErrorCodes.VALIDATION_ERROR,
-        `Invalid file type. Allowed types: ${allowedTypes.join(', ')}`,
+        `Invalid file type "${contentType}". Allowed types: ${allowedTypes.join(', ')}`,
         400,
         undefined,
         ctx.requestId
@@ -755,133 +772,15 @@ export const uploadAvatar: RouteHandler = async (ctx) => {
     // Build R2 key for avatar (standardized naming)
     const fileKey = `profiles/${artist.id}/avatar.${ext}`
 
-    // Generate upload ID for tracking
-    const uploadId = `avatar-${artist.id}-${Date.now()}`
-
-    // Store upload metadata in KV (for verification after upload)
-    const uploadMetadata = {
-      uploadId,
-      artistId: artist.id,
-      userId: ctx.userId,
-      filename,
-      fileSize,
-      contentType,
-      fileKey,
-      oldAvatarUrl: artist.avatar_url,
-      createdAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(), // 15 minutes
-    }
-
-    await ctx.env.KV.put(
-      `upload:avatar:${uploadId}`,
-      JSON.stringify(uploadMetadata),
-      { expirationTtl: 900 } // 15 minutes
-    )
-
-    // Generate upload URL (placeholder for MVP, replace with actual R2 presigned URL)
-    const uploadUrl = `https://upload.umbrella.dev/${fileKey}?uploadId=${uploadId}`
-
-    return successResponse(
-      {
-        uploadId,
-        uploadUrl,
-        fileKey,
-        expiresAt: uploadMetadata.expiresAt,
-        maxFileSize: MAX_AVATAR_SIZE,
-      },
-      200,
-      ctx.requestId
-    )
-  } catch (error) {
-    console.error('Error generating avatar upload URL:', error)
-    return errorResponse(
-      ErrorCodes.INTERNAL_ERROR,
-      'Failed to generate avatar upload URL',
-      500,
-      undefined,
-      ctx.requestId
-    )
-  }
-}
-
-/**
- * Confirm avatar upload and update artist record
- * POST /v1/profile/avatar/confirm
- * Validates file exists in R2 and updates artist avatar_url
- */
-export const confirmAvatarUpload: RouteHandler = async (ctx) => {
-  if (!ctx.userId) {
-    return errorResponse(
-      ErrorCodes.AUTHENTICATION_FAILED,
-      'Authentication required',
-      401,
-      undefined,
-      ctx.requestId
-    )
-  }
-
-  try {
-    const body = await ctx.request.json()
-    const { uploadId } = body
-
-    if (!uploadId) {
-      return errorResponse(
-        ErrorCodes.VALIDATION_ERROR,
-        'uploadId is required',
-        400,
-        undefined,
-        ctx.requestId
-      )
-    }
-
-    // Get upload metadata from KV
-    const uploadMetadataStr = await ctx.env.KV.get(`upload:avatar:${uploadId}`)
-
-    if (!uploadMetadataStr) {
-      return errorResponse(
-        ErrorCodes.NOT_FOUND,
-        'Upload session not found or expired',
-        404,
-        undefined,
-        ctx.requestId
-      )
-    }
-
-    const uploadMetadata = JSON.parse(uploadMetadataStr)
-
-    // Verify user owns this upload
-    if (uploadMetadata.userId !== ctx.userId) {
-      return errorResponse(
-        ErrorCodes.AUTHORIZATION_FAILED,
-        'Unauthorized to confirm this upload',
-        403,
-        undefined,
-        ctx.requestId
-      )
-    }
-
-    // Verify file exists in R2 via HEAD request
-    const fileExists = await ctx.env.BUCKET.head(uploadMetadata.fileKey)
-
-    if (!fileExists) {
-      return errorResponse(
-        ErrorCodes.NOT_FOUND,
-        'File not found in storage. Upload may have failed.',
-        404,
-        undefined,
-        ctx.requestId
-      )
-    }
-
-    // Delete old avatar from R2 if it exists
-    if (uploadMetadata.oldAvatarUrl) {
+    // Delete old avatar from R2 if exists and has different extension
+    if (artist.avatar_url) {
       try {
-        // Extract key from URL (assumes URL format: https://.../profiles/{artistId}/avatar.{ext})
-        const urlMatch = uploadMetadata.oldAvatarUrl.match(/profiles\/[^\/]+\/avatar\.[a-z]+/)
-        if (urlMatch) {
-          const oldKey = urlMatch[0]
-          // Only delete if it's different from the new key
-          if (oldKey !== uploadMetadata.fileKey) {
+        // Extract old key from URL (format: /media/profiles/{artistId}/avatar.{ext})
+        const oldKeyMatch = artist.avatar_url.match(/profiles\/[^\/]+\/avatar\.[a-z]+/)
+        if (oldKeyMatch) {
+          const oldKey = oldKeyMatch[0]
+          // Only delete if it's a different file (different extension)
+          if (oldKey !== fileKey) {
             await ctx.env.BUCKET.delete(oldKey)
             console.log(`Deleted old avatar: ${oldKey}`)
           }
@@ -892,8 +791,23 @@ export const confirmAvatarUpload: RouteHandler = async (ctx) => {
       }
     }
 
-    // Build public URL for the avatar
-    const avatarUrl = `https://pub-umbrella.r2.dev/${uploadMetadata.fileKey}`
+    // Upload file to R2
+    const fileBuffer = await file.arrayBuffer()
+    await ctx.env.BUCKET.put(fileKey, fileBuffer, {
+      httpMetadata: {
+        contentType: contentType,
+      },
+      customMetadata: {
+        uploadedBy: ctx.userId,
+        uploadedAt: new Date().toISOString(),
+        originalFilename: filename,
+      },
+    })
+
+    console.log(`Avatar uploaded to R2: ${fileKey}`)
+
+    // Build the public URL for the avatar (served via /media/* endpoint)
+    const avatarUrl = `/media/${fileKey}`
 
     // Update artist record with new avatar_url
     await ctx.env.DB.prepare(
@@ -901,9 +815,6 @@ export const confirmAvatarUpload: RouteHandler = async (ctx) => {
     )
       .bind(avatarUrl, new Date().toISOString(), ctx.userId)
       .run()
-
-    // Clean up KV upload metadata
-    await ctx.env.KV.delete(`upload:avatar:${uploadId}`)
 
     // Get updated profile
     const updatedArtist = await ctx.env.DB.prepare(
@@ -948,16 +859,17 @@ export const confirmAvatarUpload: RouteHandler = async (ctx) => {
       ctx.requestId
     )
   } catch (error) {
-    console.error('Error confirming avatar upload:', error)
+    console.error('Error uploading avatar:', error)
     return errorResponse(
       ErrorCodes.INTERNAL_ERROR,
-      'Failed to confirm avatar upload',
+      'Failed to upload avatar',
       500,
       undefined,
       ctx.requestId
     )
   }
 }
+
 
 /**
  * Get profile statistics

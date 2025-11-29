@@ -15,6 +15,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Search,
   Filter,
@@ -576,9 +577,12 @@ export default function MarketplacePage() {
           >
             <CardContent className="flex items-center gap-4 p-4">
               {/* Avatar */}
-              <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-xl font-bold text-white">
-                {artist.artist_name.charAt(0).toUpperCase()}
-              </div>
+              <Avatar className="h-16 w-16 flex-shrink-0">
+                <AvatarImage src={artist.avatar_url || undefined} alt={artist.artist_name} />
+                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-xl font-bold text-white">
+                  {artist.artist_name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
 
               {/* Content */}
               <div className="min-w-0 flex-1">
@@ -915,9 +919,15 @@ export default function MarketplacePage() {
                 <div className="p-6">
                   {/* Artist Avatar */}
                   <div className="mb-6 flex items-center gap-4">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-2xl font-bold text-white">
-                      {selectedArtist.artist_name.charAt(0).toUpperCase()}
-                    </div>
+                    <Avatar className="h-20 w-20">
+                      <AvatarImage
+                        src={selectedArtist.avatar_url || undefined}
+                        alt={selectedArtist.artist_name}
+                      />
+                      <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-2xl font-bold text-white">
+                        {selectedArtist.artist_name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                     <div>
                       <div className="flex items-center gap-2">
                         <h2 className="text-xl font-bold text-foreground">
