@@ -157,11 +157,11 @@ export default function ProfilePage() {
       }
     } catch (err) {
       console.error('Error starting conversation:', err)
-    toast({
+      toast({
         title: 'Failed to start conversation',
         description: 'Please try again later.',
         variant: 'destructive',
-    })
+      })
     } finally {
       setStartingConversation(false)
     }
@@ -354,8 +354,8 @@ export default function ProfilePage() {
                           </>
                         ) : (
                           <>
-                        <MessageCircle className="h-4 w-4" />
-                        Book Artist
+                            <MessageCircle className="h-4 w-4" />
+                            Book Artist
                           </>
                         )}
                       </Button>
@@ -608,8 +608,8 @@ export default function ProfilePage() {
                       </>
                     ) : (
                       <>
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    Send Booking Inquiry
+                        <MessageCircle className="mr-2 h-4 w-4" />
+                        Send Booking Inquiry
                       </>
                     )}
                   </Button>
