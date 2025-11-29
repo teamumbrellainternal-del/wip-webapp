@@ -36,6 +36,7 @@ import * as violetController from './controllers/violet'
 import * as searchController from './controllers/search'
 import * as accountController from './controllers/account'
 import * as adminController from './controllers/admin'
+import * as pusherController from './controllers/pusher'
 import { aggregateAnalytics, handleAnalyticsCron } from './controllers/cron/analytics'
 import { requireAdmin } from './middleware/admin'
 
@@ -57,6 +58,10 @@ export interface Env {
   TWILIO_ACCOUNT_SID: string // Twilio account SID
   TWILIO_AUTH_TOKEN: string // Twilio auth token
   TWILIO_PHONE_NUMBER: string // Twilio phone number
+  PUSHER_APP_ID?: string // Pusher app ID for real-time messaging
+  PUSHER_KEY?: string // Pusher key for real-time messaging
+  PUSHER_SECRET?: string // Pusher secret for real-time messaging
+  PUSHER_CLUSTER?: string // Pusher cluster region (e.g., us2, eu)
   SENTRY_DSN?: string // Sentry DSN for error tracking (optional)
   ENVIRONMENT?: string // Environment name (production, staging, dev)
 }
@@ -201,6 +206,9 @@ function setupRouter(): Router {
   router.post('/v1/conversations/:id/read', messagesController.markAsRead, [authMiddleware])
   router.delete('/v1/conversations/:id', messagesController.deleteConversation, [authMiddleware])
   router.post('/v1/messages/booking-inquiry', messagesController.createBookingInquiry, [authMiddleware])
+
+  // Pusher authentication (for real-time private channels)
+  router.post('/v1/pusher/auth', pusherController.authenticate, [authMiddleware])
 
   // Files routes (auth required)
   router.post('/v1/files', filesController.confirmFileUpload, [authMiddleware]) // Confirm upload

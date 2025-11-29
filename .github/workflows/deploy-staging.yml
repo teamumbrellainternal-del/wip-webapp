@@ -78,6 +78,8 @@ jobs:
         env:
           VITE_DEMO_MODE: false
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_PUSHER_KEY: ${{ secrets.VITE_PUSHER_KEY }}
+          VITE_PUSHER_CLUSTER: ${{ secrets.VITE_PUSHER_CLUSTER }}
         run: npm run build
 
       - name: Deploy to Cloudflare Workers
@@ -99,6 +101,10 @@ jobs:
           echo "${{ secrets.TWILIO_ACCOUNT_SID }}" | npx wrangler secret put TWILIO_ACCOUNT_SID --env staging
           echo "${{ secrets.TWILIO_AUTH_TOKEN }}" | npx wrangler secret put TWILIO_AUTH_TOKEN --env staging
           echo "${{ secrets.TWILIO_PHONE_NUMBER }}" | npx wrangler secret put TWILIO_PHONE_NUMBER --env staging
+          echo "${{ secrets.PUSHER_APP_ID }}" | npx wrangler secret put PUSHER_APP_ID --env staging
+          echo "${{ secrets.PUSHER_KEY }}" | npx wrangler secret put PUSHER_KEY --env staging
+          echo "${{ secrets.PUSHER_SECRET }}" | npx wrangler secret put PUSHER_SECRET --env staging
+          echo "${{ secrets.PUSHER_CLUSTER }}" | npx wrangler secret put PUSHER_CLUSTER --env staging
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
