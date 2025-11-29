@@ -15,7 +15,6 @@ import type { Message } from '@/types'
  */
 const PUSHER_KEY = import.meta.env.VITE_PUSHER_KEY || ''
 const PUSHER_CLUSTER = import.meta.env.VITE_PUSHER_CLUSTER || 'us2'
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787'
 
 /**
  * Connection state for UI display
@@ -135,8 +134,8 @@ export function usePusher(): UsePusherReturn {
               return
             }
 
-            // Call our backend auth endpoint
-            const response = await fetch(`${API_URL}/v1/pusher/auth`, {
+            // Call our backend auth endpoint (relative path works for all environments)
+            const response = await fetch('/v1/pusher/auth', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
