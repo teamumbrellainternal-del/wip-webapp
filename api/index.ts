@@ -87,6 +87,21 @@ async function authMiddleware(ctx: any, next: () => Promise<Response>): Promise<
 }
 
 /**
+ * Optional authentication middleware - populates ctx.userId if authenticated, but doesn't reject if not
+ * Useful for endpoints that work for both authenticated and unauthenticated users
+ */
+async function optionalAuthMiddleware(ctx: any, next: () => Promise<Response>): Promise<Response> {
+  try {
+    const user = await authenticateRequest(ctx.request, ctx.env)
+    ctx.userId = user.userId
+  } catch {
+    // Silently continue without userId for unauthenticated requests
+    ctx.userId = undefined
+  }
+  return next()
+}
+
+/**
  * Admin authorization middleware wrapper
  * Requires authentication + admin role in Clerk publicMetadata
  */
@@ -197,6 +212,7 @@ function setupRouter(): Router {
   router.get('/v1/artists/:id', artistsController.getArtist) // Public
   router.get('/v1/artists/:id/tracks', artistsController.getArtistTracks) // Public
   router.get('/v1/artists/:id/reviews', artistsController.getArtistReviews) // Public
+  router.get('/v1/artists/:id/follow', artistsController.getFollowStatus, [optionalAuthMiddleware]) // Returns is_following if authenticated
   router.post('/v1/artists/:id/follow', artistsController.followArtist, [authMiddleware])
   router.delete('/v1/artists/:id/follow', artistsController.unfollowArtist, [authMiddleware])
 

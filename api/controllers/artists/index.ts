@@ -6,6 +6,7 @@
 import type { RouteHandler } from '../../router'
 import { successResponse, errorResponse } from '../../utils/response'
 import { ErrorCodes } from '../../utils/error-codes'
+import { generateUUIDv4 } from '../../utils/uuid'
 
 /**
  * Discover artists (marketplace)
@@ -445,9 +446,9 @@ export const followArtist: RouteHandler = async (ctx) => {
     )
   }
 
-  const { id } = ctx.params
+  const { id: artistId } = ctx.params
 
-  if (!id) {
+  if (!artistId) {
     return errorResponse(
       ErrorCodes.VALIDATION_ERROR,
       'Artist ID required',
@@ -457,15 +458,98 @@ export const followArtist: RouteHandler = async (ctx) => {
     )
   }
 
-  // TODO: Implement follow functionality
-  return successResponse(
-    {
-      message: 'Artist followed successfully',
-      artistId: id,
-    },
-    200,
-    ctx.requestId
-  )
+  try {
+    // 1. Validate artist exists
+    const artist = await ctx.env.DB.prepare(
+      'SELECT id, user_id, follower_count FROM artists WHERE id = ?'
+    )
+      .bind(artistId)
+      .first<{ id: string; user_id: string; follower_count: number }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist not found',
+        404,
+        'id',
+        ctx.requestId
+      )
+    }
+
+    // 2. Prevent self-follow (user cannot follow their own artist profile)
+    if (artist.user_id === ctx.userId) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'You cannot follow your own profile',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // 3. Check if already following
+    const existingFollow = await ctx.env.DB.prepare(
+      'SELECT id FROM artist_followers WHERE artist_id = ? AND follower_user_id = ?'
+    )
+      .bind(artistId, ctx.userId)
+      .first()
+
+    if (existingFollow) {
+      return errorResponse(
+        ErrorCodes.CONFLICT,
+        'You are already following this artist',
+        409,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // 4. INSERT into artist_followers table
+    const followId = generateUUIDv4()
+    const now = new Date().toISOString()
+
+    await ctx.env.DB.prepare(
+      'INSERT INTO artist_followers (id, artist_id, follower_user_id, created_at) VALUES (?, ?, ?, ?)'
+    )
+      .bind(followId, artistId, ctx.userId, now)
+      .run()
+
+    // 5. UPDATE follower_count on the artists table (atomic increment)
+    await ctx.env.DB.prepare(
+      'UPDATE artists SET follower_count = follower_count + 1 WHERE id = ?'
+    )
+      .bind(artistId)
+      .run()
+
+    // 6. Get actual follower count from artist_followers table (consistent with getArtist)
+    const countResult = await ctx.env.DB.prepare(
+      'SELECT COUNT(*) as count FROM artist_followers WHERE artist_id = ?'
+    )
+      .bind(artistId)
+      .first<{ count: number }>()
+
+    const actualFollowerCount = countResult?.count || 0
+
+    return successResponse(
+      {
+        message: 'Artist followed successfully',
+        artistId,
+        follower_count: actualFollowerCount,
+        is_following: true,
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error following artist:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to follow artist',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
 }
 
 /**
@@ -483,15 +567,172 @@ export const unfollowArtist: RouteHandler = async (ctx) => {
     )
   }
 
-  const { id } = ctx.params
+  const { id: artistId } = ctx.params
 
-  // TODO: Implement unfollow functionality
-  return successResponse(
-    {
-      message: 'Artist unfollowed successfully',
-      artistId: id,
-    },
-    200,
-    ctx.requestId
-  )
+  if (!artistId) {
+    return errorResponse(
+      ErrorCodes.VALIDATION_ERROR,
+      'Artist ID required',
+      400,
+      'id',
+      ctx.requestId
+    )
+  }
+
+  try {
+    // 1. Validate artist exists
+    const artist = await ctx.env.DB.prepare(
+      'SELECT id, follower_count FROM artists WHERE id = ?'
+    )
+      .bind(artistId)
+      .first<{ id: string; follower_count: number }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist not found',
+        404,
+        'id',
+        ctx.requestId
+      )
+    }
+
+    // 2. Check if follow relationship exists
+    const existingFollow = await ctx.env.DB.prepare(
+      'SELECT id FROM artist_followers WHERE artist_id = ? AND follower_user_id = ?'
+    )
+      .bind(artistId, ctx.userId)
+      .first()
+
+    if (!existingFollow) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'You are not following this artist',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // 3. DELETE from artist_followers table
+    await ctx.env.DB.prepare(
+      'DELETE FROM artist_followers WHERE artist_id = ? AND follower_user_id = ?'
+    )
+      .bind(artistId, ctx.userId)
+      .run()
+
+    // 4. UPDATE follower_count on the artists table (atomic decrement, floor at 0)
+    await ctx.env.DB.prepare(
+      'UPDATE artists SET follower_count = MAX(follower_count - 1, 0) WHERE id = ?'
+    )
+      .bind(artistId)
+      .run()
+
+    // 5. Get actual follower count from artist_followers table (consistent with getArtist)
+    const countResult = await ctx.env.DB.prepare(
+      'SELECT COUNT(*) as count FROM artist_followers WHERE artist_id = ?'
+    )
+      .bind(artistId)
+      .first<{ count: number }>()
+
+    const actualFollowerCount = countResult?.count || 0
+
+    return successResponse(
+      {
+        message: 'Artist unfollowed successfully',
+        artistId,
+        follower_count: actualFollowerCount,
+        is_following: false,
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error unfollowing artist:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to unfollow artist',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
+ * Get follow status for an artist
+ * GET /v1/artists/:id/follow
+ * Returns whether the authenticated user is following the artist and the follower count
+ */
+export const getFollowStatus: RouteHandler = async (ctx) => {
+  const { id: artistId } = ctx.params
+
+  if (!artistId) {
+    return errorResponse(
+      ErrorCodes.VALIDATION_ERROR,
+      'Artist ID required',
+      400,
+      'id',
+      ctx.requestId
+    )
+  }
+
+  try {
+    // Verify artist exists
+    const artist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE id = ?'
+    )
+      .bind(artistId)
+      .first<{ id: string }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist not found',
+        404,
+        'id',
+        ctx.requestId
+      )
+    }
+
+    // Get actual follower count from artist_followers table (consistent with getArtist)
+    const countResult = await ctx.env.DB.prepare(
+      'SELECT COUNT(*) as count FROM artist_followers WHERE artist_id = ?'
+    )
+      .bind(artistId)
+      .first<{ count: number }>()
+
+    const followerCount = countResult?.count || 0
+
+    // Check if user is following (only if authenticated)
+    let isFollowing = false
+    if (ctx.userId) {
+      const followRecord = await ctx.env.DB.prepare(
+        'SELECT id FROM artist_followers WHERE artist_id = ? AND follower_user_id = ?'
+      )
+        .bind(artistId, ctx.userId)
+        .first()
+
+      isFollowing = !!followRecord
+    }
+
+    return successResponse(
+      {
+        artistId,
+        is_following: isFollowing,
+        follower_count: followerCount,
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error getting follow status:', error)
+    return errorResponse(
+      ErrorCodes.DATABASE_ERROR,
+      'Failed to get follow status',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
 }
