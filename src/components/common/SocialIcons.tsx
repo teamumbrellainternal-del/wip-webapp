@@ -68,7 +68,15 @@ export const BandcampIcon = ({ className = 'h-5 w-5' }: { className?: string }) 
 
 // Website/Globe Icon
 export const WebsiteIcon = ({ className = 'h-5 w-5' }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <circle cx="12" cy="12" r="10" />
     <line x1="2" y1="12" x2="22" y2="12" />
     <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
@@ -105,16 +113,76 @@ export interface SocialLinksData {
 
 // Platform configuration
 const PLATFORMS = [
-  { key: 'tiktok', flatKey: 'tiktok_handle', nestedKey: 'tiktok', Icon: TikTokIcon, label: 'TikTok' },
-  { key: 'spotify', flatKey: 'spotify_url', nestedKey: 'spotify', Icon: SpotifyIcon, label: 'Spotify' },
-  { key: 'apple_music', flatKey: 'apple_music_url', nestedKey: 'apple_music', Icon: AppleMusicIcon, label: 'Apple Music' },
-  { key: 'instagram', flatKey: 'instagram_handle', nestedKey: 'instagram', Icon: InstagramIcon, label: 'Instagram' },
-  { key: 'youtube', flatKey: 'youtube_url', nestedKey: 'youtube', Icon: YouTubeIcon, label: 'YouTube' },
-  { key: 'soundcloud', flatKey: 'soundcloud_url', nestedKey: 'soundcloud', Icon: SoundCloudIcon, label: 'SoundCloud' },
-  { key: 'facebook', flatKey: 'facebook_url', nestedKey: 'facebook', Icon: FacebookIcon, label: 'Facebook' },
-  { key: 'twitter', flatKey: 'twitter_url', nestedKey: 'twitter', Icon: TwitterIcon, label: 'Twitter/X' },
-  { key: 'bandcamp', flatKey: 'bandcamp_url', nestedKey: 'bandcamp', Icon: BandcampIcon, label: 'Bandcamp' },
-  { key: 'website', flatKey: 'website_url', nestedKey: 'website', Icon: WebsiteIcon, label: 'Website' },
+  {
+    key: 'tiktok',
+    flatKey: 'tiktok_handle',
+    nestedKey: 'tiktok',
+    Icon: TikTokIcon,
+    label: 'TikTok',
+  },
+  {
+    key: 'spotify',
+    flatKey: 'spotify_url',
+    nestedKey: 'spotify',
+    Icon: SpotifyIcon,
+    label: 'Spotify',
+  },
+  {
+    key: 'apple_music',
+    flatKey: 'apple_music_url',
+    nestedKey: 'apple_music',
+    Icon: AppleMusicIcon,
+    label: 'Apple Music',
+  },
+  {
+    key: 'instagram',
+    flatKey: 'instagram_handle',
+    nestedKey: 'instagram',
+    Icon: InstagramIcon,
+    label: 'Instagram',
+  },
+  {
+    key: 'youtube',
+    flatKey: 'youtube_url',
+    nestedKey: 'youtube',
+    Icon: YouTubeIcon,
+    label: 'YouTube',
+  },
+  {
+    key: 'soundcloud',
+    flatKey: 'soundcloud_url',
+    nestedKey: 'soundcloud',
+    Icon: SoundCloudIcon,
+    label: 'SoundCloud',
+  },
+  {
+    key: 'facebook',
+    flatKey: 'facebook_url',
+    nestedKey: 'facebook',
+    Icon: FacebookIcon,
+    label: 'Facebook',
+  },
+  {
+    key: 'twitter',
+    flatKey: 'twitter_url',
+    nestedKey: 'twitter',
+    Icon: TwitterIcon,
+    label: 'Twitter/X',
+  },
+  {
+    key: 'bandcamp',
+    flatKey: 'bandcamp_url',
+    nestedKey: 'bandcamp',
+    Icon: BandcampIcon,
+    label: 'Bandcamp',
+  },
+  {
+    key: 'website',
+    flatKey: 'website_url',
+    nestedKey: 'website',
+    Icon: WebsiteIcon,
+    label: 'Website',
+  },
 ] as const
 
 // Helper to normalize URL (add https:// if missing)
@@ -134,15 +202,15 @@ function normalizeUrl(url: string): string {
 // Helper to get platform URL from handle
 function getPlatformUrl(platform: string, value: string): string {
   if (!value) return ''
-  
+
   // If it's already a full URL, return it
   if (value.startsWith('http://') || value.startsWith('https://')) {
     return value
   }
-  
+
   // Convert handle to full URL for specific platforms
   const handle = value.replace(/^@/, '') // Remove @ prefix if present
-  
+
   switch (platform) {
     case 'instagram':
       return `https://instagram.com/${handle}`
@@ -153,8 +221,8 @@ function getPlatformUrl(platform: string, value: string): string {
     case 'facebook':
       return `https://facebook.com/${handle}`
     case 'youtube':
-      return value.includes('youtube.com') || value.includes('youtu.be') 
-        ? normalizeUrl(value) 
+      return value.includes('youtube.com') || value.includes('youtu.be')
+        ? normalizeUrl(value)
         : `https://youtube.com/@${handle}`
     default:
       return normalizeUrl(value)
@@ -179,18 +247,20 @@ export function SocialLinksBar({ data, className = '', iconClassName = '' }: Soc
     if (flatValue) {
       return getPlatformUrl(nestedKey, flatValue)
     }
-    
+
     // Check nested social_links object
     const nestedValue = data.social_links?.[nestedKey as keyof typeof data.social_links]
     if (nestedValue) {
       return getPlatformUrl(nestedKey, nestedValue)
     }
-    
+
     return null
   }
 
   // Filter to only platforms with URLs
-  const availablePlatforms = PLATFORMS.filter(({ flatKey, nestedKey }) => getUrl(flatKey, nestedKey))
+  const availablePlatforms = PLATFORMS.filter(({ flatKey, nestedKey }) =>
+    getUrl(flatKey, nestedKey)
+  )
 
   if (availablePlatforms.length === 0) {
     return null
@@ -221,4 +291,3 @@ export function SocialLinksBar({ data, className = '', iconClassName = '' }: Soc
 }
 
 export default SocialLinksBar
-
