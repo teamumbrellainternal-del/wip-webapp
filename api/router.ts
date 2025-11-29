@@ -165,15 +165,23 @@ export class Router {
   /**
    * Convert path pattern to regex and extract parameter names
    * Supports patterns like /users/:id/posts/:postId
+   * Also supports wildcard patterns like /media/* (matches /media/anything/here)
    */
   private pathToRegex(path: string): { pattern: RegExp; paramNames: string[] } {
     const paramNames: string[] = []
 
     // Replace :param with regex capture group
-    const pattern = path.replace(/:([a-zA-Z0-9_]+)/g, (_, paramName) => {
+    let pattern = path.replace(/:([a-zA-Z0-9_]+)/g, (_, paramName) => {
       paramNames.push(paramName)
       return '([^/]+)'
     })
+
+    // Handle wildcard * at end of path (matches any remaining path)
+    // /media/* becomes /media/(.*)
+    if (pattern.endsWith('/*')) {
+      paramNames.push('wildcard')
+      pattern = pattern.slice(0, -2) + '/(.*)'
+    }
 
     // Ensure exact match
     return {

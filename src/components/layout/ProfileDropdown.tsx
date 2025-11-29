@@ -47,10 +47,11 @@ function ProfileDropdownProduction() {
   const clerk = useClerk()
   const { user: clerkUser } = useUser()
   const [artistName, setArtistName] = useState<string | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
 
-  // Fetch artist profile to get artist name
+  // Fetch artist profile to get artist name and avatar
   useEffect(() => {
-    const fetchArtistName = async () => {
+    const fetchArtistProfile = async () => {
       try {
         const profile = await apiClient.getProfile()
         // Backend returns stage_name, frontend types expect artist_name
@@ -58,14 +59,18 @@ function ProfileDropdownProduction() {
         if (name) {
           setArtistName(name)
         }
+        // Set avatar URL from profile
+        const avatar = (profile as any).avatar_url
+        if (avatar) {
+          setAvatarUrl(avatar)
+        }
       } catch (error) {
         // Silently fail - will use fallback
-        console.debug('Could not fetch artist profile for dropdown:', error)
       }
     }
 
     if (clerkUser) {
-      fetchArtistName()
+      fetchArtistProfile()
     }
   }, [clerkUser])
 
@@ -87,7 +92,7 @@ function ProfileDropdownProduction() {
   const userData: UserData = {
     artist_name: artistName || clerkUser?.fullName || clerkUser?.firstName || 'User',
     email: clerkUser?.primaryEmailAddress?.emailAddress || '',
-    avatar_url: null, // Don't use Clerk avatar, use initials
+    avatar_url: avatarUrl, // Use avatar from artist profile
   }
 
   return <ProfileDropdownContent user={userData} onLogout={handleLogout} />

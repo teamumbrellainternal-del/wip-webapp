@@ -140,7 +140,6 @@ export default function ProfileEditPage() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load profile'
       setError(errorMessage)
-      console.error('Error loading profile:', err)
     } finally {
       setIsLoading(false)
     }
@@ -188,29 +187,19 @@ export default function ProfileEditPage() {
     setIsUploadingAvatar(true)
 
     try {
-      // Step 1: Get signed upload URL
-      const uploadData = await apiClient.getAvatarUploadUrl({
-        filename: avatarFile.name,
-        fileSize: avatarFile.size,
-        contentType: avatarFile.type,
-      })
-
-      // Step 2: Upload file to R2 (using signed URL - placeholder for MVP)
-      // In production, this would upload to the actual R2 signed URL
-      // For now, we'll simulate a successful upload
-      console.log('Upload URL received:', uploadData.uploadUrl)
-
-      // Step 3: Confirm upload
-      const confirmResult = await apiClient.confirmAvatarUpload(uploadData.uploadId)
+      // Upload file directly to R2 via the new single endpoint
+      const result = await apiClient.uploadProfileAvatar(avatarFile)
 
       toast({
         title: 'Avatar uploaded',
         description: 'Your profile photo has been updated successfully',
       })
 
-      return confirmResult.avatarUrl
+      // Update preview with the new avatar URL
+      setAvatarPreview(result.avatarUrl)
+
+      return result.avatarUrl
     } catch (err) {
-      console.error('Error uploading avatar:', err)
       toast({
         title: 'Upload failed',
         description: err instanceof Error ? err.message : 'Failed to upload avatar',

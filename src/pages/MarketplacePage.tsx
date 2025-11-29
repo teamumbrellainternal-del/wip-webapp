@@ -15,6 +15,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Search,
   Filter,
@@ -411,9 +412,8 @@ export default function MarketplacePage() {
         {gigs.map((gig, index) => (
           <Card
             key={gig.id}
-            className={`cursor-pointer overflow-hidden border-border/50 transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700 ${
-              selectedGig?.id === gig.id ? 'border-purple-500 ring-1 ring-purple-500' : ''
-            }`}
+            className={`cursor-pointer overflow-hidden border-border/50 transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700 ${selectedGig?.id === gig.id ? 'border-purple-500 ring-1 ring-purple-500' : ''
+              }`}
             onClick={() => handleGigClick(gig)}
           >
             <div className="flex">
@@ -498,11 +498,10 @@ export default function MarketplacePage() {
                       }}
                     >
                       <Bookmark
-                        className={`h-4 w-4 ${
-                          favorites.has(gig.id)
-                            ? 'fill-purple-500 text-purple-500'
-                            : 'text-muted-foreground'
-                        }`}
+                        className={`h-4 w-4 ${favorites.has(gig.id)
+                          ? 'fill-purple-500 text-purple-500'
+                          : 'text-muted-foreground'
+                          }`}
                       />
                     </Button>
                     <Button
@@ -569,16 +568,21 @@ export default function MarketplacePage() {
         {artists.map((artist) => (
           <Card
             key={artist.id}
-            className={`cursor-pointer overflow-hidden border-border/50 transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700 ${
-              selectedArtist?.id === artist.id ? 'border-purple-500 ring-1 ring-purple-500' : ''
-            }`}
+            className={`cursor-pointer overflow-hidden border-border/50 transition-all hover:border-purple-300 hover:shadow-md dark:hover:border-purple-700 ${selectedArtist?.id === artist.id ? 'border-purple-500 ring-1 ring-purple-500' : ''
+              }`}
             onClick={() => handleArtistClick(artist)}
           >
             <CardContent className="flex items-center gap-4 p-4">
               {/* Avatar */}
-              <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-xl font-bold text-white">
-                {artist.artist_name.charAt(0).toUpperCase()}
-              </div>
+              <Avatar className="h-16 w-16 flex-shrink-0">
+                <AvatarImage
+                  src={artist.avatar_url || undefined}
+                  alt={artist.artist_name}
+                />
+                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-xl font-bold text-white">
+                  {artist.artist_name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
 
               {/* Content */}
               <div className="min-w-0 flex-1">
@@ -794,11 +798,10 @@ export default function MarketplacePage() {
               <Badge
                 key={filter.id}
                 variant={activeQuickFilters.has(filter.id) ? 'default' : 'secondary'}
-                className={`cursor-pointer px-3 py-1.5 text-sm transition-colors ${
-                  activeQuickFilters.has(filter.id)
-                    ? 'bg-purple-500 text-white hover:bg-purple-600'
-                    : 'bg-muted/50 text-foreground hover:bg-muted'
-                }`}
+                className={`cursor-pointer px-3 py-1.5 text-sm transition-colors ${activeQuickFilters.has(filter.id)
+                  ? 'bg-purple-500 text-white hover:bg-purple-600'
+                  : 'bg-muted/50 text-foreground hover:bg-muted'
+                  }`}
                 onClick={() => handleQuickFilterToggle(filter.id)}
               >
                 {filter.label}
@@ -902,11 +905,10 @@ export default function MarketplacePage() {
                       onClick={() => handleToggleFavorite(selectedGig.id)}
                     >
                       <Bookmark
-                        className={`h-4 w-4 ${
-                          favorites.has(selectedGig.id)
-                            ? 'fill-purple-500 text-purple-500'
-                            : 'text-muted-foreground'
-                        }`}
+                        className={`h-4 w-4 ${favorites.has(selectedGig.id)
+                          ? 'fill-purple-500 text-purple-500'
+                          : 'text-muted-foreground'
+                          }`}
                       />
                     </Button>
                   </div>
@@ -915,9 +917,15 @@ export default function MarketplacePage() {
                 <div className="p-6">
                   {/* Artist Avatar */}
                   <div className="mb-6 flex items-center gap-4">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-2xl font-bold text-white">
-                      {selectedArtist.artist_name.charAt(0).toUpperCase()}
-                    </div>
+                    <Avatar className="h-20 w-20">
+                      <AvatarImage
+                        src={selectedArtist.avatar_url || undefined}
+                        alt={selectedArtist.artist_name}
+                      />
+                      <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-2xl font-bold text-white">
+                        {selectedArtist.artist_name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                     <div>
                       <div className="flex items-center gap-2">
                         <h2 className="text-xl font-bold text-foreground">

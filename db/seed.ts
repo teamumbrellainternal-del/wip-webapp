@@ -342,7 +342,7 @@ function generateArtists(users: User[]): Artist[] {
       rates_negotiable: Math.random() > 0.3,
       currently_making_music: Math.random() > 0.2,
       verified: isVerified,
-      avatar_url: `https://storage.umbrella.app/profiles/${generateId('avatar')}/avatar.jpg`,
+      avatar_url: null, // No avatar - will show initials fallback
       avg_rating: avgRating,
       total_reviews: totalReviews,
       total_gigs: totalGigs,

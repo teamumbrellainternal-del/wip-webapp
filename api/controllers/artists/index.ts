@@ -254,6 +254,15 @@ export const getArtist: RouteHandler = async (ctx) => {
         a.total_gigs,
         a.avatar_url,
         a.website_url,
+        a.instagram_handle,
+        a.tiktok_handle,
+        a.youtube_url,
+        a.spotify_url,
+        a.apple_music_url,
+        a.soundcloud_url,
+        a.facebook_url,
+        a.twitter_url,
+        a.bandcamp_url,
         (SELECT COUNT(*) FROM artist_followers WHERE artist_id = a.id) as follower_count
       FROM artists a
       WHERE a.id = ?
@@ -272,6 +281,15 @@ export const getArtist: RouteHandler = async (ctx) => {
       total_gigs: number
       avatar_url: string | null
       website_url: string | null
+      instagram_handle: string | null
+      tiktok_handle: string | null
+      youtube_url: string | null
+      spotify_url: string | null
+      apple_music_url: string | null
+      soundcloud_url: string | null
+      facebook_url: string | null
+      twitter_url: string | null
+      bandcamp_url: string | null
       follower_count: number
     }>()
 
@@ -301,10 +319,18 @@ export const getArtist: RouteHandler = async (ctx) => {
       }
     }
 
-    // Build social links (only website_url exists in schema for now)
-    const social_links: any = {}
+    // Build social links object for frontend compatibility
+    const social_links: Record<string, string> = {}
     if (artist.website_url) social_links.website = artist.website_url
-    // TODO: Add other social links when columns are added to database
+    if (artist.instagram_handle) social_links.instagram = artist.instagram_handle
+    if (artist.tiktok_handle) social_links.tiktok = artist.tiktok_handle
+    if (artist.youtube_url) social_links.youtube = artist.youtube_url
+    if (artist.spotify_url) social_links.spotify = artist.spotify_url
+    if (artist.apple_music_url) social_links.apple_music = artist.apple_music_url
+    if (artist.soundcloud_url) social_links.soundcloud = artist.soundcloud_url
+    if (artist.facebook_url) social_links.facebook = artist.facebook_url
+    if (artist.twitter_url) social_links.twitter = artist.twitter_url
+    if (artist.bandcamp_url) social_links.bandcamp = artist.bandcamp_url
 
     // Return artist data matching the Artist interface
     return successResponse(
@@ -326,6 +352,17 @@ export const getArtist: RouteHandler = async (ctx) => {
         avatar_url: artist.avatar_url || undefined,
         banner_url: undefined, // TODO: Add banner_url column to database
         social_links,
+        // Also include flat field names for SocialLinksBar component
+        website_url: artist.website_url,
+        instagram_handle: artist.instagram_handle,
+        tiktok_handle: artist.tiktok_handle,
+        youtube_url: artist.youtube_url,
+        spotify_url: artist.spotify_url,
+        apple_music_url: artist.apple_music_url,
+        soundcloud_url: artist.soundcloud_url,
+        facebook_url: artist.facebook_url,
+        twitter_url: artist.twitter_url,
+        bandcamp_url: artist.bandcamp_url,
         created_at: new Date().toISOString(), // TODO: Add to database
         updated_at: new Date().toISOString(), // TODO: Add to database
       },

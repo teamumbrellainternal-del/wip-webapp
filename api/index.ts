@@ -37,6 +37,7 @@ import * as searchController from './controllers/search'
 import * as accountController from './controllers/account'
 import * as adminController from './controllers/admin'
 import * as pusherController from './controllers/pusher'
+import * as mediaController from './controllers/media'
 import { aggregateAnalytics, handleAnalyticsCron } from './controllers/cron/analytics'
 import { requireAdmin } from './middleware/admin'
 
@@ -119,6 +120,9 @@ function setupRouter(): Router {
   // Public routes (no auth required)
   router.get('/v1/health', async (ctx) => handleHealthCheck(ctx.env))
 
+  // Media routes (public - serves files from R2)
+  router.get('/media/*', mediaController.serveFile)
+
   // Auth routes
   router.post('/v1/auth/webhook', async (ctx) => handleClerkWebhook(ctx.request, ctx.env, ctx.requestId))
   router.get('/v1/auth/session', async (ctx) => handleSessionCheck(ctx.request, ctx.env))
@@ -134,8 +138,7 @@ function setupRouter(): Router {
   router.delete('/v1/profile', profileController.deleteProfile, [authMiddleware])
   router.get('/v1/profile/completion', profileController.getProfileCompletion, [authMiddleware])
   router.get('/v1/profile/actions', profileController.getProfileActions, [authMiddleware])
-  router.post('/v1/profile/avatar/upload', profileController.uploadAvatar, [authMiddleware])
-  router.post('/v1/profile/avatar/confirm', profileController.confirmAvatarUpload, [authMiddleware])
+  router.post('/v1/profile/avatar', profileController.uploadAvatar, [authMiddleware])
   router.get('/v1/profile/:id', profileController.getPublicProfile) // Public profile
 
   // Profile tracks routes (task-3.4)

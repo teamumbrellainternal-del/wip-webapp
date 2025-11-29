@@ -134,6 +134,17 @@ export interface ArtistPublicProfile {
   follower_count: number
   base_rate_flat: number | null
   base_rate_hourly: number | null
+  // Social links (public)
+  website_url: string | null
+  instagram_handle: string | null
+  tiktok_handle: string | null
+  youtube_url: string | null
+  spotify_url: string | null
+  apple_music_url: string | null
+  soundcloud_url: string | null
+  facebook_url: string | null
+  twitter_url: string | null
+  bandcamp_url: string | null
 }
 
 /**
@@ -270,5 +281,16 @@ export function sanitizeArtistPublic(artist: Artist): ArtistPublicProfile {
     follower_count: artist.follower_count,
     base_rate_flat: artist.base_rate_flat,
     base_rate_hourly: artist.base_rate_hourly,
+    // Social links
+    website_url: artist.website_url,
+    instagram_handle: artist.instagram_handle,
+    tiktok_handle: artist.tiktok_handle,
+    youtube_url: artist.youtube_url,
+    spotify_url: artist.spotify_url,
+    apple_music_url: artist.apple_music_url,
+    soundcloud_url: artist.soundcloud_url,
+    facebook_url: artist.facebook_url,
+    twitter_url: artist.twitter_url,
+    bandcamp_url: artist.bandcamp_url,
   }
 }

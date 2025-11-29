@@ -95,6 +95,11 @@ migrations_dir = "db/migrations"
 binding = "KV"
 id = "04fceb9a09054bbd991d5252a9a169cf"
 
+# R2 Storage Configuration (default/local)
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "umbrella-dev-media"
+
 # Assets configuration for serving frontend as SPA from Workers
 [assets]
 directory = "./dist"
@@ -121,12 +126,9 @@ binding = "KV"
 id = "ef9530c365f94b12adcc128acf23e821"
 
 # R2 Storage Configuration (Task 10.7 - D-028: 24-hour download links)
-# Create bucket via: wrangler r2 bucket create umbrella-dev-media
-# CORS must be configured for presigned URLs
-# Uncomment when R2 is available (requires billing)
-# [[env.preview.r2_buckets]]
-# binding = "BUCKET"
-# bucket_name = "umbrella-dev-media"
+[[env.preview.r2_buckets]]
+binding = "BUCKET"
+bucket_name = "umbrella-preview-media"
 
 # Staging environment
 [env.staging]
@@ -146,6 +148,11 @@ migrations_dir = "db/migrations"
 [[env.staging.kv_namespaces]]
 binding = "KV"
 id = "24fee37dca904d53b87f403e6d9945da"
+
+# R2 Storage Configuration (staging)
+[[env.staging.r2_buckets]]
+binding = "BUCKET"
+bucket_name = "umbrella-staging-media"
 
 # Production environment
 [env.production]
@@ -176,10 +183,9 @@ binding = "KV"
 id = "d712547ed2b3478997506be4f97bc12a"
 
 # Production R2 bucket binding
-# Uncomment after creating the bucket via: wrangler r2 bucket create umbrella-prod
-# [[env.production.r2_buckets]]
-# binding = "BUCKET"
-# bucket_name = "umbrella-prod"
+[[env.production.r2_buckets]]
+binding = "BUCKET"
+bucket_name = "umbrella-prod-media"
 
 # Production cron triggers
 # Analytics aggregation: Daily at midnight UTC
