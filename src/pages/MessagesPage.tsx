@@ -83,13 +83,17 @@ export default function MessagesPage() {
   const fetchConversations = useCallback(async () => {
     try {
       const data = await messagesService.getConversations()
-      setConversations(data)
+      // Preserve unread_count: 0 for the currently viewed conversation
+      // (user is viewing it, so it's "read" regardless of what server says)
+      setConversations(
+        data.map((conv) => (conv.id === conversationId ? { ...conv, unread_count: 0 } : conv))
+      )
       setError(null)
     } catch (err) {
       console.error('Error fetching conversations:', err)
       setError(err as Error)
     }
-  }, [])
+  }, [conversationId])
 
   // Fetch messages for a conversation
   // If mergeOnly is true, only add new messages (don't replace existing) - used for polling
