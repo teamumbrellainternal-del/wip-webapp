@@ -55,7 +55,7 @@ function ProfileDropdownProduction() {
       try {
         const profile = await apiClient.getProfile()
         // Backend returns stage_name, frontend types expect artist_name
-        const profileData = profile as Record<string, unknown>
+        const profileData = profile as unknown as Record<string, unknown>
         const name = (profileData.stage_name as string) || profile?.artist_name
         if (name) {
           setArtistName(name)
