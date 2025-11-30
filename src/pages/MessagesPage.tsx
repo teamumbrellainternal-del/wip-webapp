@@ -151,7 +151,7 @@ export default function MessagesPage() {
           participant_id: targetUserId,
           context_type: 'artist',
         })
-        
+
         if (response.conversation?.id) {
           // Navigate to the conversation (replace history to avoid back-button issues)
           navigate(`/messages/${response.conversation.id}`, { replace: true })
@@ -392,7 +392,9 @@ export default function MessagesPage() {
   if (loading || redirectingToConversation) {
     return (
       <AppLayout>
-        <LoadingState message={redirectingToConversation ? "Opening conversation..." : "Loading messages..."} />
+        <LoadingState
+          message={redirectingToConversation ? 'Opening conversation...' : 'Loading messages...'}
+        />
       </AppLayout>
     )
   }

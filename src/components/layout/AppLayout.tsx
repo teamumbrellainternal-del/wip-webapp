@@ -3,21 +3,18 @@
  * Main authenticated app shell with navigation bar for Umbrella
  *
  * Features:
- * - Top navigation bar with logo, tabs, search, notifications, profile
+ * - Top navigation bar with logo, tabs, notifications, profile
  * - D-044: Tools navigation item
- * - D-071: Global search (Artists + Gigs)
  * - D-098: Settings access via profile dropdown
  */
 
 import { Link, useLocation } from 'react-router-dom'
-import { Search, Bell } from 'lucide-react'
+import { Bell } from 'lucide-react'
 import UmbrellaIcon from '@brand/assets/logos/umbrella-icon.svg'
 import { Button } from '@/components/ui/button'
 import { ProfileDropdown } from './ProfileDropdown'
-import { SearchModal } from './SearchModal'
 import { NotificationPanel } from './NotificationPanel'
 import { Footer } from './Footer'
-import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
 interface AppLayoutProps {
@@ -35,7 +32,6 @@ const navigationTabs = [
 
 export default function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation()
-  const [searchOpen, setSearchOpen] = useState(false)
 
   const isActiveTab = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`)
@@ -78,19 +74,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
               </nav>
             </div>
 
-            {/* Right Side: Search, Notifications, Profile */}
+            {/* Right Side: Notifications, Profile */}
             <div className="flex items-center gap-3">
-              {/* Search Icon - D-071: Global search for Artists + Gigs */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSearchOpen(true)}
-                className="relative"
-              >
-                <Search className="h-5 w-5" />
-                <span className="sr-only">Search artists or gigs</span>
-              </Button>
-
               {/* Notification Bell with Dropdown */}
               <NotificationPanel>
                 <Button variant="ghost" size="icon" className="relative">
@@ -137,9 +122,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
       {/* Footer */}
       <Footer />
-
-      {/* Search Modal - D-071 */}
-      <SearchModal open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
   )
 }

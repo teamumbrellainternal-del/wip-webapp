@@ -152,12 +152,12 @@ export function ConnectionButton({
           >
             <Clock className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
             {!compact && 'Pending'}
-            <MoreHorizontal className="h-3 w-3 ml-1" />
+            <MoreHorizontal className="ml-1 h-3 w-3" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={handleCancel} className="text-destructive">
-            <UserMinus className="h-4 w-4 mr-2" />
+            <UserMinus className="mr-2 h-4 w-4" />
             Withdraw Request
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -204,12 +204,12 @@ export function ConnectionButton({
           >
             <UserCheck className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
             {!compact && 'Connected'}
-            <MoreHorizontal className="h-3 w-3 ml-1" />
+            <MoreHorizontal className="ml-1 h-3 w-3" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={handleRemove} className="text-destructive">
-            <UserMinus className="h-4 w-4 mr-2" />
+            <UserMinus className="mr-2 h-4 w-4" />
             Remove Connection
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -221,4 +221,3 @@ export function ConnectionButton({
 }
 
 export default ConnectionButton
-

@@ -73,10 +73,10 @@ export default function NetworkPage() {
     setActionLoading(request.connection_id)
     try {
       await apiClient.acceptConnectionRequest(request.connection_id)
-      
+
       // Move from pending to connections
       setPendingRequests((prev) => prev.filter((r) => r.connection_id !== request.connection_id))
-      
+
       // Refresh connections list
       const connectionsRes = await apiClient.getConnections({ limit: 50 })
       setConnections(connectionsRes.connections)
@@ -196,7 +196,7 @@ export default function NetworkPage() {
   )
 
   const renderConnectionCard = (connection: Connection) => (
-    <Card key={connection.connection_id} className="hover:shadow-md transition-shadow">
+    <Card key={connection.connection_id} className="transition-shadow hover:shadow-md">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <Link to={`/artist/${connection.artist_id}`}>
@@ -205,14 +205,14 @@ export default function NetworkPage() {
               <AvatarFallback>{getInitials(connection.artist_name)}</AvatarFallback>
             </Avatar>
           </Link>
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             <Link
               to={`/artist/${connection.artist_id}`}
-              className="font-semibold text-foreground hover:underline truncate block"
+              className="block truncate font-semibold text-foreground hover:underline"
             >
               {connection.artist_name}
             </Link>
-            <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+            <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
               <MapPin className="h-3 w-3" />
               <span className="truncate">
                 {formatLocation(connection.location_city, connection.location_state)}
@@ -252,7 +252,10 @@ export default function NetworkPage() {
   )
 
   const renderPendingCard = (request: ConnectionRequest) => (
-    <Card key={request.connection_id} className="hover:shadow-md transition-shadow border-l-4 border-l-purple-500">
+    <Card
+      key={request.connection_id}
+      className="border-l-4 border-l-purple-500 transition-shadow hover:shadow-md"
+    >
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <Link to={`/artist/${request.artist_id}`}>
@@ -261,20 +264,20 @@ export default function NetworkPage() {
               <AvatarFallback>{getInitials(request.artist_name)}</AvatarFallback>
             </Avatar>
           </Link>
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             <Link
               to={`/artist/${request.artist_id}`}
-              className="font-semibold text-foreground hover:underline truncate block"
+              className="block truncate font-semibold text-foreground hover:underline"
             >
               {request.artist_name}
             </Link>
-            <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+            <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
               <MapPin className="h-3 w-3" />
               <span className="truncate">
                 {formatLocation(request.location_city, request.location_state)}
               </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="mt-1 text-xs text-muted-foreground">
               Sent {new Date(request.created_at).toLocaleDateString()}
             </p>
           </div>
@@ -309,7 +312,7 @@ export default function NetworkPage() {
   )
 
   const renderSentCard = (request: ConnectionRequest) => (
-    <Card key={request.connection_id} className="hover:shadow-md transition-shadow opacity-75">
+    <Card key={request.connection_id} className="opacity-75 transition-shadow hover:shadow-md">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <Link to={`/artist/${request.artist_id}`}>
@@ -318,20 +321,20 @@ export default function NetworkPage() {
               <AvatarFallback>{getInitials(request.artist_name)}</AvatarFallback>
             </Avatar>
           </Link>
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             <Link
               to={`/artist/${request.artist_id}`}
-              className="font-semibold text-foreground hover:underline truncate block"
+              className="block truncate font-semibold text-foreground hover:underline"
             >
               {request.artist_name}
             </Link>
-            <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+            <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
               <MapPin className="h-3 w-3" />
               <span className="truncate">
                 {formatLocation(request.location_city, request.location_state)}
               </span>
             </div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
               <Clock className="h-3 w-3" />
               <span>Pending since {new Date(request.created_at).toLocaleDateString()}</span>
             </div>
@@ -376,7 +379,7 @@ export default function NetworkPage() {
       sent: {
         icon: Send,
         title: 'No sent requests',
-        description: 'You haven\'t sent any connection requests.',
+        description: "You haven't sent any connection requests.",
         action: (
           <Link to="/marketplace/artists">
             <Button variant="outline" className="mt-4">
@@ -390,10 +393,10 @@ export default function NetworkPage() {
     const { icon: Icon, title, description, action } = config[type]
 
     return (
-      <div className="text-center py-12">
-        <Icon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-        <h3 className="font-semibold text-lg">{title}</h3>
-        <p className="text-muted-foreground mt-1">{description}</p>
+      <div className="py-12 text-center">
+        <Icon className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
+        <h3 className="text-lg font-semibold">{title}</h3>
+        <p className="mt-1 text-muted-foreground">{description}</p>
         {action}
       </div>
     )
@@ -407,13 +410,11 @@ export default function NetworkPage() {
         url="/network"
       />
 
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto max-w-6xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold">My Network</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your professional connections
-          </p>
+          <p className="mt-1 text-muted-foreground">Manage your professional connections</p>
         </div>
 
         {/* Tabs */}
@@ -482,9 +483,7 @@ export default function NetworkPage() {
                   <Clock className="h-5 w-5 text-purple-500" />
                   Pending Requests
                 </CardTitle>
-                <CardDescription>
-                  Connection requests waiting for your response
-                </CardDescription>
+                <CardDescription>Connection requests waiting for your response</CardDescription>
               </CardHeader>
               <CardContent>
                 {loading ? (
@@ -530,4 +529,3 @@ export default function NetworkPage() {
     </AppLayout>
   )
 }
-

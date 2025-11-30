@@ -134,10 +134,11 @@ export default function LoginPage() {
                 <button
                   key={index}
                   onClick={() => setCurrentSlide(index)}
-                  className={`h-2 rounded-full transition-all duration-300 ${index === currentSlide
-                    ? 'w-8 bg-purple-500'
-                    : 'w-2 bg-purple-200 hover:bg-purple-300 dark:bg-purple-800 dark:hover:bg-purple-700'
-                    }`}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    index === currentSlide
+                      ? 'w-8 bg-purple-500'
+                      : 'w-2 bg-purple-200 hover:bg-purple-300 dark:bg-purple-800 dark:hover:bg-purple-700'
+                  }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}

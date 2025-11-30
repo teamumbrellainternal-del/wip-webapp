@@ -64,16 +64,12 @@ export function MutualConnections({
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <Users className="h-4 w-4 text-muted-foreground" />
-      
+
       {/* Avatar stack */}
       <div className="flex -space-x-2">
         {displayedMutuals.map((mutual) => (
-          <Link
-            key={mutual.user_id}
-            to={`/artist/${mutual.artist_id}`}
-            className="relative block"
-          >
-            <Avatar className="h-6 w-6 border-2 border-background hover:z-10 transition-transform hover:scale-110">
+          <Link key={mutual.user_id} to={`/artist/${mutual.artist_id}`} className="relative block">
+            <Avatar className="h-6 w-6 border-2 border-background transition-transform hover:z-10 hover:scale-110">
               <AvatarImage src={mutual.avatar_url} alt={mutual.artist_name} />
               <AvatarFallback className="text-[10px]">
                 {getInitials(mutual.artist_name)}
@@ -104,9 +100,7 @@ export function MutualConnections({
               {displayedMutuals[0]?.artist_name}
             </Link>{' '}
             and {remainingCount + displayedMutuals.length - 1} other mutual{' '}
-            {remainingCount + displayedMutuals.length - 1 === 1
-              ? 'connection'
-              : 'connections'}
+            {remainingCount + displayedMutuals.length - 1 === 1 ? 'connection' : 'connections'}
           </>
         ) : (
           <>
@@ -120,4 +114,3 @@ export function MutualConnections({
 }
 
 export default MutualConnections
-

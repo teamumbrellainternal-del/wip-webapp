@@ -5,4 +5,3 @@
 
 export { ConnectionButton } from './ConnectionButton'
 export { MutualConnections } from './MutualConnections'
-

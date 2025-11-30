@@ -24,6 +24,7 @@ export const discoverArtists: RouteHandler = async (ctx) => {
   const availableNow = ctx.url.searchParams.get('available_now') === 'true'
   const limit = parseInt(ctx.url.searchParams.get('limit') || '20')
   const offset = parseInt(ctx.url.searchParams.get('offset') || '0')
+  const searchQuery = (ctx.url.searchParams.get('q') || ctx.url.searchParams.get('query'))?.trim()
 
   try {
     // Get authenticated user's location for distance calculation
@@ -66,6 +67,13 @@ export const discoverArtists: RouteHandler = async (ctx) => {
     `
 
     const bindings: any[] = []
+
+    // Text search filter (searches stage_name and bio)
+    if (searchQuery) {
+      query += ` AND (a.stage_name LIKE ? OR a.bio LIKE ?)`
+      const searchPattern = `%${searchQuery}%`
+      bindings.push(searchPattern, searchPattern)
+    }
 
     // Filter by genre (if provided)
     if (genres.length > 0) {

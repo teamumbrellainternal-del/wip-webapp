@@ -175,7 +175,7 @@ export function NotificationPanel({ children }: NotificationPanelProps) {
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-5 min-w-[20px] rounded-full px-1 text-xs"
+              className="absolute -right-1 -top-1 h-5 min-w-[20px] rounded-full px-1 text-xs"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </Badge>
@@ -192,7 +192,7 @@ export function NotificationPanel({ children }: NotificationPanelProps) {
               className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
               onClick={handleMarkAllRead}
             >
-              <CheckCheck className="h-3 w-3 mr-1" />
+              <CheckCheck className="mr-1 h-3 w-3" />
               Mark all read
             </Button>
           )}
@@ -226,12 +226,14 @@ export function NotificationPanel({ children }: NotificationPanelProps) {
                   >
                     <div
                       className={`mt-0.5 rounded-full p-2 ${
-                        !notification.read ? 'bg-purple-100 text-purple-600' : 'bg-muted text-muted-foreground'
+                        !notification.read
+                          ? 'bg-purple-100 text-purple-600'
+                          : 'bg-muted text-muted-foreground'
                       }`}
                     >
                       <Icon className="h-4 w-4" />
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p
                         className={`text-sm leading-tight ${
                           !notification.read ? 'font-medium' : 'text-muted-foreground'
@@ -239,10 +241,10 @@ export function NotificationPanel({ children }: NotificationPanelProps) {
                       >
                         {notification.title}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                      <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                         {notification.body}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         {formatTimeAgo(notification.created_at)}
                       </p>
                     </div>

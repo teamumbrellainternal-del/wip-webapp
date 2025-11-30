@@ -10,7 +10,7 @@ export type LogLevel = 'info' | 'warn' | 'error' | 'debug'
 export interface LogContext {
   requestId?: string
   userId?: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 class Logger {
