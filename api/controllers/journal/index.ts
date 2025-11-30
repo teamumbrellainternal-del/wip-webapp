@@ -70,8 +70,8 @@ export const listEntries: RouteHandler = async (ctx) => {
       )
     }
 
-    // Build query based on filter
-    let query = 'SELECT id, artist_id, title, entry_type, created_at, updated_at FROM journal_entries WHERE artist_id = ?'
+    // Build query based on filter - include content column for full note data
+    let query = 'SELECT id, artist_id, title, content, entry_type, created_at, updated_at FROM journal_entries WHERE artist_id = ?'
     const params: any[] = [artist.id]
 
     if (entryType) {
@@ -84,10 +84,29 @@ export const listEntries: RouteHandler = async (ctx) => {
     // Execute query
     const result = await ctx.env.DB.prepare(query).bind(...params).all()
 
+    // Parse content JSON for each entry
+    const entries = (result.results || []).map((entry: any) => {
+      let parsedContent = []
+      if (entry.content) {
+        try {
+          parsedContent = typeof entry.content === 'string'
+            ? JSON.parse(entry.content)
+            : entry.content
+        } catch (e) {
+          console.error('Failed to parse content JSON for entry:', entry.id, e)
+          parsedContent = []
+        }
+      }
+      return {
+        ...entry,
+        content: parsedContent,
+      }
+    })
+
     return successResponse(
       {
-        entries: result.results || [],
-        count: result.results?.length || 0,
+        entries,
+        count: entries.length,
       },
       200,
       ctx.requestId

@@ -66,21 +66,35 @@ export const serveFile: RouteHandler = async (ctx) => {
 
     // Determine Content-Type from stored metadata or file extension
     let contentType = object.httpMetadata?.contentType || 'application/octet-stream'
-    
+
     // Fallback: derive from file extension if not set
     if (contentType === 'application/octet-stream') {
       const ext = key.split('.').pop()?.toLowerCase()
       const mimeTypes: Record<string, string> = {
+        // Images
         'jpg': 'image/jpeg',
         'jpeg': 'image/jpeg',
         'png': 'image/png',
         'webp': 'image/webp',
         'gif': 'image/gif',
         'heic': 'image/heic',
+        // Audio
         'mp3': 'audio/mpeg',
         'wav': 'audio/wav',
+        'flac': 'audio/flac',
+        'm4a': 'audio/x-m4a',
+        'aac': 'audio/aac',
+        'ogg': 'audio/ogg',
+        // Video
         'mp4': 'video/mp4',
+        'mov': 'video/quicktime',
+        'webm': 'video/webm',
+        'avi': 'video/x-msvideo',
+        // Documents
         'pdf': 'application/pdf',
+        'txt': 'text/plain',
+        'md': 'text/markdown',
+        'csv': 'text/csv',
       }
       contentType = (ext && mimeTypes[ext]) || contentType
     }
@@ -89,11 +103,30 @@ export const serveFile: RouteHandler = async (ctx) => {
     const headers = new Headers()
     headers.set('Content-Type', contentType)
     headers.set('Content-Length', object.size.toString())
-    
+
+    // Set Content-Disposition to inline for viewable content types
+    // This tells the browser to display the content rather than download it
+    const viewableTypes = [
+      'image/', 'video/', 'audio/', 'application/pdf', 'text/'
+    ]
+    const isViewable = viewableTypes.some(type => contentType.startsWith(type))
+    headers.set('Content-Disposition', isViewable ? 'inline' : 'attachment')
+
+    // For PDFs and text files that need to be displayed in iframes,
+    // override the global CSP to allow framing from same origin
+    const iframeTypes = ['application/pdf', 'text/']
+    const needsIframe = iframeTypes.some(type => contentType.startsWith(type))
+    if (needsIframe) {
+      // Allow this content to be framed by our app
+      headers.set('X-Frame-Options', 'SAMEORIGIN')
+      // Remove restrictive CSP for iframe-viewable content
+      headers.set('Content-Security-Policy', "frame-ancestors 'self'")
+    }
+
     // Cache headers for performance
     // Avatars and media can be cached for 1 hour, with revalidation
     headers.set('Cache-Control', 'public, max-age=3600, must-revalidate')
-    
+
     // ETag for cache validation
     if (object.etag) {
       headers.set('ETag', object.etag)
@@ -108,10 +141,10 @@ export const serveFile: RouteHandler = async (ctx) => {
       })
     }
 
-    logger.info('📁 Serving file:', { 
-      key, 
-      size: object.size, 
-      contentType 
+    logger.info('📁 Serving file:', {
+      key,
+      size: object.size,
+      contentType
     })
 
     // Return the file

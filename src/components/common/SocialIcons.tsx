@@ -229,10 +229,41 @@ function getPlatformUrl(platform: string, value: string): string {
   }
 }
 
+import { ToolboxButton } from '@/components/toolbox'
+
 interface SocialLinksBarProps {
   data: SocialLinksData
   className?: string
   iconClassName?: string
+}
+
+interface SocialLinksBarWithToolboxProps extends SocialLinksBarProps {
+  showToolbox?: boolean
+}
+
+/**
+ * SocialLinksBar - Displays clickable social platform icons
+ * Supports both flat fields (from DB) and nested social_links object
+ */
+// Helper function to get URL for a platform
+function getUrlForPlatform(
+  data: SocialLinksData,
+  flatKey: string,
+  nestedKey: string
+): string | null {
+  // Check flat field first (direct from DB)
+  const flatValue = (data as Record<string, unknown>)[flatKey] as string | null | undefined
+  if (flatValue) {
+    return getPlatformUrl(nestedKey, flatValue)
+  }
+
+  // Check nested social_links object
+  const nestedValue = data.social_links?.[nestedKey as keyof typeof data.social_links]
+  if (nestedValue) {
+    return getPlatformUrl(nestedKey, nestedValue)
+  }
+
+  return null
 }
 
 /**
@@ -240,26 +271,9 @@ interface SocialLinksBarProps {
  * Supports both flat fields (from DB) and nested social_links object
  */
 export function SocialLinksBar({ data, className = '', iconClassName = '' }: SocialLinksBarProps) {
-  // Get URL for a platform, checking both flat and nested formats
-  const getUrl = (flatKey: string, nestedKey: string): string | null => {
-    // Check flat field first (direct from DB)
-    const flatValue = (data as Record<string, unknown>)[flatKey] as string | null | undefined
-    if (flatValue) {
-      return getPlatformUrl(nestedKey, flatValue)
-    }
-
-    // Check nested social_links object
-    const nestedValue = data.social_links?.[nestedKey as keyof typeof data.social_links]
-    if (nestedValue) {
-      return getPlatformUrl(nestedKey, nestedValue)
-    }
-
-    return null
-  }
-
   // Filter to only platforms with URLs
   const availablePlatforms = PLATFORMS.filter(({ flatKey, nestedKey }) =>
-    getUrl(flatKey, nestedKey)
+    getUrlForPlatform(data, flatKey, nestedKey)
   )
 
   if (availablePlatforms.length === 0) {
@@ -269,7 +283,7 @@ export function SocialLinksBar({ data, className = '', iconClassName = '' }: Soc
   return (
     <div className={`flex gap-3 ${className}`}>
       {availablePlatforms.map(({ key, flatKey, nestedKey, Icon, label }) => {
-        const url = getUrl(flatKey, nestedKey)
+        const url = getUrlForPlatform(data, flatKey, nestedKey)
         if (!url) return null
 
         return (
@@ -286,6 +300,52 @@ export function SocialLinksBar({ data, className = '', iconClassName = '' }: Soc
           </a>
         )
       })}
+    </div>
+  )
+}
+
+/**
+ * SocialLinksBarWithToolbox - Social links with optional artist toolbox button
+ * Shows the toolbox button when viewing own profile in preview mode
+ */
+export function SocialLinksBarWithToolbox({
+  data,
+  className = '',
+  iconClassName = '',
+  showToolbox = false,
+}: SocialLinksBarWithToolboxProps) {
+  // Filter to only platforms with URLs
+  const availablePlatforms = PLATFORMS.filter(({ flatKey, nestedKey }) =>
+    getUrlForPlatform(data, flatKey, nestedKey)
+  )
+
+  // Show nothing only if no platforms AND no toolbox
+  if (availablePlatforms.length === 0 && !showToolbox) {
+    return null
+  }
+
+  return (
+    <div className={`flex items-center gap-3 ${className}`}>
+      {availablePlatforms.map(({ key, flatKey, nestedKey, Icon, label }) => {
+        const url = getUrlForPlatform(data, flatKey, nestedKey)
+        if (!url) return null
+
+        return (
+          <a
+            key={key}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`flex h-10 w-10 items-center justify-center rounded-full bg-muted transition-colors hover:bg-muted/80 ${iconClassName}`}
+            title={label}
+            aria-label={`Visit ${label} profile`}
+          >
+            <Icon />
+          </a>
+        )
+      })}
+
+      {showToolbox && <ToolboxButton />}
     </div>
   )
 }

@@ -624,17 +624,12 @@ export const violetService = {
 export const filesService = {
   /**
    * Upload file to R2 (D-026: No upload limit, 50GB quota)
+   * Uses direct upload endpoint (like avatar upload)
+   * Sends FormData to backend which handles R2 upload internally
    */
-  upload: (file: File, metadata?: { title?: string; description?: string }) => {
-    const formData = new FormData()
-    formData.append('file', file)
-    if (metadata?.title) formData.append('title', metadata.title)
-    if (metadata?.description) formData.append('description', metadata.description)
-
-    return apiRequest<FileUploadResponse>('/files/upload', {
-      method: 'POST',
-      body: formData as unknown as Record<string, unknown>,
-    })
+  upload: async (file: File): Promise<FileUploadResponse> => {
+    // Use apiClient's uploadFile method which handles FormData correctly
+    return apiClient.uploadFile(file)
   },
 
   /**
@@ -664,7 +659,7 @@ export const filesService = {
       used_bytes: number
       total_bytes: number
       percentage: number
-    }>('/files/usage'),
+    }>('/files/storage'),
 }
 
 // ============================================================================
@@ -923,7 +918,7 @@ export const broadcastService = {
    * (D-049: Text-only broadcasts in MVP)
    */
   send: (data: BroadcastRequest) =>
-    apiRequest<BroadcastResponse>('/broadcast', {
+    apiRequest<BroadcastResponse>('/broadcasts', {
       method: 'POST',
       body: data,
     }),
@@ -931,18 +926,18 @@ export const broadcastService = {
   /**
    * Get all broadcast messages
    */
-  getAll: () => apiRequest<BroadcastMessage[]>('/broadcast/messages'),
+  getAll: () => apiRequest<BroadcastMessage[]>('/broadcasts'),
 
   /**
    * Get a single broadcast message by ID
    */
-  getById: (id: string) => apiRequest<BroadcastMessage>(`/broadcast/messages/${id}`),
+  getById: (id: string) => apiRequest<BroadcastMessage>(`/broadcasts/${id}`),
 
   /**
    * Save a draft broadcast
    */
   saveDraft: (data: { subject: string; body: string; list_ids: string[] }) =>
-    apiRequest<BroadcastMessage>('/broadcast/drafts', {
+    apiRequest<BroadcastMessage>('/broadcasts/drafts', {
       method: 'POST',
       body: data,
     }),
@@ -951,7 +946,7 @@ export const broadcastService = {
    * Update a draft broadcast
    */
   updateDraft: (id: string, data: Partial<BroadcastMessage>) =>
-    apiRequest<BroadcastMessage>(`/broadcast/drafts/${id}`, {
+    apiRequest<BroadcastMessage>(`/broadcasts/drafts/${id}`, {
       method: 'PUT',
       body: data,
     }),
@@ -960,7 +955,7 @@ export const broadcastService = {
    * Delete a draft broadcast
    */
   deleteDraft: (id: string) =>
-    apiRequest<void>(`/broadcast/drafts/${id}`, {
+    apiRequest<void>(`/broadcasts/drafts/${id}`, {
       method: 'DELETE',
     }),
 }

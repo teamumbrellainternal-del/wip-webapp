@@ -19,7 +19,8 @@ export default tseslint.config(
       '*.cjs',
       '**/*.cjs',
       'inspiration/**',
-      'brand/**'
+      'brand/**',
+      '_archive/**'
     ]
   },
   js.configs.recommended,

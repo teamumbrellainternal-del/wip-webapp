@@ -1022,3 +1022,238 @@ export const moveFile: RouteHandler = async (ctx) => {
     )
   }
 }
+
+/**
+ * Upload file directly to R2 (like avatar upload)
+ * POST /v1/files/direct
+ * Accepts multipart/form-data with the file
+ * Uploads directly to R2 and creates file record
+ * 
+ * This is the recommended upload method for development
+ * as it doesn't require signed URLs
+ */
+export const uploadFileDirect: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  // Check if R2 storage is configured
+  if (!ctx.env.BUCKET) {
+    return errorResponse(
+      ErrorCodes.SERVICE_UNAVAILABLE,
+      'File storage is not configured',
+      503,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    // Parse multipart form data
+    const formData = await ctx.request.formData()
+    const file = formData.get('file') as File | null
+
+    if (!file) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'No file provided. Send file in form-data with key "file"',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    const contentType = file.type
+    const fileSize = file.size
+    const filename = file.name
+
+    // Get artist profile
+    const artist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE user_id = ?'
+    ).bind(ctx.userId).first<{ id: string }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist profile not found',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Validate file type
+    const ALLOWED_CONTENT_TYPES = [
+      // Images
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/heic',
+      'image/gif',
+      // Audio
+      'audio/mpeg',
+      'audio/wav',
+      'audio/flac',
+      'audio/mp3',
+      'audio/x-m4a',
+      'audio/m4a',
+      'audio/aac',
+      'audio/ogg',
+      // Video
+      'video/mp4',
+      'video/quicktime',
+      'video/webm',
+      'video/x-msvideo',
+      'video/avi',
+      // Documents
+      'application/pdf',
+      'application/x-pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'text/plain',
+      'text/csv',
+      'text/markdown',
+      'text/x-markdown',
+    ]
+
+    // Log the content type for debugging
+    console.log(`Upload attempt - filename: ${filename}, contentType: ${contentType}, size: ${fileSize}`)
+
+    if (!ALLOWED_CONTENT_TYPES.includes(contentType)) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        `Invalid file type "${contentType}". Allowed types: images, audio, video, documents`,
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Validate file size (50MB max per file)
+    const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+    if (fileSize > MAX_FILE_SIZE) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        `File size ${Math.round(fileSize / (1024 * 1024))}MB exceeds maximum allowed size of 50MB`,
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Check storage quota (50GB per artist)
+    const STORAGE_QUOTA = 50 * 1024 * 1024 * 1024 // 50GB
+    const storageQuery = await ctx.env.DB.prepare(
+      'SELECT SUM(file_size_bytes) as total FROM files WHERE artist_id = ?'
+    ).bind(artist.id).first<{ total: number | null }>()
+
+    const currentUsage = storageQuery?.total || 0
+    if (currentUsage + fileSize > STORAGE_QUOTA) {
+      const usedGB = (currentUsage / (1024 * 1024 * 1024)).toFixed(2)
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        `Storage quota exceeded. Current usage: ${usedGB}GB / 50GB`,
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Determine file category based on MIME type
+    let category = 'other'
+    if (contentType.startsWith('image/')) category = 'press_photo'
+    else if (contentType.startsWith('audio/')) category = 'music'
+    else if (contentType.startsWith('video/')) category = 'video'
+    else if (contentType.includes('pdf') || contentType.includes('document') || contentType.includes('text')) category = 'document'
+
+    // Generate unique file ID and R2 key
+    const fileId = generateUUIDv4()
+    const timestamp = Date.now()
+    const safeFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_')
+    const r2Key = `files/${artist.id}/${timestamp}-${safeFilename}`
+
+    // Upload file to R2
+    const fileBuffer = await file.arrayBuffer()
+    await ctx.env.BUCKET.put(r2Key, fileBuffer, {
+      httpMetadata: {
+        contentType: contentType,
+      },
+      customMetadata: {
+        uploadedBy: ctx.userId,
+        uploadedAt: new Date().toISOString(),
+        originalFilename: filename,
+        fileId: fileId,
+      },
+    })
+
+    console.log(`File uploaded to R2: ${r2Key}`)
+
+    // Insert file metadata into database
+    const now = new Date().toISOString()
+    await ctx.env.DB.prepare(
+      `INSERT INTO files (id, artist_id, filename, file_size_bytes, mime_type, r2_key, category, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      fileId,
+      artist.id,
+      filename,
+      fileSize,
+      contentType,
+      r2Key,
+      category,
+      now
+    ).run()
+
+    // Update storage quota
+    const existingQuota = await ctx.env.DB.prepare(
+      'SELECT used_bytes FROM storage_quotas WHERE artist_id = ?'
+    ).bind(artist.id).first<{ used_bytes: number }>()
+
+    if (existingQuota) {
+      await ctx.env.DB.prepare(
+        'UPDATE storage_quotas SET used_bytes = used_bytes + ?, updated_at = ? WHERE artist_id = ?'
+      ).bind(fileSize, now, artist.id).run()
+    } else {
+      await ctx.env.DB.prepare(
+        'INSERT INTO storage_quotas (artist_id, used_bytes, limit_bytes, updated_at) VALUES (?, ?, ?, ?)'
+      ).bind(artist.id, fileSize, STORAGE_QUOTA, now).run()
+    }
+
+    // Build public URL for the file
+    const fileUrl = `/media/${r2Key}`
+
+    return successResponse(
+      {
+        file: {
+          id: fileId,
+          filename: filename,
+          file_type: contentType,
+          file_size: fileSize,
+          url: fileUrl,
+          category: category,
+          uploaded_at: now,
+        },
+        success: true,
+      },
+      201,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error uploading file:', error)
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Failed to upload file',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}

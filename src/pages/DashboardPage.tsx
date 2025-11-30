@@ -175,7 +175,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 className="w-fit border-purple-300 hover:bg-purple-50 dark:border-purple-700 dark:hover:bg-purple-950"
-                onClick={() => navigate('/profile/edit')}
+                onClick={() => navigate('/profile/view')}
               >
                 <User className="mr-2 h-4 w-4" />
                 View My Profile

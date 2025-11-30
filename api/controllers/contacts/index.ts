@@ -9,9 +9,13 @@ import { successResponse, errorResponse } from '../../utils/response'
 import { ErrorCodes } from '../../utils/error-codes'
 import { generateUUIDv4 } from '../../utils/uuid'
 
+// Reserved ID for the virtual followers list
+export const FOLLOWERS_LIST_ID = '__followers__'
+
 /**
  * Get all contact lists for artist
  * GET /v1/contacts/lists
+ * Includes a virtual "Your Followers" list auto-populated from artist_followers table
  */
 export const getContactLists: RouteHandler = async (ctx) => {
   if (!ctx.userId) {
@@ -27,10 +31,10 @@ export const getContactLists: RouteHandler = async (ctx) => {
   try {
     // Get artist profile
     const artist = await ctx.env.DB.prepare(
-      'SELECT id FROM artists WHERE user_id = ?'
+      'SELECT id, created_at FROM artists WHERE user_id = ?'
     )
       .bind(ctx.userId)
-      .first<{ id: string }>()
+      .first<{ id: string; created_at: string }>()
 
     if (!artist) {
       return errorResponse(
@@ -42,7 +46,25 @@ export const getContactLists: RouteHandler = async (ctx) => {
       )
     }
 
-    // Get all contact lists for this artist
+    // Query follower count for this artist
+    const followerCount = await ctx.env.DB.prepare(
+      'SELECT COUNT(*) as count FROM artist_followers WHERE artist_id = ?'
+    )
+      .bind(artist.id)
+      .first<{ count: number }>()
+
+    // Create virtual "Your Followers" list (always first in the list)
+    const followersVirtualList = {
+      id: FOLLOWERS_LIST_ID,
+      list_id: FOLLOWERS_LIST_ID,
+      list_name: 'Your Followers',
+      list_description: 'All users who follow your profile',
+      contact_count: followerCount?.count || 0,
+      created_at: artist.created_at || new Date().toISOString(),
+      is_system_list: true, // Flag to indicate this is not a user-created list
+    }
+
+    // Get all user-created contact lists for this artist
     const lists = await ctx.env.DB.prepare(
       'SELECT * FROM contact_lists WHERE artist_id = ? ORDER BY created_at DESC'
     )
@@ -59,17 +81,20 @@ export const getContactLists: RouteHandler = async (ctx) => {
           .first<{ count: number }>()
 
         return {
+          id: list.id,
           list_id: list.id,
           list_name: list.name,
           list_description: list.description,
           contact_count: countResult?.count || 0,
           created_at: list.created_at,
+          is_system_list: false,
         }
       })
     )
 
+    // Return followers list first, then user-created lists
     return successResponse(
-      listsWithCounts, // Return array directly to match frontend expectation (ContactList[])
+      [followersVirtualList, ...listsWithCounts],
       200,
       ctx.requestId
     )

@@ -154,7 +154,7 @@ function ProfileDropdownContent({ user, onLogout }: { user: UserData; onLogout: 
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link to="/profile/edit" className="cursor-pointer">
+          <Link to="/profile/view" className="cursor-pointer">
             <User className="mr-2 h-4 w-4" />
             View My Profile
           </Link>
