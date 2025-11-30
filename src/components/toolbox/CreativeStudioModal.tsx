@@ -5,7 +5,17 @@
  */
 
 import { useState, useEffect, useRef } from 'react'
-import { ArrowLeft, Save, Loader2, Clock, Music, Calendar, FileText, Plus, Trash2 } from 'lucide-react'
+import {
+  ArrowLeft,
+  Save,
+  Loader2,
+  Clock,
+  Music,
+  Calendar,
+  FileText,
+  Plus,
+  Trash2,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -47,26 +57,26 @@ interface CreativeStudioModalProps {
 
 export function CreativeStudioModal({ open, onOpenChange, onBack }: CreativeStudioModalProps) {
   const { toast } = useToast()
-  
+
   // Category state
   const [entryType, setEntryType] = useState<JournalEntryType>('general_note')
-  
+
   // Notes list state
   const [notes, setNotes] = useState<JournalEntry[]>([])
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null)
   const [isCreating, setIsCreating] = useState(false)
-  
+
   // Editor state
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  
+
   // UI state
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  
+
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   // Load notes when modal opens or entry type changes
@@ -104,7 +114,7 @@ export function CreativeStudioModal({ open, onOpenChange, onBack }: CreativeStud
       const response = await journalService.list(entryType)
       const filteredNotes = response.entries.filter((e) => e.entry_type === entryType)
       setNotes(filteredNotes)
-      
+
       // Select the most recent note if available
       if (filteredNotes.length > 0) {
         selectNote(filteredNotes[0])
@@ -127,7 +137,7 @@ export function CreativeStudioModal({ open, onOpenChange, onBack }: CreativeStud
     setSelectedNoteId(note.id)
     setIsCreating(false)
     setTitle(note.title || '')
-    
+
     // Extract text content from the first text block
     const textBlock = note.content?.find((b: JournalBlock) => b.type === 'text')
     if (textBlock) {
@@ -154,7 +164,7 @@ export function CreativeStudioModal({ open, onOpenChange, onBack }: CreativeStud
     if (hasUnsavedChanges) {
       await handleSave(true)
     }
-    
+
     setSelectedNoteId(null)
     setIsCreating(true)
     setTitle('')
@@ -165,12 +175,12 @@ export function CreativeStudioModal({ open, onOpenChange, onBack }: CreativeStud
   // Handle note selection with auto-save
   const handleSelectNote = async (note: JournalEntry) => {
     if (note.id === selectedNoteId) return
-    
+
     // Save current note if unsaved
     if (hasUnsavedChanges) {
       await handleSave(true)
     }
-    
+
     selectNote(note)
   }
 
@@ -217,13 +227,15 @@ export function CreativeStudioModal({ open, onOpenChange, onBack }: CreativeStud
           title: title.trim() || undefined,
           blocks: blocks,
         })
-        
+
         // Update note in local state
-        setNotes(prev => prev.map(n => 
-          n.id === selectedNoteId 
-            ? { ...n, title: title.trim() || undefined, updated_at: new Date().toISOString() }
-            : n
-        ))
+        setNotes((prev) =>
+          prev.map((n) =>
+            n.id === selectedNoteId
+              ? { ...n, title: title.trim() || undefined, updated_at: new Date().toISOString() }
+              : n
+          )
+        )
       } else {
         // Create new note
         const response = await journalService.create({
@@ -231,10 +243,10 @@ export function CreativeStudioModal({ open, onOpenChange, onBack }: CreativeStud
           title: title.trim() || undefined,
           blocks: blocks,
         })
-        
+
         // Add new note to list and select it
         const newNote = response.entry
-        setNotes(prev => [newNote, ...prev])
+        setNotes((prev) => [newNote, ...prev])
         setSelectedNoteId(newNote.id)
         setIsCreating(false)
       }
@@ -262,21 +274,21 @@ export function CreativeStudioModal({ open, onOpenChange, onBack }: CreativeStud
   // Handle delete
   const handleDelete = async () => {
     if (!selectedNoteId) return
-    
+
     try {
       await journalService.delete(selectedNoteId)
-      
+
       // Remove from list
-      const updatedNotes = notes.filter(n => n.id !== selectedNoteId)
+      const updatedNotes = notes.filter((n) => n.id !== selectedNoteId)
       setNotes(updatedNotes)
-      
+
       // Select next note or clear
       if (updatedNotes.length > 0) {
         selectNote(updatedNotes[0])
       } else {
         clearEditor()
       }
-      
+
       toast({
         title: 'Note deleted',
       })
@@ -294,7 +306,7 @@ export function CreativeStudioModal({ open, onOpenChange, onBack }: CreativeStud
   // Handle entry type change
   const handleEntryTypeChange = async (newType: JournalEntryType) => {
     if (newType === entryType) return
-    
+
     // Save current note if unsaved
     if (hasUnsavedChanges) {
       await handleSave(true)
@@ -312,7 +324,7 @@ export function CreativeStudioModal({ open, onOpenChange, onBack }: CreativeStud
     const date = new Date(dateStr)
     const now = new Date()
     const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
-    
+
     if (diffDays === 0) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     } else if (diffDays === 1) {
@@ -348,12 +360,7 @@ export function CreativeStudioModal({ open, onOpenChange, onBack }: CreativeStud
                 <DialogTitle>Creative Studio</DialogTitle>
                 <DialogDescription>Your personal scratchpad for ideas</DialogDescription>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNewNote}
-                className="gap-1.5"
-              >
+              <Button variant="outline" size="sm" onClick={handleNewNote} className="gap-1.5">
                 <Plus className="h-3.5 w-3.5" />
                 New Note
               </Button>
@@ -403,12 +410,7 @@ export function CreativeStudioModal({ open, onOpenChange, onBack }: CreativeStud
                 ) : notes.length === 0 && !isCreating ? (
                   <div className="p-4 text-center">
                     <p className="text-sm text-muted-foreground">No notes yet</p>
-                    <Button
-                      variant="link"
-                      size="sm"
-                      onClick={handleNewNote}
-                      className="mt-1"
-                    >
+                    <Button variant="link" size="sm" onClick={handleNewNote} className="mt-1">
                       Create one
                     </Button>
                   </div>
@@ -418,15 +420,11 @@ export function CreativeStudioModal({ open, onOpenChange, onBack }: CreativeStud
                       <div
                         className={cn(
                           'mb-1 cursor-pointer rounded-md p-3 transition-colors',
-                          'bg-primary/10 border border-primary/20'
+                          'border border-primary/20 bg-primary/10'
                         )}
                       >
-                        <p className="truncate text-sm font-medium">
-                          {title || 'New Note'}
-                        </p>
-                        <p className="mt-0.5 text-xs text-muted-foreground">
-                          Creating...
-                        </p>
+                        <p className="truncate text-sm font-medium">{title || 'New Note'}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">Creating...</p>
                       </div>
                     )}
                     {notes.map((note) => (

@@ -297,7 +297,7 @@ export default function ProfileEditPage() {
             variant="ghost"
             size="sm"
             onClick={() => navigate('/profile/view')}
-            className="mb-4 -ml-2 text-muted-foreground hover:text-foreground"
+            className="-ml-2 mb-4 text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Profile

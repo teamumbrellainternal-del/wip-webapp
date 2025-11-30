@@ -147,4 +147,3 @@ export function ToolboxModal({ open, onOpenChange }: ToolboxModalProps) {
 }
 
 export default ToolboxModal
-

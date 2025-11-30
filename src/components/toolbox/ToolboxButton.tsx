@@ -40,13 +40,9 @@ export function ToolboxButton({ className = '' }: ToolboxButtonProps) {
         <UmbrellaIcon className="h-5 w-5" />
       </button>
 
-      <ToolboxModal 
-        open={isModalOpen} 
-        onOpenChange={setIsModalOpen} 
-      />
+      <ToolboxModal open={isModalOpen} onOpenChange={setIsModalOpen} />
     </>
   )
 }
 
 export default ToolboxButton
-

@@ -99,7 +99,7 @@ export default function FilesPage() {
     try {
       setLoading(true)
       // The list endpoint returns files and storage info together
-      const filesResponse = await filesService.list() as unknown as {
+      const filesResponse = (await filesService.list()) as unknown as {
         files: Array<{
           id: string
           filename: string
@@ -327,11 +327,7 @@ export default function FilesPage() {
           <CardContent className="p-0">
             <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-muted">
               {isImage && file.url ? (
-                <img
-                  src={file.url}
-                  alt={file.filename}
-                  className="h-full w-full object-cover"
-                />
+                <img src={file.url} alt={file.filename} className="h-full w-full object-cover" />
               ) : (
                 <FileIcon className="h-12 w-12 text-muted-foreground" />
               )}
