@@ -594,6 +594,30 @@ Let's make some noise together.
           text: `${data.accepterName} accepted your connection request on Umbrella! View their profile: ${data.profileUrl}`,
         }
 
+      case 'new_follower':
+        return {
+          subject: `${data.followerName} started following you on Umbrella!`,
+          html: `
+            <h1>You Have a New Follower!</h1>
+            <p><strong>${data.followerName}</strong> is now following you on Umbrella.</p>
+            <p>They'll see your updates, new tracks, and upcoming gigs in their feed.</p>
+            <a href="${data.profileUrl}" style="display: inline-block; padding: 12px 24px; background: #000; color: #fff; text-decoration: none; border-radius: 4px;">View ${data.followerName}'s Profile</a>
+          `,
+          text: `${data.followerName} started following you on Umbrella! View their profile: ${data.profileUrl}`,
+        }
+
+      case 'profile_view':
+        return {
+          subject: `${data.viewerName} viewed your profile on Umbrella`,
+          html: `
+            <h1>Someone Checked Out Your Profile!</h1>
+            <p><strong>${data.viewerName}</strong> recently viewed your profile on Umbrella.</p>
+            <p>This could be a great opportunity to connect!</p>
+            <a href="${data.profileUrl}" style="display: inline-block; padding: 12px 24px; background: #000; color: #fff; text-decoration: none; border-radius: 4px;">View ${data.viewerName}'s Profile</a>
+          `,
+          text: `${data.viewerName} viewed your profile on Umbrella. Check out their profile: ${data.profileUrl}`,
+        }
+
       default:
         return {
           subject: 'Notification from Umbrella',

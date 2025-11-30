@@ -47,6 +47,8 @@ export type EmailTemplate =
   | 'broadcast'
   | 'connection_request'
   | 'connection_accepted'
+  | 'new_follower'
+  | 'profile_view'
 
 /**
  * Email send parameters

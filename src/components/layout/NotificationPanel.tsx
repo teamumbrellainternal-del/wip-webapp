@@ -99,7 +99,7 @@ export function NotificationPanel({ children }: NotificationPanelProps) {
       try {
         const response = await apiClient.getUnreadNotificationCount()
         setUnreadCount(response.unread_count)
-      } catch (_error) {
+      } catch {
         // Silently fail - don't spam console
       }
     }

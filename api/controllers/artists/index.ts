@@ -7,6 +7,8 @@ import type { RouteHandler } from '../../router'
 import { successResponse, errorResponse } from '../../utils/response'
 import { ErrorCodes } from '../../utils/error-codes'
 import { generateUUIDv4 } from '../../utils/uuid'
+import { createResendService } from '../../services/resend'
+import { logger } from '../../utils/logger'
 
 /**
  * Discover artists (marketplace)
@@ -523,6 +525,69 @@ export const followArtist: RouteHandler = async (ctx) => {
     )
       .bind(artistId)
       .run()
+
+    // 5.5. Send in-app notification + email to followed artist (fire-and-forget)
+    try {
+      // Get follower's artist info
+      const followerArtist = await ctx.env.DB.prepare(
+        'SELECT id, stage_name, avatar_url FROM artists WHERE user_id = ?'
+      )
+        .bind(ctx.userId)
+        .first<{ id: string; stage_name: string; avatar_url: string | null }>()
+
+      // Get followed artist's email
+      const followedUser = await ctx.env.DB.prepare(
+        'SELECT email FROM users WHERE id = ?'
+      )
+        .bind(artist.user_id)
+        .first<{ email: string }>()
+
+      if (followerArtist && followedUser) {
+        const followerName = followerArtist.stage_name || 'Someone'
+
+        // Create in-app notification
+        const notificationId = generateUUIDv4()
+        const notificationData = JSON.stringify({
+          follower_user_id: ctx.userId,
+          follower_artist_id: followerArtist.id,
+          follower_artist_name: followerName,
+        })
+
+        await ctx.env.DB.prepare(`
+          INSERT INTO notifications (id, user_id, type, title, body, data, read, created_at)
+          VALUES (?, ?, 'new_follower', ?, ?, ?, 0, ?)
+        `)
+          .bind(
+            notificationId,
+            artist.user_id,
+            `${followerName} started following you`,
+            `${followerName} is now following your profile on Umbrella.`,
+            notificationData,
+            now
+          )
+          .run()
+
+        // Send email notification (non-blocking)
+        if (ctx.env.RESEND_API_KEY) {
+          const emailService = createResendService(ctx.env.RESEND_API_KEY, ctx.env.DB)
+          await emailService.sendTransactional('new_follower', followedUser.email, {
+            followerName: followerName,
+            profileUrl: `https://app.umbrellalive.com/artist/${followerArtist.id}`,
+          })
+        }
+
+        logger.info('ArtistsController', 'followArtist', 'Notification sent', {
+          followedUserId: artist.user_id,
+          notificationId,
+        })
+      }
+    } catch (notificationError) {
+      // Log but don't fail - notification is non-critical
+      logger.error('ArtistsController', 'followArtist', 'Failed to send notification', {
+        error: notificationError instanceof Error ? notificationError.message : 'Unknown error',
+        artistId,
+      })
+    }
 
     // 6. Get actual follower count from artist_followers table (consistent with getArtist)
     const countResult = await ctx.env.DB.prepare(

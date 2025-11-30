@@ -1013,6 +1013,73 @@ export const sendMessage: RouteHandler = async (ctx) => {
       })
     }
 
+    // Send in-app notification + email to recipient (fire-and-forget)
+    try {
+      // Get sender's artist info
+      const senderArtist = await ctx.env.DB.prepare(
+        'SELECT id, stage_name, avatar_url FROM artists WHERE user_id = ?'
+      )
+        .bind(ctx.userId)
+        .first<{ id: string; stage_name: string; avatar_url: string | null }>()
+
+      // Get recipient's email
+      const recipientUser = await ctx.env.DB.prepare(
+        'SELECT email FROM users WHERE id = ?'
+      )
+        .bind(recipientId)
+        .first<{ email: string }>()
+
+      if (senderArtist && recipientUser) {
+        const senderName = senderArtist.stage_name || 'Someone'
+        const messagePreviewText = content.length > 100 ? content.substring(0, 100) + '...' : content
+
+        // Create in-app notification
+        const notificationId = generateUUIDv4()
+        const notificationData = JSON.stringify({
+          conversation_id: conversationId,
+          message_id: messageId,
+          from_user_id: ctx.userId,
+          from_artist_id: senderArtist.id,
+          from_artist_name: senderName,
+        })
+
+        await ctx.env.DB.prepare(`
+          INSERT INTO notifications (id, user_id, type, title, body, data, read, created_at)
+          VALUES (?, ?, 'new_message', ?, ?, ?, 0, ?)
+        `)
+          .bind(
+            notificationId,
+            recipientId,
+            `New message from ${senderName}`,
+            messagePreviewText,
+            notificationData,
+            now
+          )
+          .run()
+
+        // Send email notification (non-blocking)
+        if (ctx.env.RESEND_API_KEY) {
+          const emailService = createResendService(ctx.env.RESEND_API_KEY, ctx.env.DB)
+          await emailService.sendTransactional('message_notification', recipientUser.email, {
+            senderName: senderName,
+            messagePreview: messagePreviewText,
+            conversationUrl: `https://app.umbrellalive.com/messages/${conversationId}`,
+          })
+        }
+
+        logger.info('MessagesController', 'sendMessage', 'Notification sent', {
+          recipientId,
+          notificationId,
+        })
+      }
+    } catch (notificationError) {
+      // Log but don't fail - notification is non-critical
+      logger.error('MessagesController', 'sendMessage', 'Failed to send notification', {
+        error: notificationError instanceof Error ? notificationError.message : 'Unknown error',
+        recipientId,
+      })
+    }
+
     // Return the message in the format the frontend Message type expects
     // Frontend uses: timestamp (not created_at), sender_avatar_url (not sender_avatar), read_status (not read)
     return successResponse(
