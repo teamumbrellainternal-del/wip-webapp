@@ -27,6 +27,7 @@ interface AppLayoutProps {
 const navigationTabs = [
   { label: 'Dashboard', path: '/dashboard' },
   { label: 'Discover', path: '/marketplace/gigs' },
+  { label: 'Network', path: '/network' },
   { label: 'Messages', path: '/messages' },
   { label: 'Violet', path: '/violet' },
   // { label: 'Growth', path: '/growth' }, // Hidden for launch - page still exists at /growth

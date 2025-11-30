@@ -38,6 +38,8 @@ import * as accountController from './controllers/account'
 import * as adminController from './controllers/admin'
 import * as pusherController from './controllers/pusher'
 import * as mediaController from './controllers/media'
+import * as connectionsController from './controllers/connections'
+import * as notificationsController from './controllers/notifications'
 import { aggregateAnalytics, handleAnalyticsCron } from './controllers/cron/analytics'
 import { requireAdmin } from './middleware/admin'
 
@@ -215,6 +217,25 @@ function setupRouter(): Router {
   router.get('/v1/artists/:id/follow', artistsController.getFollowStatus, [optionalAuthMiddleware]) // Returns is_following if authenticated
   router.post('/v1/artists/:id/follow', artistsController.followArtist, [authMiddleware])
   router.delete('/v1/artists/:id/follow', artistsController.unfollowArtist, [authMiddleware])
+
+  // Connections routes (auth required) - LinkedIn-style mutual connections
+  router.post('/v1/connections/:userId', connectionsController.sendRequest, [authMiddleware])
+  router.get('/v1/connections', connectionsController.listConnections, [authMiddleware])
+  router.get('/v1/connections/pending', connectionsController.listPending, [authMiddleware])
+  router.get('/v1/connections/sent', connectionsController.listSent, [authMiddleware])
+  router.put('/v1/connections/:requestId/accept', connectionsController.acceptRequest, [authMiddleware])
+  router.put('/v1/connections/:requestId/decline', connectionsController.declineRequest, [authMiddleware])
+  router.delete('/v1/connections/:requestId/cancel', connectionsController.cancelRequest, [authMiddleware])
+  router.delete('/v1/connections/:userId', connectionsController.removeConnection, [authMiddleware])
+  router.get('/v1/connections/:userId/status', connectionsController.getStatus, [authMiddleware])
+  router.get('/v1/connections/:userId/mutual', connectionsController.getMutualConnections, [authMiddleware])
+
+  // Notifications routes (auth required)
+  router.get('/v1/notifications', notificationsController.list, [authMiddleware])
+  router.get('/v1/notifications/count', notificationsController.getUnreadCount, [authMiddleware])
+  router.put('/v1/notifications/:id/read', notificationsController.markRead, [authMiddleware])
+  router.put('/v1/notifications/read-all', notificationsController.markAllRead, [authMiddleware])
+  router.delete('/v1/notifications/:id', notificationsController.deleteNotification, [authMiddleware])
 
   // Messages routes (auth required)
   router.get('/v1/conversations', messagesController.listConversations, [authMiddleware])

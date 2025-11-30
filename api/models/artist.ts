@@ -87,6 +87,7 @@ export interface Artist {
   total_earnings: number
   profile_views: number
   follower_count: number
+  connection_count: number
 
   created_at: string
   updated_at: string
@@ -132,6 +133,7 @@ export interface ArtistPublicProfile {
   total_reviews: number
   total_gigs: number
   follower_count: number
+  connection_count: number
   base_rate_flat: number | null
   base_rate_hourly: number | null
   // Social links (public)

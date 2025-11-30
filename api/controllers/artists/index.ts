@@ -264,6 +264,7 @@ export const getArtist: RouteHandler = async (ctx) => {
         a.facebook_url,
         a.twitter_url,
         a.bandcamp_url,
+        a.connection_count,
         (SELECT COUNT(*) FROM artist_followers WHERE artist_id = a.id) as follower_count
       FROM artists a
       WHERE a.id = ?
@@ -291,6 +292,7 @@ export const getArtist: RouteHandler = async (ctx) => {
       facebook_url: string | null
       twitter_url: string | null
       bandcamp_url: string | null
+      connection_count: number | null
       follower_count: number
     }>()
 
@@ -349,6 +351,7 @@ export const getArtist: RouteHandler = async (ctx) => {
         rating_avg: artist.avg_rating,
         review_count: 0, // TODO: Get actual review count
         follower_count: artist.follower_count,
+        connection_count: artist.connection_count || 0,
         gigs_completed: artist.total_gigs,
         avatar_url: artist.avatar_url || undefined,
         banner_url: undefined, // TODO: Add banner_url column to database

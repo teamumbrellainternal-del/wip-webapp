@@ -134,11 +134,10 @@ export default function LoginPage() {
                 <button
                   key={index}
                   onClick={() => setCurrentSlide(index)}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    index === currentSlide
-                      ? 'w-8 bg-purple-500'
-                      : 'w-2 bg-purple-200 hover:bg-purple-300 dark:bg-purple-800 dark:hover:bg-purple-700'
-                  }`}
+                  className={`h-2 rounded-full transition-all duration-300 ${index === currentSlide
+                    ? 'w-8 bg-purple-500'
+                    : 'w-2 bg-purple-200 hover:bg-purple-300 dark:bg-purple-800 dark:hover:bg-purple-700'
+                    }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
@@ -185,8 +184,9 @@ export default function LoginPage() {
                     card: 'shadow-none bg-transparent p-0',
                     headerTitle: 'hidden',
                     headerSubtitle: 'hidden',
+                    main: 'flex flex-col items-center',
                     socialButtonsBlockButton:
-                      'bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 border border-border transition-all duration-200 rounded-lg h-11',
+                      'bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-600 transition-all duration-200 rounded-xl h-12 w-[280px]',
                     socialButtonsBlockButtonText: 'font-medium text-sm',
                     socialButtonsBlockButtonArrow: 'hidden',
                     dividerLine: 'bg-border',
@@ -202,8 +202,8 @@ export default function LoginPage() {
                     formFieldAction: 'text-purple-500 hover:text-purple-600 text-sm font-medium',
                     otpCodeFieldInput: 'border-border rounded-lg',
                     formResendCodeLink: 'text-purple-500 hover:text-purple-600',
-                    footer: 'pt-4',
-                    footerAction: 'text-sm',
+                    footer: 'pt-4 text-center w-full',
+                    footerAction: 'text-sm justify-center',
                     footerActionText: 'text-muted-foreground',
                   },
                   layout: {

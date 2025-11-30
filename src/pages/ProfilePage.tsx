@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { artistsService, tracksService, messagesService } from '@/services/api'
-import type { Artist, Track, Review } from '@/types'
+import { apiClient } from '@/lib/api-client'
+import type { Artist, Track, Review, ConnectionStatus } from '@/types'
 import AppLayout from '@/components/layout/AppLayout'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -52,6 +53,7 @@ import {
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
 import { MetaTags } from '@/components/MetaTags'
+import { ConnectionButton, MutualConnections } from '@/components/connections'
 
 import { SocialLinksBar, type SocialLinksData } from '@/components/common/SocialIcons'
 
@@ -71,6 +73,8 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('overview')
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null)
   const [isFollowing, setIsFollowing] = useState(false)
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('none')
+  const [connectionId, setConnectionId] = useState<string | null>(null)
   const [bioExpanded, setBioExpanded] = useState(false)
   const [reportDialogOpen, setReportDialogOpen] = useState(false)
   const [reportReason, setReportReason] = useState('spam')
@@ -103,6 +107,20 @@ export default function ProfilePage() {
         } catch {
           // If follow status fetch fails, default to not following
           setIsFollowing(false)
+        }
+
+        // Fetch connection status (requires authentication)
+        try {
+          // Need to get the user_id for the artist to check connection status
+          if (artistData.user_id) {
+            const connStatus = await apiClient.getConnectionStatus(artistData.user_id)
+            setConnectionStatus(connStatus.status)
+            setConnectionId(connStatus.connection_id)
+          }
+        } catch {
+          // If connection status fetch fails, default to none
+          setConnectionStatus('none')
+          setConnectionId(null)
         }
       } catch (err) {
         console.error('Error fetching profile:', err)
@@ -342,43 +360,66 @@ export default function ProfilePage() {
 
                   {/* Action Buttons */}
                   {!isOwnProfile && (
-                    <div className="flex gap-2">
-                      <Button variant="outline" className="gap-2" onClick={handleFollowToggle}>
-                        {isFollowing ? (
-                          <>
-                            <UserMinus className="h-4 w-4" />
-                            Unfollow
-                          </>
-                        ) : (
-                          <>
-                            <UserPlus className="h-4 w-4" />
-                            Follow
-                          </>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex gap-2">
+                        {/* Primary: Connection Button */}
+                        {artist.user_id && (
+                          <ConnectionButton
+                            userId={artist.user_id}
+                            artistId={artist.id}
+                            status={connectionStatus}
+                            connectionId={connectionId}
+                            onStatusChange={(newStatus) => setConnectionStatus(newStatus)}
+                          />
                         )}
-                      </Button>
-                      <Button
-                        className="gap-2 bg-purple-500 hover:bg-purple-600"
-                        onClick={handleBookArtist}
-                        disabled={startingConversation}
-                      >
-                        {startingConversation ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Starting...
-                          </>
-                        ) : (
-                          <>
-                            <MessageCircle className="h-4 w-4" />
-                            Book Artist
-                          </>
-                        )}
-                      </Button>
+                        {/* Secondary: Follow Button */}
+                        <Button variant="outline" className="gap-2" onClick={handleFollowToggle}>
+                          {isFollowing ? (
+                            <>
+                              <UserMinus className="h-4 w-4" />
+                              Unfollow
+                            </>
+                          ) : (
+                            <>
+                              <UserPlus className="h-4 w-4" />
+                              Follow
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          className="gap-2 bg-purple-500 hover:bg-purple-600"
+                          onClick={handleBookArtist}
+                          disabled={startingConversation}
+                        >
+                          {startingConversation ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Starting...
+                            </>
+                          ) : (
+                            <>
+                              <MessageCircle className="h-4 w-4" />
+                              Book Artist
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      {/* Mutual Connections indicator */}
+                      {artist.user_id && connectionStatus !== 'self' && (
+                        <MutualConnections userId={artist.user_id} className="mt-1" />
+                      )}
                     </div>
                   )}
                 </div>
 
                 {/* Stats Row */}
-                <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+                <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-5">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">
+                      {(artist.connection_count || 0).toLocaleString()}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Connections</p>
+                  </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold">{artist.follower_count.toLocaleString()}</p>
                     <p className="text-sm text-muted-foreground">Followers</p>

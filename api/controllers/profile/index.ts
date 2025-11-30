@@ -62,9 +62,21 @@ export const getProfile: RouteHandler = async (ctx) => {
     const completionPercentage = calculateProfileCompletion(artist)
 
     // Parse JSON array fields for response
+    // Map database fields to frontend Artist interface fields
+    const secondaryGenres = parseArrayField(artist.secondary_genres)
+    const allGenres = artist.primary_genre 
+      ? [artist.primary_genre, ...secondaryGenres]
+      : secondaryGenres
+    
     const response = {
       ...artist,
-      secondary_genres: parseArrayField(artist.secondary_genres),
+      // Map to frontend Artist interface fields
+      artist_name: artist.stage_name,
+      full_name: artist.legal_name || artist.stage_name,
+      location: [artist.location_city, artist.location_state].filter(Boolean).join(', '),
+      genres: allGenres,
+      // Parse array fields
+      secondary_genres: secondaryGenres,
       influences: parseArrayField(artist.influences),
       artist_type: parseArrayField(artist.artist_type),
       equipment: parseArrayField(artist.equipment),

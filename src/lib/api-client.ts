@@ -3,7 +3,20 @@
  * Handles authentication, error handling, and API communication
  */
 
-import type { UserProfile, Artist, Gig, Conversation, Message } from '@/types'
+import type {
+  UserProfile,
+  Artist,
+  Gig,
+  Conversation,
+  Message,
+  ConnectionsListResponse,
+  PendingRequestsResponse,
+  SentRequestsResponse,
+  ConnectionStatusResponse,
+  MutualConnectionsResponse,
+  NotificationsResponse,
+  UnreadCountResponse,
+} from '@/types'
 import { getSession, clearSession } from '@/lib/session'
 import { triggerSessionTimeout } from '@/contexts/SessionTimeoutContext'
 import {
@@ -500,6 +513,147 @@ class APIClient {
 
     return data.data
   }
+
+  // ============================================================================
+  // CONNECTION ENDPOINTS (LinkedIn-style mutual connections)
+  // ============================================================================
+
+  /**
+   * Send a connection request to another user
+   */
+  async sendConnectionRequest(userId: string): Promise<{
+    message: string
+    connectionId: string
+    status: string
+  }> {
+    return this.request(`/connections/${userId}`, { method: 'POST' })
+  }
+
+  /**
+   * Get list of accepted connections
+   */
+  async getConnections(params?: {
+    limit?: number
+    offset?: number
+  }): Promise<ConnectionsListResponse> {
+    const searchParams = new URLSearchParams()
+    if (params?.limit) searchParams.set('limit', params.limit.toString())
+    if (params?.offset) searchParams.set('offset', params.offset.toString())
+    const query = searchParams.toString()
+    return this.request(`/connections${query ? `?${query}` : ''}`)
+  }
+
+  /**
+   * Get pending connection requests (received)
+   */
+  async getPendingRequests(): Promise<PendingRequestsResponse> {
+    return this.request('/connections/pending')
+  }
+
+  /**
+   * Get sent connection requests (outgoing pending)
+   */
+  async getSentRequests(): Promise<SentRequestsResponse> {
+    return this.request('/connections/sent')
+  }
+
+  /**
+   * Accept a connection request
+   */
+  async acceptConnectionRequest(requestId: string): Promise<{
+    message: string
+    connectionId: string
+    status: string
+  }> {
+    return this.request(`/connections/${requestId}/accept`, { method: 'PUT' })
+  }
+
+  /**
+   * Decline a connection request
+   */
+  async declineConnectionRequest(requestId: string): Promise<{
+    message: string
+    connectionId: string
+    status: string
+  }> {
+    return this.request(`/connections/${requestId}/decline`, { method: 'PUT' })
+  }
+
+  /**
+   * Cancel a sent connection request
+   */
+  async cancelConnectionRequest(requestId: string): Promise<{ message: string }> {
+    return this.request(`/connections/${requestId}/cancel`, { method: 'DELETE' })
+  }
+
+  /**
+   * Remove an existing connection
+   */
+  async removeConnection(userId: string): Promise<{ message: string }> {
+    return this.request(`/connections/${userId}`, { method: 'DELETE' })
+  }
+
+  /**
+   * Get connection status with a user
+   */
+  async getConnectionStatus(userId: string): Promise<ConnectionStatusResponse> {
+    return this.request(`/connections/${userId}/status`)
+  }
+
+  /**
+   * Get mutual connections with a user
+   */
+  async getMutualConnections(userId: string): Promise<MutualConnectionsResponse> {
+    return this.request(`/connections/${userId}/mutual`)
+  }
+
+  // ============================================================================
+  // NOTIFICATION ENDPOINTS
+  // ============================================================================
+
+  /**
+   * Get notifications list
+   */
+  async getNotifications(params?: {
+    limit?: number
+    offset?: number
+    unread_only?: boolean
+  }): Promise<NotificationsResponse> {
+    const searchParams = new URLSearchParams()
+    if (params?.limit) searchParams.set('limit', params.limit.toString())
+    if (params?.offset) searchParams.set('offset', params.offset.toString())
+    if (params?.unread_only) searchParams.set('unread_only', 'true')
+    const query = searchParams.toString()
+    return this.request(`/notifications${query ? `?${query}` : ''}`)
+  }
+
+  /**
+   * Get unread notification count
+   */
+  async getUnreadNotificationCount(): Promise<UnreadCountResponse> {
+    return this.request('/notifications/count')
+  }
+
+  /**
+   * Mark a notification as read
+   */
+  async markNotificationRead(notificationId: string): Promise<{ message: string; id: string }> {
+    return this.request(`/notifications/${notificationId}/read`, { method: 'PUT' })
+  }
+
+  /**
+   * Mark all notifications as read
+   */
+  async markAllNotificationsRead(): Promise<{ message: string; count: number }> {
+    return this.request('/notifications/read-all', { method: 'PUT' })
+  }
+
+  /**
+   * Delete a notification
+   */
+  async deleteNotification(notificationId: string): Promise<{ message: string; id: string }> {
+    return this.request(`/notifications/${notificationId}`, { method: 'DELETE' })
+  }
 }
 
 // Export singleton instance
@@ -528,5 +682,24 @@ export const endpoints = {
   conversations: {
     list: '/v1/conversations',
     messages: (id: string) => `/v1/conversations/${id}/messages`,
+  },
+  connections: {
+    list: '/v1/connections',
+    pending: '/v1/connections/pending',
+    sent: '/v1/connections/sent',
+    send: (userId: string) => `/v1/connections/${userId}`,
+    accept: (requestId: string) => `/v1/connections/${requestId}/accept`,
+    decline: (requestId: string) => `/v1/connections/${requestId}/decline`,
+    cancel: (requestId: string) => `/v1/connections/${requestId}/cancel`,
+    remove: (userId: string) => `/v1/connections/${userId}`,
+    status: (userId: string) => `/v1/connections/${userId}/status`,
+    mutual: (userId: string) => `/v1/connections/${userId}/mutual`,
+  },
+  notifications: {
+    list: '/v1/notifications',
+    count: '/v1/notifications/count',
+    markRead: (id: string) => `/v1/notifications/${id}/read`,
+    markAllRead: '/v1/notifications/read-all',
+    delete: (id: string) => `/v1/notifications/${id}`,
   },
 }
