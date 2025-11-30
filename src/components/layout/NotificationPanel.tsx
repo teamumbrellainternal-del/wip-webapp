@@ -15,7 +15,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Bell,
-  Check,
   CheckCheck,
   Users,
   UserCheck,
@@ -100,7 +99,7 @@ export function NotificationPanel({ children }: NotificationPanelProps) {
       try {
         const response = await apiClient.getUnreadNotificationCount()
         setUnreadCount(response.unread_count)
-      } catch (error) {
+      } catch (_error) {
         // Silently fail - don't spam console
       }
     }
