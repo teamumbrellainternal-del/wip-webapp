@@ -18,7 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Loader2, AlertCircle, Upload, X, Plus, Trash2 } from 'lucide-react'
+import { Loader2, AlertCircle, Upload, X, Plus, Trash2, ArrowLeft } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 interface ProfileFormData {
@@ -293,6 +293,15 @@ export default function ProfileEditPage() {
       <div className="mx-auto max-w-4xl py-8">
         {/* Header */}
         <div className="mb-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/profile/view')}
+            className="mb-4 -ml-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Profile
+          </Button>
           <h1 className="mb-2 text-3xl font-bold">Edit Profile</h1>
           <p className="text-muted-foreground">Update your artist profile information</p>
         </div>

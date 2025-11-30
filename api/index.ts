@@ -237,6 +237,7 @@ function setupRouter(): Router {
   router.get('/v1/files/:id', filesController.getFile, [authMiddleware])
   router.post('/v1/files/upload', filesController.generateUploadUrl, [authMiddleware]) // task-7.1
   router.post('/v1/files/upload-url', filesController.getUploadUrl, [authMiddleware]) // legacy
+  router.post('/v1/files/direct', filesController.uploadFileDirect, [authMiddleware]) // direct upload (like avatar)
   router.post('/v1/files/:id/confirm', filesController.confirmUpload, [authMiddleware])
   router.delete('/v1/files/:id', filesController.deleteFile, [authMiddleware])
 
@@ -358,22 +359,25 @@ function initSentry(request: Request, env: Env, ctx: ExecutionContext): Toucan |
 function addSecurityHeaders(response: Response, env: Env): Response {
   const headers = new Headers(response.headers)
 
-  // Content Security Policy
-  const csp = [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com",
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: https:",
-    "font-src 'self' data:",
-    "connect-src 'self'",
-    "media-src 'self' https:",
-    "object-src 'none'",
-    "frame-ancestors 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-  ].join('; ')
+  // Content Security Policy - only set if not already present
+  // (allows individual controllers like media to set their own CSP)
+  if (!response.headers.has('Content-Security-Policy')) {
+    const csp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https:",
+      "font-src 'self' data:",
+      "connect-src 'self'",
+      "media-src 'self' https:",
+      "object-src 'none'",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; ')
 
-  headers.set('Content-Security-Policy', csp)
+    headers.set('Content-Security-Policy', csp)
+  }
 
   // Prevent MIME type sniffing
   headers.set('X-Content-Type-Options', 'nosniff')
@@ -381,8 +385,11 @@ function addSecurityHeaders(response: Response, env: Env): Response {
   // Enable XSS protection (legacy browsers)
   headers.set('X-XSS-Protection', '1; mode=block')
 
-  // Prevent clickjacking
-  headers.set('X-Frame-Options', 'DENY')
+  // Prevent clickjacking - only set if not already present
+  // (allows media controller to set SAMEORIGIN for iframe-viewable content)
+  if (!response.headers.has('X-Frame-Options')) {
+    headers.set('X-Frame-Options', 'DENY')
+  }
 
   // HSTS (only in production)
   if (env.ENVIRONMENT === 'production') {

@@ -11,6 +11,7 @@ import { ErrorCodes } from '../../utils/error-codes'
 import { generateUUIDv4 } from '../../utils/uuid'
 import { createResendService } from '../../services/resend'
 import { getSMSService } from '../../mocks'
+import { FOLLOWERS_LIST_ID } from '../contacts'
 
 /**
  * List broadcasts
@@ -170,25 +171,52 @@ export const createBroadcast: RouteHandler = async (ctx) => {
       )
     }
 
-    // Fetch contacts from selected lists with opt-in status
-    // Build query for multiple list_ids
-    const placeholders = list_ids.map(() => '?').join(',')
-    const contactsQuery = `
-      SELECT email, phone, opted_in_email, opted_in_sms
-      FROM contact_list_members
-      WHERE list_id IN (${placeholders})
-    `
+    // Separate followers list_id from regular list_ids
+    const hasFollowersList = list_ids.includes(FOLLOWERS_LIST_ID)
+    const regularListIds = list_ids.filter((id: string) => id !== FOLLOWERS_LIST_ID)
 
-    const contacts = await ctx.env.DB.prepare(contactsQuery)
-      .bind(...list_ids)
-      .all<{
-        email: string | null
-        phone: string | null
-        opted_in_email: number
-        opted_in_sms: number
-      }>()
+    // Type for contact records
+    type ContactRecord = {
+      email: string | null
+      phone: string | null
+      opted_in_email: number
+      opted_in_sms: number
+    }
 
-    if (!contacts.results || contacts.results.length === 0) {
+    // Fetch contacts from regular contact lists (if any selected)
+    let regularContacts: ContactRecord[] = []
+    if (regularListIds.length > 0) {
+      const placeholders = regularListIds.map(() => '?').join(',')
+      const contactsQuery = `
+        SELECT email, phone, opted_in_email, opted_in_sms
+        FROM contact_list_members
+        WHERE list_id IN (${placeholders})
+      `
+      const result = await ctx.env.DB.prepare(contactsQuery)
+        .bind(...regularListIds)
+        .all<ContactRecord>()
+      regularContacts = result.results || []
+    }
+
+    // Fetch followers' emails if followers list is selected
+    let followerContacts: ContactRecord[] = []
+    if (hasFollowersList) {
+      const followersQuery = `
+        SELECT u.email, NULL as phone, 1 as opted_in_email, 0 as opted_in_sms
+        FROM artist_followers af
+        INNER JOIN users u ON af.follower_user_id = u.id
+        WHERE af.artist_id = ?
+      `
+      const result = await ctx.env.DB.prepare(followersQuery)
+        .bind(artist.id)
+        .all<ContactRecord>()
+      followerContacts = result.results || []
+    }
+
+    // Merge all contacts
+    const allContacts = [...regularContacts, ...followerContacts]
+
+    if (allContacts.length === 0) {
       return errorResponse(
         ErrorCodes.VALIDATION_ERROR,
         'No contacts found in specified lists',
@@ -198,11 +226,11 @@ export const createBroadcast: RouteHandler = async (ctx) => {
       )
     }
 
-    // Filter contacts by opt-in status
+    // Filter contacts by opt-in status and collect recipients
     const emailRecipients: string[] = []
     const smsRecipients: string[] = []
 
-    for (const contact of contacts.results) {
+    for (const contact of allContacts) {
       // Add to email list if opted in and has email
       if (contact.opted_in_email && contact.email) {
         emailRecipients.push(contact.email)
@@ -214,12 +242,16 @@ export const createBroadcast: RouteHandler = async (ctx) => {
       }
     }
 
-    const totalRecipients = new Set([...emailRecipients, ...smsRecipients]).size
+    // Deduplicate recipients (a follower could also be in a manual contact list)
+    const uniqueEmailRecipients = [...new Set(emailRecipients)]
+    const uniqueSmsRecipients = [...new Set(smsRecipients)]
+
+    const totalRecipients = new Set([...uniqueEmailRecipients, ...uniqueSmsRecipients]).size
     let emailsSent = 0
     let smsSent = 0
 
     // Send emails via Resend (batch processing, max 1000 per batch)
-    if (emailRecipients.length > 0) {
+    if (uniqueEmailRecipients.length > 0) {
       const resendService = createResendService(ctx.env.RESEND_API_KEY, ctx.env.DB)
 
       // Convert plain text body to simple HTML
@@ -234,7 +266,7 @@ export const createBroadcast: RouteHandler = async (ctx) => {
       `
 
       const emailResult = await resendService.sendBroadcast({
-        recipients: emailRecipients,
+        recipients: uniqueEmailRecipients,
         subject,
         html: htmlBody,
         text: `${messageBody}\n\n- ${artist.stage_name}\n\nUnsubscribe: {{unsubscribe_url}}`,
@@ -246,14 +278,14 @@ export const createBroadcast: RouteHandler = async (ctx) => {
     }
 
     // Send SMS via SMS service (falls back to mock when Twilio not configured)
-    if (smsRecipients.length > 0) {
+    if (uniqueSmsRecipients.length > 0) {
       const smsService = getSMSService(ctx.env)
 
       // Add opt-out instructions to SMS (required by Twilio)
       const smsMessage = `${messageBody}\n\n- ${artist.stage_name}\n\nReply STOP to unsubscribe`
 
       const smsResult = await smsService.sendBroadcast({
-        recipients: smsRecipients,
+        recipients: uniqueSmsRecipients,
         message: smsMessage,
         artistId: artist.id,
       })

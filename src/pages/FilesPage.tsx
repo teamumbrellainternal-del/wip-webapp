@@ -42,7 +42,6 @@ import {
   Music,
   Video,
   Image as ImageIcon,
-  Download,
   Trash2,
   Edit2,
   FolderOpen,
@@ -99,12 +98,33 @@ export default function FilesPage() {
   const fetchFiles = useCallback(async () => {
     try {
       setLoading(true)
-      const [filesResponse, storageResponse] = await Promise.all([
-        filesService.list(),
-        filesService.getStorageUsage(),
-      ])
-      setFiles(filesResponse.data)
-      setStorageUsed(storageResponse.used_bytes)
+      // The list endpoint returns files and storage info together
+      const filesResponse = await filesService.list() as unknown as {
+        files: Array<{
+          id: string
+          filename: string
+          mime_type: string
+          file_size_bytes: number
+          r2_key: string
+          category: string
+          created_at: string
+        }>
+        storageUsed: number
+        storageQuota: number
+      }
+
+      // Map backend response to FileMetadata format
+      const mappedFiles: FileMetadata[] = (filesResponse.files || []).map((f) => ({
+        id: f.id,
+        filename: f.filename,
+        file_type: f.mime_type,
+        file_size: f.file_size_bytes,
+        url: `/media/${f.r2_key}`,
+        uploaded_at: f.created_at,
+      }))
+
+      setFiles(mappedFiles)
+      setStorageUsed(filesResponse.storageUsed || 0)
       setError(null)
     } catch (err) {
       console.error('Error fetching files:', err)
@@ -253,10 +273,6 @@ export default function FilesPage() {
     }
   }
 
-  const handleDownloadFile = (file: FileMetadata) => {
-    window.open(file.url, '_blank')
-  }
-
   const openRenameDialog = (file: FileMetadata) => {
     setSelectedFile(file)
     setNewFileName(file.filename)
@@ -302,12 +318,17 @@ export default function FilesPage() {
 
     if (viewMode === 'grid') {
       return (
-        <Card key={file.id} className="group overflow-hidden transition-shadow hover:shadow-md">
+        <Card
+          key={file.id}
+          className="group cursor-pointer overflow-hidden transition-shadow hover:shadow-md"
+          onDoubleClick={() => window.open(file.url, '_blank')}
+          title="Double-click to view"
+        >
           <CardContent className="p-0">
             <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-muted">
-              {isImage && file.thumbnail_url ? (
+              {isImage && file.url ? (
                 <img
-                  src={file.thumbnail_url}
+                  src={file.url}
                   alt={file.filename}
                   className="h-full w-full object-cover"
                 />
@@ -324,10 +345,6 @@ export default function FilesPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleDownloadFile(file)}>
-                      <Download className="mr-2 h-4 w-4" />
-                      Download
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => openRenameDialog(file)}>
                       <Edit2 className="mr-2 h-4 w-4" />
                       Rename
@@ -358,13 +375,18 @@ export default function FilesPage() {
 
     // List view
     return (
-      <Card key={file.id} className="mb-2 transition-shadow hover:shadow-sm">
+      <Card
+        key={file.id}
+        className="mb-2 cursor-pointer transition-shadow hover:shadow-sm"
+        onDoubleClick={() => window.open(file.url, '_blank')}
+        title="Double-click to view"
+      >
         <CardContent className="p-3">
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0">
-              {isImage && file.thumbnail_url ? (
+              {isImage && file.url ? (
                 <img
-                  src={file.thumbnail_url}
+                  src={file.url}
                   alt={file.filename}
                   className="h-10 w-10 rounded object-cover"
                 />
@@ -389,10 +411,6 @@ export default function FilesPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleDownloadFile(file)}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Download
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => openRenameDialog(file)}>
                   <Edit2 className="mr-2 h-4 w-4" />
                   Rename

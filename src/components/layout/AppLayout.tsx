@@ -103,7 +103,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
               {/* View My Profile Button - Hidden on mobile */}
               <Button asChild size="sm" className="hidden lg:inline-flex">
-                <Link to="/profile/edit">View My Profile</Link>
+                <Link to="/profile/view">View My Profile</Link>
               </Button>
             </div>
           </div>

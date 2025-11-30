@@ -24,6 +24,10 @@ import SettingsPage from '@/pages/SettingsPage'
 import RoleSelectionPage from '@/pages/onboarding/RoleSelectionPage'
 import GigDetailsPage from '@/pages/GigDetailsPage'
 import GrowthPage from '@/pages/GrowthPage'
+import ToolboxPage from '@/pages/ToolboxPage'
+import FilesPage from '@/pages/FilesPage'
+import MessageFansPage from '@/pages/MessageFansPage'
+import CreativeStudioPage from '@/pages/CreativeStudioPage'
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
@@ -288,6 +292,48 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <OnboardingGuard>
           <SettingsPage />
+        </OnboardingGuard>
+      </ProtectedRoute>
+    ),
+  },
+
+  // Artist Toolbox
+  {
+    path: '/tools',
+    element: (
+      <ProtectedRoute>
+        <OnboardingGuard>
+          <ToolboxPage />
+        </OnboardingGuard>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/tools/files',
+    element: (
+      <ProtectedRoute>
+        <OnboardingGuard>
+          <FilesPage />
+        </OnboardingGuard>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/tools/message-fans',
+    element: (
+      <ProtectedRoute>
+        <OnboardingGuard>
+          <MessageFansPage />
+        </OnboardingGuard>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/tools/studio',
+    element: (
+      <ProtectedRoute>
+        <OnboardingGuard>
+          <CreativeStudioPage />
         </OnboardingGuard>
       </ProtectedRoute>
     ),

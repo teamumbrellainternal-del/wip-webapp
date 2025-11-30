@@ -427,6 +427,79 @@ class APIClient {
 
     return data.data
   }
+
+  /**
+   * Upload file directly to R2 storage (for file manager)
+   * @param file - The file to upload
+   * @returns The uploaded file metadata
+   */
+  async uploadFile(file: File): Promise<{
+    file: {
+      id: string
+      filename: string
+      file_type: string
+      file_size: number
+      url: string
+      category: string
+      uploaded_at: string
+    }
+    success: boolean
+  }> {
+    // Demo mode - simulate upload
+    if (DEMO_MODE) {
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      return {
+        file: {
+          id: `mock-${Date.now()}`,
+          filename: file.name,
+          file_type: file.type,
+          file_size: file.size,
+          url: '/media/mock/file.png',
+          category: 'other',
+          uploaded_at: new Date().toISOString(),
+        },
+        success: true,
+      }
+    }
+
+    // Create FormData with the file
+    const formData = new FormData()
+    formData.append('file', file)
+
+    // Get auth headers (without Content-Type - browser sets it for FormData)
+    const headers: HeadersInit = {}
+    if (this.getToken) {
+      const token = await this.getToken()
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+    } else {
+      const session = getSession()
+      if (session?.token) {
+        headers['Authorization'] = `Bearer ${session.token}`
+      }
+    }
+
+    const response = await fetch(`${this.baseURL}/files/direct`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    })
+
+    if (response.status === 401) {
+      clearSession()
+      triggerSessionTimeout()
+      throw new Error('Session expired. Please log in again.')
+    }
+
+    const data = await response.json()
+
+    if (!data.success) {
+      throw new Error(data.error?.message || 'Failed to upload file')
+    }
+
+    return data.data
+  }
 }
 
 // Export singleton instance

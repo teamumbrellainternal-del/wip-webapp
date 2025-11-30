@@ -25,12 +25,13 @@ import {
   Calendar,
   Sparkles,
   Camera,
+  Eye,
 } from 'lucide-react'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
 import { MetaTags } from '@/components/MetaTags'
 
-import { SocialLinksBar, type SocialLinksData } from '@/components/common/SocialIcons'
+import { SocialLinksBarWithToolbox, type SocialLinksData } from '@/components/common/SocialIcons'
 
 // Profile completion calculator
 function calculateProfileCompletion(artist: Artist): number {
@@ -61,6 +62,7 @@ export default function ProfileViewPage() {
   const [activeTab, setActiveTab] = useState('overview')
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null)
   const [bioExpanded, setBioExpanded] = useState(false)
+  const [viewMode, setViewMode] = useState<'edit' | 'preview'>('preview')
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -152,17 +154,19 @@ export default function ProfileViewPage() {
           {/* Cover image placeholder - could be replaced with actual cover image */}
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&h=400&fit=crop')] bg-cover bg-center opacity-50" />
 
-          {/* Edit cover button */}
-          <Button
-            variant="secondary"
-            size="sm"
-            className="absolute right-4 top-4 gap-1.5 bg-white/90 hover:bg-white"
-          >
-            <Camera className="h-4 w-4" />
-            Edit Cover
-          </Button>
+          {/* Edit cover button - only in edit mode */}
+          {viewMode === 'edit' && (
+            <Button
+              variant="secondary"
+              size="sm"
+              className="absolute right-4 top-4 gap-1.5 bg-white/90 hover:bg-white"
+            >
+              <Camera className="h-4 w-4" />
+              Edit Cover
+            </Button>
+          )}
 
-          {/* Header with back button and completion */}
+          {/* Header with back button and completion/view mode toggle */}
           <div className="absolute left-0 right-0 top-0 flex items-center justify-between p-4">
             <Button
               variant="secondary"
@@ -173,23 +177,49 @@ export default function ProfileViewPage() {
               <ArrowLeft className="h-4 w-4" />
               Back to Dashboard
             </Button>
-            <div className="flex items-center gap-2 rounded-full bg-white/90 px-3 py-1.5">
-              <span className="text-sm font-medium">Profile {profileCompletion}% complete</span>
-              <div className="h-5 w-5">
-                <svg viewBox="0 0 36 36" className="h-5 w-5 -rotate-90">
-                  <circle cx="18" cy="18" r="16" fill="none" stroke="#e5e7eb" strokeWidth="3" />
-                  <circle
-                    cx="18"
-                    cy="18"
-                    r="16"
-                    fill="none"
-                    stroke="#9370DB"
-                    strokeWidth="3"
-                    strokeDasharray={`${profileCompletion} 100`}
-                    strokeLinecap="round"
-                  />
-                </svg>
+            <div className="flex items-center gap-3">
+              {/* View Mode Toggle */}
+              <div className="flex items-center gap-1 rounded-full bg-white/90 p-1">
+                <Button
+                  variant={viewMode === 'edit' ? 'default' : 'ghost'}
+                  size="sm"
+                  className={`gap-1.5 rounded-full ${viewMode === 'edit' ? 'bg-purple-500 text-white hover:bg-purple-600' : 'hover:bg-white/50'}`}
+                  onClick={() => setViewMode('edit')}
+                >
+                  <Edit className="h-3.5 w-3.5" />
+                  Edit Mode
+                </Button>
+                <Button
+                  variant={viewMode === 'preview' ? 'default' : 'ghost'}
+                  size="sm"
+                  className={`gap-1.5 rounded-full ${viewMode === 'preview' ? 'bg-purple-500 text-white hover:bg-purple-600' : 'hover:bg-white/50'}`}
+                  onClick={() => setViewMode('preview')}
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  Public Preview
+                </Button>
               </div>
+              {/* Profile Completion - only in edit mode */}
+              {viewMode === 'edit' && (
+                <div className="flex items-center gap-2 rounded-full bg-white/90 px-3 py-1.5">
+                  <span className="text-sm font-medium">Profile {profileCompletion}% complete</span>
+                  <div className="h-5 w-5">
+                    <svg viewBox="0 0 36 36" className="h-5 w-5 -rotate-90">
+                      <circle cx="18" cy="18" r="16" fill="none" stroke="#e5e7eb" strokeWidth="3" />
+                      <circle
+                        cx="18"
+                        cy="18"
+                        r="16"
+                        fill="none"
+                        stroke="#9370DB"
+                        strokeWidth="3"
+                        strokeDasharray={`${profileCompletion} 100`}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -244,13 +274,15 @@ export default function ProfileViewPage() {
                     <Button variant="outline" size="icon" onClick={handleShare}>
                       <Share2 className="h-4 w-4" />
                     </Button>
-                    <Button
-                      className="gap-2 bg-purple-500 hover:bg-purple-600"
-                      onClick={() => navigate('/profile/edit')}
-                    >
-                      <Edit className="h-4 w-4" />
-                      Edit Profile
-                    </Button>
+                    {viewMode === 'edit' && (
+                      <Button
+                        className="gap-2 bg-purple-500 hover:bg-purple-600"
+                        onClick={() => navigate('/profile/edit')}
+                      >
+                        <Edit className="h-4 w-4" />
+                        Edit Profile
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -280,7 +312,10 @@ export default function ProfileViewPage() {
                 </div>
 
                 {/* Social Links */}
-                <SocialLinksBar data={artist as unknown as SocialLinksData} />
+                <SocialLinksBarWithToolbox
+                  data={artist as unknown as SocialLinksData}
+                  showToolbox={viewMode === 'preview'}
+                />
               </div>
             </div>
           </div>
@@ -671,11 +706,10 @@ function ReviewCard({ review }: ReviewCardProps) {
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-4 w-4 ${
-                        i < review.rating
+                      className={`h-4 w-4 ${i < review.rating
                           ? 'fill-amber-400 text-amber-400'
                           : 'text-muted-foreground'
-                      }`}
+                        }`}
                     />
                   ))}
                 </div>

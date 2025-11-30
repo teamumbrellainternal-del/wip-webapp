@@ -461,6 +461,7 @@ export interface ContactList {
   contact_count: number
   created_at: string
   updated_at: string
+  is_system_list?: boolean  // True for virtual lists like "Your Followers"
 }
 
 export interface Contact {
