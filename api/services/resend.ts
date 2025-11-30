@@ -562,6 +562,62 @@ Let's make some noise together.
           text: data.text || 'No content provided',
         }
 
+      case 'connection_request':
+        return {
+          subject: `${data.requesterName} wants to connect with you on Umbrella`,
+          html: `
+            <h1>New Connection Request</h1>
+            <p><strong>${data.requesterName}</strong> wants to connect with you on Umbrella.</p>
+            <p>Connecting expands your professional network and opens doors to collaborations and opportunities.</p>
+            <div style="margin: 24px 0;">
+              <a href="${data.profileUrl}" style="display: inline-block; padding: 12px 24px; background: #000; color: #fff; text-decoration: none; border-radius: 4px; margin-right: 12px;">View Profile</a>
+              <a href="https://app.umbrellalive.com/network" style="display: inline-block; padding: 12px 24px; background: #9370DB; color: #fff; text-decoration: none; border-radius: 4px;">Respond to Request</a>
+            </div>
+          `,
+          text: `${data.requesterName} wants to connect with you on Umbrella. View their profile: ${data.profileUrl}`,
+        }
+
+      case 'connection_accepted':
+        return {
+          subject: `${data.accepterName} accepted your connection request!`,
+          html: `
+            <h1>You're Now Connected!</h1>
+            <p>Great news! <strong>${data.accepterName}</strong> has accepted your connection request.</p>
+            <p>You can now:</p>
+            <ul>
+              <li>See each other's full profiles</li>
+              <li>Collaborate on projects</li>
+              <li>Share opportunities</li>
+            </ul>
+            <a href="${data.profileUrl}" style="display: inline-block; padding: 12px 24px; background: #000; color: #fff; text-decoration: none; border-radius: 4px;">View ${data.accepterName}'s Profile</a>
+          `,
+          text: `${data.accepterName} accepted your connection request on Umbrella! View their profile: ${data.profileUrl}`,
+        }
+
+      case 'new_follower':
+        return {
+          subject: `${data.followerName} started following you on Umbrella!`,
+          html: `
+            <h1>You Have a New Follower!</h1>
+            <p><strong>${data.followerName}</strong> is now following you on Umbrella.</p>
+            <p>They'll see your updates, new tracks, and upcoming gigs in their feed.</p>
+            <a href="${data.profileUrl}" style="display: inline-block; padding: 12px 24px; background: #000; color: #fff; text-decoration: none; border-radius: 4px;">View ${data.followerName}'s Profile</a>
+          `,
+          text: `${data.followerName} started following you on Umbrella! View their profile: ${data.profileUrl}`,
+        }
+
+      case 'profile_view':
+        return {
+          subject: `${data.viewerName} viewed your profile on Umbrella`,
+          html: `
+            <h1>Someone Checked Out Your Profile!</h1>
+            <p><strong>${data.viewerName}</strong> recently viewed your profile on Umbrella.</p>
+            <p>This could be a great opportunity to connect!</p>
+            <a href="${data.profileUrl}" style="display: inline-block; padding: 12px 24px; background: #000; color: #fff; text-decoration: none; border-radius: 4px;">View ${data.viewerName}'s Profile</a>
+          `,
+          text: `${data.viewerName} viewed your profile on Umbrella. Check out their profile: ${data.profileUrl}`,
+        }
+
       default:
         return {
           subject: 'Notification from Umbrella',

@@ -27,11 +27,19 @@ export const listGigs: RouteHandler = async (ctx) => {
   const dateEnd = ctx.url.searchParams.get('date_end')
   const priceMin = ctx.url.searchParams.get('price_min')
   const priceMax = ctx.url.searchParams.get('price_max')
+  const searchQuery = (ctx.url.searchParams.get('q') || ctx.url.searchParams.get('query'))?.trim()
 
   try {
     // Build dynamic WHERE clause
     const whereClauses: string[] = ["status = 'open'"] // Only show open gigs
     const queryParams: any[] = []
+
+    // Text search filter (searches title, description, venue_name)
+    if (searchQuery) {
+      whereClauses.push('(title LIKE ? OR description LIKE ? OR venue_name LIKE ?)')
+      const searchPattern = `%${searchQuery}%`
+      queryParams.push(searchPattern, searchPattern, searchPattern)
+    }
 
     // Genre filter (IN clause for multiple genres)
     if (genres.length > 0) {

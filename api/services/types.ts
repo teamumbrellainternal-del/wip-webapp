@@ -45,6 +45,10 @@ export type EmailTemplate =
   | 'message_notification'
   | 'review_invitation'
   | 'broadcast'
+  | 'connection_request'
+  | 'connection_accepted'
+  | 'new_follower'
+  | 'profile_view'
 
 /**
  * Email send parameters

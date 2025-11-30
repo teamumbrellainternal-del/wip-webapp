@@ -48,6 +48,7 @@ export interface Artist {
   rating_avg: number
   review_count: number
   follower_count: number
+  connection_count?: number // LinkedIn-style mutual connections
   gigs_completed: number
   price_range_min?: number
   price_range_max?: number
@@ -569,4 +570,103 @@ export interface UpdateJournalEntryRequest {
   title?: string
   blocks?: JournalBlock[]
   entry_type?: JournalEntryType
+}
+
+// ============================================================================
+// CONNECTION TYPES (LinkedIn-style mutual connections)
+// ============================================================================
+
+export type ConnectionStatus = 'none' | 'pending_sent' | 'pending_received' | 'connected' | 'self'
+
+export interface Connection {
+  connection_id: string
+  connected_user_id: string
+  artist_id: string
+  artist_name: string
+  avatar_url?: string
+  location_city?: string
+  location_state?: string
+  primary_genre?: string
+  connected_at: string
+}
+
+export interface ConnectionRequest {
+  connection_id: string
+  requester_user_id?: string
+  recipient_user_id?: string
+  artist_id: string
+  artist_name: string
+  avatar_url?: string
+  location_city?: string
+  location_state?: string
+  primary_genre?: string
+  created_at: string
+}
+
+export interface ConnectionStatusResponse {
+  status: ConnectionStatus
+  connection_id: string | null
+}
+
+export interface MutualConnection {
+  user_id: string
+  artist_id: string
+  artist_name: string
+  avatar_url?: string
+}
+
+export interface ConnectionsListResponse {
+  connections: Connection[]
+  total: number
+  limit: number
+  offset: number
+}
+
+export interface PendingRequestsResponse {
+  requests: ConnectionRequest[]
+  count: number
+}
+
+export interface SentRequestsResponse {
+  requests: ConnectionRequest[]
+  count: number
+}
+
+export interface MutualConnectionsResponse {
+  mutual_connections: MutualConnection[]
+  count: number
+}
+
+// ============================================================================
+// NOTIFICATION TYPES
+// ============================================================================
+
+export type NotificationType =
+  | 'connection_request'
+  | 'connection_accepted'
+  | 'message'
+  | 'gig_application'
+  | 'review'
+  | 'system'
+
+export interface Notification {
+  id: string
+  type: NotificationType
+  title: string
+  body: string
+  data?: Record<string, unknown>
+  read: boolean
+  created_at: string
+}
+
+export interface NotificationsResponse {
+  notifications: Notification[]
+  unread_count: number
+  total: number
+  limit: number
+  offset: number
+}
+
+export interface UnreadCountResponse {
+  unread_count: number
 }

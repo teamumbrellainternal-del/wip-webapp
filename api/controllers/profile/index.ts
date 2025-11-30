@@ -14,6 +14,7 @@
 import type { RouteHandler } from '../../router'
 import { successResponse, errorResponse } from '../../utils/response'
 import { ErrorCodes } from '../../utils/error-codes'
+import { generateUUIDv4 } from '../../utils/uuid'
 import type { Artist } from '../../models/artist'
 import {
   calculateProfileCompletion,
@@ -21,6 +22,8 @@ import {
   parseArrayField,
   serializeArrayField,
 } from '../../models/artist'
+import { createResendService } from '../../services/resend'
+import { logger } from '../../utils/logger'
 
 /**
  * Get artist profile (own profile with full data)
@@ -62,9 +65,21 @@ export const getProfile: RouteHandler = async (ctx) => {
     const completionPercentage = calculateProfileCompletion(artist)
 
     // Parse JSON array fields for response
+    // Map database fields to frontend Artist interface fields
+    const secondaryGenres = parseArrayField(artist.secondary_genres)
+    const allGenres = artist.primary_genre 
+      ? [artist.primary_genre, ...secondaryGenres]
+      : secondaryGenres
+    
     const response = {
       ...artist,
-      secondary_genres: parseArrayField(artist.secondary_genres),
+      // Map to frontend Artist interface fields
+      artist_name: artist.stage_name,
+      full_name: artist.legal_name || artist.stage_name,
+      location: [artist.location_city, artist.location_state].filter(Boolean).join(', '),
+      genres: allGenres,
+      // Parse array fields
+      secondary_genres: secondaryGenres,
       influences: parseArrayField(artist.influences),
       artist_type: parseArrayField(artist.artist_type),
       equipment: parseArrayField(artist.equipment),
@@ -416,6 +431,73 @@ export const getPublicProfile: RouteHandler = async (ctx) => {
       .bind(id)
       .run()
       .catch((err) => console.error('Failed to increment profile views:', err))
+
+    // Send profile view notification (only if viewer is authenticated and viewing someone else's profile)
+    if (ctx.userId && ctx.userId !== artist.user_id) {
+      try {
+        // Get viewer's artist info
+        const viewerArtist = await ctx.env.DB.prepare(
+          'SELECT id, stage_name, avatar_url FROM artists WHERE user_id = ?'
+        )
+          .bind(ctx.userId)
+          .first<{ id: string; stage_name: string; avatar_url: string | null }>()
+
+        // Get profile owner's email
+        const profileOwner = await ctx.env.DB.prepare(
+          'SELECT email FROM users WHERE id = ?'
+        )
+          .bind(artist.user_id)
+          .first<{ email: string }>()
+
+        if (viewerArtist && profileOwner) {
+          const viewerName = viewerArtist.stage_name || 'Someone'
+          const now = new Date().toISOString()
+
+          // Create in-app notification
+          const notificationId = generateUUIDv4()
+          const notificationData = JSON.stringify({
+            viewer_user_id: ctx.userId,
+            viewer_artist_id: viewerArtist.id,
+            viewer_artist_name: viewerName,
+          })
+
+          await ctx.env.DB.prepare(`
+            INSERT INTO notifications (id, user_id, type, title, body, data, read, created_at)
+            VALUES (?, ?, 'profile_view', ?, ?, ?, 0, ?)
+          `)
+            .bind(
+              notificationId,
+              artist.user_id,
+              `${viewerName} viewed your profile`,
+              `${viewerName} checked out your profile on Umbrella.`,
+              notificationData,
+              now
+            )
+            .run()
+
+          // Send email notification (non-blocking)
+          if (ctx.env.RESEND_API_KEY) {
+            const emailService = createResendService(ctx.env.RESEND_API_KEY, ctx.env.DB)
+            await emailService.sendTransactional('profile_view', profileOwner.email, {
+              viewerName: viewerName,
+              profileUrl: `https://app.umbrellalive.com/artist/${viewerArtist.id}`,
+            })
+          }
+
+          logger.info('ProfileController', 'getPublicProfile', 'View notification sent', {
+            viewedArtistId: id,
+            viewerUserId: ctx.userId,
+            notificationId,
+          })
+        }
+      } catch (notificationError) {
+        // Log but don't fail - notification is non-critical
+        logger.error('ProfileController', 'getPublicProfile', 'Failed to send view notification', {
+          error: notificationError instanceof Error ? notificationError.message : 'Unknown error',
+          artistId: id,
+        })
+      }
+    }
 
     return successResponse(
       {

@@ -28,6 +28,7 @@ import ToolboxPage from '@/pages/ToolboxPage'
 import FilesPage from '@/pages/FilesPage'
 import MessageFansPage from '@/pages/MessageFansPage'
 import CreativeStudioPage from '@/pages/CreativeStudioPage'
+import NetworkPage from '@/pages/NetworkPage'
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
@@ -212,6 +213,18 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <OnboardingGuard>
           <ProfileEditPage />
+        </OnboardingGuard>
+      </ProtectedRoute>
+    ),
+  },
+
+  // Network (Connections)
+  {
+    path: '/network',
+    element: (
+      <ProtectedRoute>
+        <OnboardingGuard>
+          <NetworkPage />
         </OnboardingGuard>
       </ProtectedRoute>
     ),

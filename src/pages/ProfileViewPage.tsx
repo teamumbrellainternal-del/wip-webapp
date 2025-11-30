@@ -287,7 +287,13 @@ export default function ProfileViewPage() {
                 </div>
 
                 {/* Stats Row */}
-                <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+                <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-5">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">
+                      {(artist.connection_count || 0).toLocaleString()}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Connections</p>
+                  </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold">
                       {artist.follower_count?.toLocaleString() || 0}

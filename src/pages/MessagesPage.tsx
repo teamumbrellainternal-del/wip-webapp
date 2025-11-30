@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -49,10 +49,12 @@ const _notifications: never[] = []
 
 export default function MessagesPage() {
   const { conversationId } = useParams<{ conversationId: string }>()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { user } = useAuth()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const [redirectingToConversation, setRedirectingToConversation] = useState(false)
 
   // Pusher real-time connection
   const {
@@ -136,6 +138,35 @@ export default function MessagesPage() {
       setError(err as Error)
     }
   }, [])
+
+  // Handle ?user= query parameter - find or create conversation with that user
+  useEffect(() => {
+    const targetUserId = searchParams.get('user')
+    if (!targetUserId || conversationId || redirectingToConversation) return
+
+    const findOrCreateConversation = async () => {
+      setRedirectingToConversation(true)
+      try {
+        const response = await messagesService.startConversation({
+          participant_id: targetUserId,
+          context_type: 'artist',
+        })
+
+        if (response.conversation?.id) {
+          // Navigate to the conversation (replace history to avoid back-button issues)
+          navigate(`/messages/${response.conversation.id}`, { replace: true })
+        }
+      } catch (error) {
+        console.error('Failed to find or create conversation:', error)
+        // Clear the query param and show empty state
+        navigate('/messages', { replace: true })
+      } finally {
+        setRedirectingToConversation(false)
+      }
+    }
+
+    findOrCreateConversation()
+  }, [searchParams, conversationId, navigate, redirectingToConversation])
 
   // Initial load
   useEffect(() => {
@@ -358,10 +389,12 @@ export default function MessagesPage() {
 
   if (!user) return null
 
-  if (loading) {
+  if (loading || redirectingToConversation) {
     return (
       <AppLayout>
-        <LoadingState message="Loading messages..." />
+        <LoadingState
+          message={redirectingToConversation ? 'Opening conversation...' : 'Loading messages...'}
+        />
       </AppLayout>
     )
   }
