@@ -468,12 +468,6 @@ export default function MarketplacePage() {
                 {/* Footer */}
                 <div className="mt-auto flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    {/* Rating */}
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">4.8</span>
-                      <span className="text-xs text-muted-foreground">(156)</span>
-                    </div>
                     {/* Genre Tags */}
                     <div className="flex gap-1">
                       {gig.genre_tags?.slice(0, 2).map((genre) => (
@@ -592,11 +586,6 @@ export default function MarketplacePage() {
                 </div>
                 <p className="text-sm text-muted-foreground">{artist.location}</p>
                 <div className="mt-2 flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">{artist.rating_avg?.toFixed(1) || '5.0'}</span>
-                    <span className="text-muted-foreground">({artist.review_count || 0})</span>
-                  </div>
                   <span className="text-muted-foreground">{artist.gigs_completed || 0} gigs</span>
                 </div>
               </div>
@@ -942,13 +931,7 @@ export default function MarketplacePage() {
                   </div>
 
                   {/* Stats */}
-                  <div className="mb-6 grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <p className="text-2xl font-bold">
-                        {selectedArtist.rating_avg?.toFixed(1) || '5.0'}
-                      </p>
-                      <p className="text-xs text-muted-foreground">Rating</p>
-                    </div>
+                  <div className="mb-6 grid grid-cols-2 gap-4 text-center">
                     <div>
                       <p className="text-2xl font-bold">{selectedArtist.gigs_completed || 0}</p>
                       <p className="text-xs text-muted-foreground">Gigs</p>

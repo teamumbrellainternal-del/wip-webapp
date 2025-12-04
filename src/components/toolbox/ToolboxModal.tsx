@@ -79,7 +79,7 @@ export function ToolboxModal({ open, onOpenChange }: ToolboxModalProps) {
         <DialogContent className="max-w-2xl">
           <DialogHeader className="pb-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-700 text-white shadow-md">
                 <UmbrellaIcon className="h-6 w-6" />
               </div>
               <div>

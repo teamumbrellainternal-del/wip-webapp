@@ -247,22 +247,6 @@ export default function GrowthPage() {
                     </CardContent>
                   </Card>
 
-                  {/* Average Rating */}
-                  <Card className="border-border/50">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Average Rating</p>
-                          <p className="text-2xl font-bold text-foreground">4.8</p>
-                          <p className="text-xs text-green-600">+0.2 this month</p>
-                        </div>
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-                          <Star className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
                   {/* Fan Reach */}
                   <Card className="border-border/50">
                     <CardContent className="p-4">
@@ -423,13 +407,6 @@ export default function GrowthPage() {
                           Quality Reviews
                         </Badge>
                       </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="flex items-center gap-1">
-                        <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
-                        <span className="text-2xl font-bold">4.8</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">avg rating</p>
                     </div>
                   </CardContent>
                 </Card>
