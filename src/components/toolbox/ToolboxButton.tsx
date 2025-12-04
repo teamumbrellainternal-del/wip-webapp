@@ -33,7 +33,7 @@ export function ToolboxButton({ className = '' }: ToolboxButtonProps) {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md transition-all hover:scale-105 hover:shadow-lg ${className}`}
+        className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-700 text-white shadow-md transition-all hover:scale-105 hover:shadow-lg ${className}`}
         title="Artist Toolbox"
         aria-label="Open Artist Toolbox"
       >

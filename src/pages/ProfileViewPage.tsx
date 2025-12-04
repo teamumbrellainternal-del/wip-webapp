@@ -287,7 +287,7 @@ export default function ProfileViewPage() {
                 </div>
 
                 {/* Stats Row */}
-                <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-5">
+                <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-4">
                   <div className="text-center">
                     <p className="text-2xl font-bold">
                       {(artist.connection_count || 0).toLocaleString()}
@@ -303,13 +303,6 @@ export default function ProfileViewPage() {
                   <div className="text-center">
                     <p className="text-2xl font-bold">{artist.gigs_completed || 0}</p>
                     <p className="text-sm text-muted-foreground">Gigs Booked</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <p className="text-2xl font-bold">{artist.rating_avg?.toFixed(1) || '5.0'}</p>
-                      <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">Avg Rating</p>
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold">{artist.review_count || 0}</p>

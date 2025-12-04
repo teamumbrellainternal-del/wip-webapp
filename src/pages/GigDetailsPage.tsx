@@ -200,16 +200,6 @@ export default function GigDetailsPage() {
                   >
                     {gig.venue_name}
                   </Link>
-                  {gig.venue_rating_avg > 0 && (
-                    <>
-                      <span>•</span>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span>{gig.venue_rating_avg.toFixed(1)}</span>
-                        <span className="text-sm">({gig.venue_review_count} reviews)</span>
-                      </div>
-                    </>
-                  )}
                 </div>
               </div>
 
