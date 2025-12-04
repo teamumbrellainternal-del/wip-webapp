@@ -154,12 +154,12 @@ export default function ProfileViewPage() {
           {/* Cover image placeholder - could be replaced with actual cover image */}
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&h=400&fit=crop')] bg-cover bg-center opacity-50" />
 
-          {/* Edit cover button - only in edit mode */}
+          {/* Edit cover button - only in edit mode, positioned bottom-right to avoid overlap with header */}
           {viewMode === 'edit' && (
             <Button
               variant="secondary"
               size="sm"
-              className="absolute right-4 top-4 gap-1.5 bg-white/90 hover:bg-white"
+              className="absolute bottom-4 right-4 gap-1.5 bg-white/90 hover:bg-white"
             >
               <Camera className="h-4 w-4" />
               Edit Cover
