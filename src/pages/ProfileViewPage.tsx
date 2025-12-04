@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
@@ -26,6 +26,7 @@ import {
   Sparkles,
   Camera,
   Eye,
+  Loader2,
 } from 'lucide-react'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
@@ -63,6 +64,11 @@ export default function ProfileViewPage() {
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null)
   const [bioExpanded, setBioExpanded] = useState(false)
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('preview')
+
+  // Cover image upload state
+  const [coverPreview, setCoverPreview] = useState<string | null>(null)
+  const [isUploadingCover, setIsUploadingCover] = useState(false)
+  const coverInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -118,6 +124,75 @@ export default function ProfileViewPage() {
     }
   }
 
+  const handleCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic']
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please select a JPEG, PNG, WebP, or HEIC image',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Validate file size (15MB max for covers)
+    const maxSize = 15 * 1024 * 1024
+    if (file.size > maxSize) {
+      toast({
+        title: 'File too large',
+        description: `File size must be less than 15MB. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB`,
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Create preview and upload immediately
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setCoverPreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+
+    // Upload the file
+    handleCoverUpload(file)
+  }
+
+  const handleCoverUpload = async (file: File) => {
+    setIsUploadingCover(true)
+
+    try {
+      const result = await apiClient.uploadProfileCover(file)
+
+      toast({
+        title: 'Cover updated',
+        description: 'Your profile cover has been updated successfully',
+      })
+
+      // Update the artist state with new cover URL
+      if (artist) {
+        setArtist({ ...artist, banner_url: result.coverUrl })
+      }
+      setCoverPreview(null) // Clear preview, use actual URL now
+    } catch (err) {
+      toast({
+        title: 'Upload failed',
+        description: err instanceof Error ? err.message : 'Failed to upload cover image',
+        variant: 'destructive',
+      })
+      setCoverPreview(null) // Clear preview on error
+    } finally {
+      setIsUploadingCover(false)
+      // Reset the file input
+      if (coverInputRef.current) {
+        coverInputRef.current.value = ''
+      }
+    }
+  }
+
   if (loading) {
     return (
       <AppLayout>
@@ -151,8 +226,24 @@ export default function ProfileViewPage() {
       <div className="flex min-h-[calc(100vh-4rem)] flex-col">
         {/* Cover Image Section */}
         <div className="relative h-48 bg-gradient-to-r from-purple-600 to-pink-600 md:h-64">
-          {/* Cover image placeholder - could be replaced with actual cover image */}
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&h=400&fit=crop')] bg-cover bg-center opacity-50" />
+          {/* Cover image - use uploaded cover, preview, or default gradient */}
+          {(coverPreview || artist?.banner_url) ? (
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url('${coverPreview || artist?.banner_url}')` }}
+            />
+          ) : (
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200&h=400&fit=crop')] bg-cover bg-center opacity-50" />
+          )}
+
+          {/* Hidden file input for cover upload */}
+          <input
+            ref={coverInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/heic"
+            onChange={handleCoverSelect}
+            className="hidden"
+          />
 
           {/* Edit cover button - only in edit mode, positioned bottom-right to avoid overlap with header */}
           {viewMode === 'edit' && (
@@ -160,9 +251,15 @@ export default function ProfileViewPage() {
               variant="secondary"
               size="sm"
               className="absolute bottom-4 right-4 gap-1.5 bg-white/90 hover:bg-white"
+              onClick={() => coverInputRef.current?.click()}
+              disabled={isUploadingCover}
             >
-              <Camera className="h-4 w-4" />
-              Edit Cover
+              {isUploadingCover ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Camera className="h-4 w-4" />
+              )}
+              {isUploadingCover ? 'Uploading...' : 'Edit Cover'}
             </Button>
           )}
 
