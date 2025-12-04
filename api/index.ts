@@ -156,6 +156,7 @@ function setupRouter(): Router {
   router.get('/v1/profile/completion', profileController.getProfileCompletion, [authMiddleware])
   router.get('/v1/profile/actions', profileController.getProfileActions, [authMiddleware])
   router.post('/v1/profile/avatar', profileController.uploadAvatar, [authMiddleware])
+  router.post('/v1/profile/cover', profileController.uploadCover, [authMiddleware])
   router.get('/v1/profile/:id', profileController.getPublicProfile) // Public profile
 
   // Profile tracks routes (task-3.4)
