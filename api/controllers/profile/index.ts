@@ -954,6 +954,203 @@ export const uploadAvatar: RouteHandler = async (ctx) => {
 
 
 /**
+ * Upload cover image directly to R2
+ * POST /v1/profile/cover
+ * Accepts multipart/form-data with the image file
+ * Uploads to R2 and updates artist record
+ */
+export const uploadCover: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  // Check if R2 storage is configured
+  if (!ctx.env.BUCKET) {
+    return errorResponse(
+      ErrorCodes.SERVICE_UNAVAILABLE,
+      'File storage is not configured',
+      503,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    // Parse multipart form data
+    const formData = await ctx.request.formData()
+    const file = formData.get('file') as File | null
+
+    if (!file) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'No file provided. Send file in form-data with key "file"',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    const contentType = file.type
+    const fileSize = file.size
+    const filename = file.name
+
+    // Get artist profile
+    const artist = await ctx.env.DB.prepare(
+      'SELECT id, banner_url FROM artists WHERE user_id = ?'
+    ).bind(ctx.userId).first<{ id: string; banner_url: string | null }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist profile not found',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Validate file type (images only)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic']
+    if (!allowedTypes.includes(contentType)) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        `Invalid file type "${contentType}". Allowed types: ${allowedTypes.join(', ')}`,
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Validate file size (15MB max for cover images)
+    const MAX_COVER_SIZE = 15 * 1024 * 1024 // 15MB
+    if (fileSize > MAX_COVER_SIZE) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        `File size ${Math.round(fileSize / (1024 * 1024))}MB exceeds maximum allowed size of 15MB`,
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Generate file extension from content type
+    const extMap: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+      'image/heic': 'heic',
+    }
+    const ext = extMap[contentType] || 'jpg'
+
+    // Build R2 key for cover image (standardized naming)
+    const fileKey = `profiles/${artist.id}/cover.${ext}`
+
+    // Delete old cover from R2 if exists and has different extension
+    if (artist.banner_url) {
+      try {
+        // Extract old key from URL (format: /media/profiles/{artistId}/cover.{ext})
+        const oldKeyMatch = artist.banner_url.match(/profiles\/[^\/]+\/cover\.[a-z]+/)
+        if (oldKeyMatch) {
+          const oldKey = oldKeyMatch[0]
+          // Only delete if it's a different file (different extension)
+          if (oldKey !== fileKey) {
+            await ctx.env.BUCKET.delete(oldKey)
+            console.log(`Deleted old cover: ${oldKey}`)
+          }
+        }
+      } catch (error) {
+        console.error('Error deleting old cover:', error)
+        // Continue even if deletion fails - not critical
+      }
+    }
+
+    // Upload file to R2
+    const fileBuffer = await file.arrayBuffer()
+    await ctx.env.BUCKET.put(fileKey, fileBuffer, {
+      httpMetadata: {
+        contentType: contentType,
+      },
+      customMetadata: {
+        uploadedBy: ctx.userId,
+        uploadedAt: new Date().toISOString(),
+        originalFilename: filename,
+      },
+    })
+
+    console.log(`Cover uploaded to R2: ${fileKey}`)
+
+    // Build the public URL for the cover (served via /media/* endpoint)
+    const coverUrl = `/media/${fileKey}`
+
+    // Update artist record with new banner_url
+    await ctx.env.DB.prepare(
+      'UPDATE artists SET banner_url = ?, updated_at = ? WHERE user_id = ?'
+    )
+      .bind(coverUrl, new Date().toISOString(), ctx.userId)
+      .run()
+
+    // Get updated profile
+    const updatedArtist = await ctx.env.DB.prepare(
+      'SELECT * FROM artists WHERE user_id = ?'
+    ).bind(ctx.userId).first<Artist>()
+
+    if (!updatedArtist) {
+      return errorResponse(
+        ErrorCodes.INTERNAL_ERROR,
+        'Failed to retrieve updated profile',
+        500,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Calculate new completion percentage
+    const completionPercentage = calculateProfileCompletion(updatedArtist)
+
+    // Parse JSON array fields for response
+    const response = {
+      ...updatedArtist,
+      secondary_genres: parseArrayField(updatedArtist.secondary_genres),
+      influences: parseArrayField(updatedArtist.influences),
+      artist_type: parseArrayField(updatedArtist.artist_type),
+      equipment: parseArrayField(updatedArtist.equipment),
+      daw: parseArrayField(updatedArtist.daw),
+      platforms: parseArrayField(updatedArtist.platforms),
+      subscriptions: parseArrayField(updatedArtist.subscriptions),
+      struggles: parseArrayField(updatedArtist.struggles),
+      available_dates: parseArrayField(updatedArtist.available_dates),
+      profile_completion: completionPercentage,
+    }
+
+    return successResponse(
+      {
+        message: 'Cover image uploaded successfully',
+        coverUrl,
+        profile: response,
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error uploading cover:', error)
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Failed to upload cover image',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+
+/**
  * Get profile statistics
  * GET /v1/profile/stats
  * Returns view counts and other profile metrics
