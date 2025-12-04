@@ -328,7 +328,7 @@ export default function ProfilePage() {
                     {(artist.artist_name || 'A').charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                {artist.verified && (
+                {!!artist.verified && (
                   <div className="absolute -bottom-1 -right-1 rounded-full bg-blue-500 p-1.5">
                     <CheckCircle2 className="h-5 w-5 text-white" />
                   </div>
@@ -343,7 +343,7 @@ export default function ProfilePage() {
                       <h1 className="text-2xl font-bold md:text-3xl">
                         {artist.artist_name || 'Artist'}
                       </h1>
-                      {artist.verified && (
+                      {!!artist.verified && (
                         <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
                           Professional
                         </Badge>
