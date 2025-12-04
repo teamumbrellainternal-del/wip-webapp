@@ -214,7 +214,7 @@ export default function GrowthPage() {
             <ScrollArea className="h-full">
               <div className="p-6">
                 {/* Stats Cards */}
-                <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-3">
                   {/* Total Revenue */}
                   <Card className="border-border/50">
                     <CardContent className="p-4">
