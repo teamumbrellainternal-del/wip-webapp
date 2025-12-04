@@ -21,7 +21,6 @@ import {
   Filter,
   MapPin,
   Calendar,
-  Star,
   CheckCircle2,
   Loader2,
   Users,

@@ -11,7 +11,6 @@ import {
   Clock,
   MapPin,
   DollarSign,
-  Star,
   Users,
   AlertCircle,
   CheckCircle2,
