@@ -442,6 +442,65 @@ class APIClient {
   }
 
   /**
+   * Upload profile cover image directly to R2 storage
+   * @param file - The image file to upload
+   * @returns The uploaded cover URL and updated profile
+   */
+  async uploadProfileCover(file: File): Promise<{
+    message: string
+    coverUrl: string
+    profile: Artist
+  }> {
+    // Demo mode - simulate upload with placeholder cover
+    if (DEMO_MODE) {
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      return {
+        message: 'Cover image uploaded successfully',
+        coverUrl: '', // Demo mode shows default gradient
+        profile: MOCK_ARTIST,
+      }
+    }
+
+    // Create FormData with the file
+    const formData = new FormData()
+    formData.append('file', file)
+
+    // Get auth headers (without Content-Type - browser sets it for FormData)
+    const headers: HeadersInit = {}
+    if (this.getToken) {
+      const token = await this.getToken()
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+    } else {
+      const session = getSession()
+      if (session?.token) {
+        headers['Authorization'] = `Bearer ${session.token}`
+      }
+    }
+
+    const response = await fetch(`${this.baseURL}/profile/cover`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    })
+
+    if (response.status === 401) {
+      clearSession()
+      triggerSessionTimeout()
+      throw new Error('Session expired. Please log in again.')
+    }
+
+    const data = await response.json()
+
+    if (!data.success) {
+      throw new Error(data.error?.message || 'Failed to upload cover image')
+    }
+
+    return data.data
+  }
+
+  /**
    * Upload file directly to R2 storage (for file manager)
    * @param file - The file to upload
    * @returns The uploaded file metadata
