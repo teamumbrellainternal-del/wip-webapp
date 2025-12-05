@@ -227,7 +227,7 @@ export default function ProfileViewPage() {
         {/* Cover Image Section */}
         <div className="relative h-48 bg-gradient-to-r from-purple-600 to-pink-600 md:h-64">
           {/* Cover image - use uploaded cover, preview, or default gradient */}
-          {(coverPreview || artist?.banner_url) ? (
+          {coverPreview || artist?.banner_url ? (
             <div
               className="absolute inset-0 bg-cover bg-center"
               style={{ backgroundImage: `url('${coverPreview || artist?.banner_url}')` }}
