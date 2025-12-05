@@ -172,9 +172,9 @@ export default function ProfileViewPage() {
         description: 'Your profile cover has been updated successfully',
       })
 
-      // Update the artist state with new cover URL
+      // Update the artist state with new cover URL (with cache-busting timestamp)
       if (artist) {
-        setArtist({ ...artist, banner_url: result.coverUrl })
+        setArtist({ ...artist, banner_url: `${result.coverUrl}?t=${Date.now()}` })
       }
       setCoverPreview(null) // Clear preview, use actual URL now
     } catch (err) {
