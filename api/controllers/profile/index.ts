@@ -1048,21 +1048,19 @@ export const uploadCover: RouteHandler = async (ctx) => {
     }
     const ext = extMap[contentType] || 'jpg'
 
-    // Build R2 key for cover image (standardized naming)
-    const fileKey = `profiles/${artist.id}/cover.${ext}`
+    // Build R2 key for cover image with timestamp for cache-busting
+    const timestamp = Date.now()
+    const fileKey = `profiles/${artist.id}/cover-${timestamp}.${ext}`
 
-    // Delete old cover from R2 if exists and has different extension
+    // Delete old cover from R2 if exists
     if (artist.banner_url) {
       try {
-        // Extract old key from URL (format: /media/profiles/{artistId}/cover.{ext})
-        const oldKeyMatch = artist.banner_url.match(/profiles\/[^\/]+\/cover\.[a-z]+/)
+        // Extract old key from URL (format: /media/profiles/{artistId}/cover-{timestamp}.{ext} or /media/profiles/{artistId}/cover.{ext})
+        const oldKeyMatch = artist.banner_url.match(/profiles\/[^\/]+\/cover(-\d+)?\.[a-z]+/)
         if (oldKeyMatch) {
           const oldKey = oldKeyMatch[0]
-          // Only delete if it's a different file (different extension)
-          if (oldKey !== fileKey) {
-            await ctx.env.BUCKET.delete(oldKey)
-            console.log(`Deleted old cover: ${oldKey}`)
-          }
+          await ctx.env.BUCKET.delete(oldKey)
+          console.log(`Deleted old cover: ${oldKey}`)
         }
       } catch (error) {
         console.error('Error deleting old cover:', error)
