@@ -1135,9 +1135,6 @@ function TrackCard({ track, isPlaying, onPlay, onDelete }: TrackCardProps) {
     setCurrentTime(newTime)
   }
 
-  // Calculate progress percentage
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0
-
   return (
     <Card className="group overflow-hidden border-border/50 transition-all hover:shadow-md">
       {/* Hidden audio element - only render if audioUrl exists */}
