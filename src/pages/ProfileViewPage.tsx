@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { apiClient } from '@/lib/api-client'
-import { tracksService } from '@/services/api'
+import { tracksService, filesService, mediaService, type MediaItem } from '@/services/api'
 import type { Artist, Track, Review } from '@/types'
 import AppLayout from '@/components/layout/AppLayout'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -75,6 +75,11 @@ export default function ProfileViewPage() {
   // Track upload modal state
   const [trackUploadModalOpen, setTrackUploadModalOpen] = useState(false)
 
+  // Media (Explore) state
+  const [media, setMedia] = useState<MediaItem[]>([])
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false)
+  const mediaInputRef = useRef<HTMLInputElement>(null)
+
   // Fetch tracks for the current user
   const fetchTracks = useCallback(async () => {
     try {
@@ -83,6 +88,17 @@ export default function ProfileViewPage() {
     } catch (err) {
       console.warn('Could not load tracks:', err)
       setTracks([])
+    }
+  }, [])
+
+  // Fetch media for the Explore gallery
+  const fetchMedia = useCallback(async (artistId: string) => {
+    try {
+      const response = await mediaService.getArtistMedia(artistId)
+      setMedia(response.media || [])
+    } catch (err) {
+      console.warn('Could not load media:', err)
+      setMedia([])
     }
   }, [])
 
@@ -97,6 +113,11 @@ export default function ProfileViewPage() {
 
         // Fetch tracks
         await fetchTracks()
+
+        // Fetch media for Explore gallery
+        if (profileData.id) {
+          await fetchMedia(profileData.id)
+        }
 
         try {
           const reviewsData: Review[] = []
@@ -114,7 +135,7 @@ export default function ProfileViewPage() {
     }
 
     fetchProfileData()
-  }, [fetchTracks])
+  }, [fetchTracks, fetchMedia])
 
   const handleShare = () => {
     if (user?.id) {
@@ -200,6 +221,65 @@ export default function ProfileViewPage() {
       // Reset the file input
       if (coverInputRef.current) {
         coverInputRef.current.value = ''
+      }
+    }
+  }
+
+  // Handle media upload for Explore gallery
+  const handleMediaSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type (images and videos)
+    const allowedTypes = [
+      'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic',
+      'video/mp4', 'video/quicktime', 'video/webm', 'video/x-msvideo'
+    ]
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please select an image (JPEG, PNG, WebP, GIF) or video (MP4, MOV, WebM)',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Validate file size (50MB max)
+    const maxSize = 50 * 1024 * 1024
+    if (file.size > maxSize) {
+      toast({
+        title: 'File too large',
+        description: `File size must be less than 50MB. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB`,
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setIsUploadingMedia(true)
+
+    try {
+      await filesService.upload(file)
+      
+      toast({
+        title: 'Media uploaded!',
+        description: 'Your media has been added to your gallery.',
+      })
+
+      // Refresh media list
+      if (artist?.id) {
+        await fetchMedia(artist.id)
+      }
+    } catch (err) {
+      toast({
+        title: 'Upload failed',
+        description: err instanceof Error ? err.message : 'Failed to upload media',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsUploadingMedia(false)
+      // Reset the file input
+      if (mediaInputRef.current) {
+        mediaInputRef.current.value = ''
       }
     }
   }
@@ -659,17 +739,89 @@ export default function ProfileViewPage() {
             </TabsContent>
 
             {/* Tab 3: Explore */}
-            <TabsContent value="explore">
-              <Card className="border-border/50">
-                <CardContent className="py-12 text-center">
-                  <Camera className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
-                  <h3 className="mb-2 text-xl font-semibold">Media Gallery</h3>
-                  <p className="mb-4 text-muted-foreground">
-                    Share photos and videos from your performances
-                  </p>
-                  <Button variant="outline">Upload Media</Button>
-                </CardContent>
-              </Card>
+            <TabsContent value="explore" className="space-y-4">
+              {/* Hidden file input for media upload */}
+              <input
+                ref={mediaInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/heic,video/mp4,video/quicktime,video/webm"
+                onChange={handleMediaSelect}
+                className="hidden"
+              />
+
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Media Gallery</h2>
+                <Button 
+                  variant="outline"
+                  onClick={() => mediaInputRef.current?.click()}
+                  disabled={isUploadingMedia}
+                >
+                  {isUploadingMedia ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="mr-2 h-4 w-4" />
+                      Upload Media
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {media.length === 0 ? (
+                <Card className="border-border/50">
+                  <CardContent className="py-12 text-center">
+                    <Camera className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
+                    <h3 className="mb-2 text-xl font-semibold">Share your moments</h3>
+                    <p className="mb-4 text-muted-foreground">
+                      Share photos and videos from your performances
+                    </p>
+                    <Button 
+                      variant="outline"
+                      onClick={() => mediaInputRef.current?.click()}
+                      disabled={isUploadingMedia}
+                    >
+                      {isUploadingMedia ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        'Upload Your First Media'
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                  {media.map((item) => (
+                    <Card key={item.id} className="overflow-hidden border-border/50">
+                      <div className="relative aspect-square">
+                        {item.file_type.startsWith('video/') ? (
+                          <video
+                            src={item.url}
+                            className="h-full w-full object-cover"
+                            controls
+                          />
+                        ) : (
+                          <img
+                            src={item.url}
+                            alt={item.filename}
+                            className="h-full w-full object-cover"
+                          />
+                        )}
+                      </div>
+                      <CardContent className="p-2">
+                        <p className="truncate text-sm text-muted-foreground">
+                          {item.filename}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
             {/* Tab 4: Journey */}

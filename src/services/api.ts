@@ -663,6 +663,28 @@ export const filesService = {
 }
 
 // ============================================================================
+// MEDIA SERVICES (Explore Gallery)
+// ============================================================================
+
+export interface MediaItem {
+  id: string
+  filename: string
+  file_type: string
+  file_size: number
+  url: string
+  category: string
+  uploaded_at: string
+}
+
+export const mediaService = {
+  /**
+   * Get public media (images/videos) for an artist's Explore gallery
+   */
+  getArtistMedia: (artistId: string) =>
+    apiRequest<{ media: MediaItem[] }>(`/profile/${artistId}/media`),
+}
+
+// ============================================================================
 // TRACKS SERVICES
 // ============================================================================
 
