@@ -592,12 +592,11 @@ class APIClient {
           artist_id: 'mock-artist',
           title: metadata.title,
           genre: metadata.genre,
+          duration_seconds: 180,
           file_url: '/media/mock/track.mp3',
           cover_art_url: metadata.cover_art_url,
-          plays: 0,
-          display_order: 1,
+          play_count: 0,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
         } as Track,
       }
     }
