@@ -1,8 +1,9 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { apiClient } from '@/lib/api-client'
+import { tracksService } from '@/services/api'
 import type { Artist, Track, Review } from '@/types'
 import AppLayout from '@/components/layout/AppLayout'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -31,6 +32,7 @@ import {
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
 import { MetaTags } from '@/components/MetaTags'
+import { TrackUploadModal } from '@/components/profile/TrackUploadModal'
 
 import { SocialLinksBarWithToolbox, type SocialLinksData } from '@/components/common/SocialIcons'
 
@@ -70,6 +72,20 @@ export default function ProfileViewPage() {
   const [isUploadingCover, setIsUploadingCover] = useState(false)
   const coverInputRef = useRef<HTMLInputElement>(null)
 
+  // Track upload modal state
+  const [trackUploadModalOpen, setTrackUploadModalOpen] = useState(false)
+
+  // Fetch tracks for the current user
+  const fetchTracks = useCallback(async () => {
+    try {
+      const tracksData = await tracksService.list()
+      setTracks(tracksData)
+    } catch (err) {
+      console.warn('Could not load tracks:', err)
+      setTracks([])
+    }
+  }, [])
+
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
@@ -79,13 +95,8 @@ export default function ProfileViewPage() {
         const profileData = await apiClient.getProfile()
         setArtist(profileData)
 
-        try {
-          const tracksData: Track[] = []
-          setTracks(tracksData)
-        } catch (err) {
-          console.warn('Could not load tracks:', err)
-          setTracks([])
-        }
+        // Fetch tracks
+        await fetchTracks()
 
         try {
           const reviewsData: Review[] = []
@@ -103,7 +114,7 @@ export default function ProfileViewPage() {
     }
 
     fetchProfileData()
-  }, [])
+  }, [fetchTracks])
 
   const handleShare = () => {
     if (user?.id) {
@@ -608,7 +619,10 @@ export default function ProfileViewPage() {
             <TabsContent value="portfolio" className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Music Portfolio</h2>
-                <Button className="gap-2 bg-purple-500 hover:bg-purple-600">
+                <Button 
+                  className="gap-2 bg-purple-500 hover:bg-purple-600"
+                  onClick={() => setTrackUploadModalOpen(true)}
+                >
                   <Music className="h-4 w-4" />
                   Add Track
                 </Button>
@@ -621,7 +635,10 @@ export default function ProfileViewPage() {
                     <p className="mb-4 text-muted-foreground">
                       Upload tracks to showcase your work to venues and collaborators
                     </p>
-                    <Button className="bg-purple-500 hover:bg-purple-600">
+                    <Button 
+                      className="bg-purple-500 hover:bg-purple-600"
+                      onClick={() => setTrackUploadModalOpen(true)}
+                    >
                       Upload Your First Track
                     </Button>
                   </CardContent>
@@ -712,6 +729,13 @@ export default function ProfileViewPage() {
           </Tabs>
         </div>
       </div>
+
+      {/* Track Upload Modal */}
+      <TrackUploadModal
+        open={trackUploadModalOpen}
+        onOpenChange={setTrackUploadModalOpen}
+        onSuccess={fetchTracks}
+      />
     </AppLayout>
   )
 }

@@ -668,6 +668,16 @@ export const filesService = {
 
 export const tracksService = {
   /**
+   * Get all tracks for the current user
+   */
+  list: () => apiRequest<Track[]>('/tracks'),
+
+  /**
+   * Get tracks for a specific artist (public)
+   */
+  getByArtist: (artistId: string) => apiRequest<Track[]>(`/profile/${artistId}/tracks`),
+
+  /**
    * Upload a track (D-028: Manual upload only for MVP)
    */
   upload: (
