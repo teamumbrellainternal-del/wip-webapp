@@ -892,7 +892,7 @@ export default function ProfileViewPage() {
   )
 }
 
-// Track Card Component
+// Track Card Component with Audio Player
 interface TrackCardProps {
   track: Track
   isPlaying: boolean
@@ -901,14 +901,94 @@ interface TrackCardProps {
 }
 
 function TrackCard({ track, isPlaying, onPlay, showActions }: TrackCardProps) {
-  const _formatDuration = (seconds: number) => {
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false)
+
+  // Format time as M:SS
+  const formatTime = (seconds: number) => {
+    if (!seconds || isNaN(seconds)) return '0:00'
     const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
+    const secs = Math.floor(seconds % 60)
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  // Build audio URL from track's file_url
+  const audioUrl = track.file_url?.startsWith('/media/') 
+    ? track.file_url 
+    : `/media/${track.file_url}`
+
+  // Handle play/pause
+  const handlePlayPause = () => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    if (isAudioPlaying) {
+      audio.pause()
+    } else {
+      audio.play().catch(err => console.error('Audio playback error:', err))
+    }
+    onPlay() // Notify parent
+  }
+
+  // Handle audio events
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const handleTimeUpdate = () => setCurrentTime(audio.currentTime)
+    const handleLoadedMetadata = () => setDuration(audio.duration)
+    const handlePlay = () => setIsAudioPlaying(true)
+    const handlePause = () => setIsAudioPlaying(false)
+    const handleEnded = () => {
+      setIsAudioPlaying(false)
+      setCurrentTime(0)
+    }
+
+    audio.addEventListener('timeupdate', handleTimeUpdate)
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata)
+    audio.addEventListener('play', handlePlay)
+    audio.addEventListener('pause', handlePause)
+    audio.addEventListener('ended', handleEnded)
+
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate)
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
+      audio.removeEventListener('play', handlePlay)
+      audio.removeEventListener('pause', handlePause)
+      audio.removeEventListener('ended', handleEnded)
+    }
+  }, [])
+
+  // Sync with parent isPlaying state (for when another track starts playing)
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    if (!isPlaying && isAudioPlaying) {
+      audio.pause()
+    }
+  }, [isPlaying, isAudioPlaying])
+
+  // Handle progress bar scrubbing
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const newTime = parseFloat(e.target.value)
+    audio.currentTime = newTime
+    setCurrentTime(newTime)
+  }
+
+  // Calculate progress percentage
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0
+
   return (
     <Card className="overflow-hidden border-border/50 transition-all hover:shadow-md">
+      {/* Hidden audio element */}
+      <audio ref={audioRef} src={audioUrl} preload="metadata" />
+      
       <div className="relative aspect-square">
         {track.cover_art_url ? (
           <img src={track.cover_art_url} alt={track.title} className="h-full w-full object-cover" />
@@ -919,18 +999,39 @@ function TrackCard({ track, isPlaying, onPlay, showActions }: TrackCardProps) {
         )}
         {/* Play/Pause Overlay */}
         <button
-          onClick={onPlay}
-          className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity hover:opacity-100"
+          onClick={handlePlayPause}
+          className={`absolute inset-0 flex items-center justify-center bg-black/40 transition-opacity ${
+            isAudioPlaying ? 'opacity-100' : 'opacity-0 hover:opacity-100'
+          }`}
         >
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90">
-            {isPlaying ? (
+            {isAudioPlaying ? (
               <Pause className="h-6 w-6 text-purple-600" />
             ) : (
               <Play className="h-6 w-6 text-purple-600" />
             )}
           </div>
         </button>
+        
+        {/* Progress Bar Overlay at bottom of image */}
+        {(isAudioPlaying || currentTime > 0) && (
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+            <input
+              type="range"
+              min={0}
+              max={duration || 100}
+              value={currentTime}
+              onChange={handleSeek}
+              className="h-1 w-full cursor-pointer appearance-none rounded-full bg-white/30 accent-purple-500 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+            />
+            <div className="mt-1 flex justify-between text-xs text-white/80">
+              <span>{formatTime(currentTime)}</span>
+              <span>{formatTime(duration)}</span>
+            </div>
+          </div>
+        )}
       </div>
+      
       <CardContent className="p-4">
         <h4 className="mb-1 truncate font-semibold">{track.title}</h4>
         <div className="flex items-center justify-between text-sm text-muted-foreground">
