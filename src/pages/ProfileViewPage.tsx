@@ -83,8 +83,8 @@ export default function ProfileViewPage() {
   // Fetch tracks for the current user
   const fetchTracks = useCallback(async () => {
     try {
-      const tracksData = await tracksService.list()
-      setTracks(tracksData)
+      const response = await tracksService.list()
+      setTracks(response.tracks || [])
     } catch (err) {
       console.warn('Could not load tracks:', err)
       setTracks([])
