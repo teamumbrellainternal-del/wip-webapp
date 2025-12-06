@@ -451,6 +451,7 @@ export const uploadTrackDirect: RouteHandler = async (ctx) => {
     const file = formData.get('file') as File | null
     const title = formData.get('title') as string | null
     const genre = formData.get('genre') as string | null
+    const coverArtUrl = formData.get('cover_art_url') as string | null
 
     if (!file) {
       return errorResponse(
@@ -594,7 +595,7 @@ export const uploadTrackDirect: RouteHandler = async (ctx) => {
       title,
       null, // duration_seconds - would need audio analysis
       r2Key,
-      null, // cover_art_url
+      coverArtUrl || null, // cover_art_url from uploaded image
       genre || null,
       new Date().getFullYear(),
       null, // spotify_url

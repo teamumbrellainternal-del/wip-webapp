@@ -580,7 +580,7 @@ class APIClient {
    */
   async uploadTrack(
     file: File,
-    metadata: { title: string; genre: string }
+    metadata: { title: string; genre: string; cover_art_url?: string }
   ): Promise<{ track: Track; message: string }> {
     // Demo mode - simulate upload
     if (DEMO_MODE) {
@@ -593,6 +593,7 @@ class APIClient {
           title: metadata.title,
           genre: metadata.genre,
           file_url: '/media/mock/track.mp3',
+          cover_art_url: metadata.cover_art_url,
           plays: 0,
           display_order: 1,
           created_at: new Date().toISOString(),
@@ -606,6 +607,9 @@ class APIClient {
     formData.append('file', file)
     formData.append('title', metadata.title)
     formData.append('genre', metadata.genre)
+    if (metadata.cover_art_url) {
+      formData.append('cover_art_url', metadata.cover_art_url)
+    }
 
     // Get auth headers (without Content-Type - browser sets it for FormData)
     const headers: HeadersInit = {}

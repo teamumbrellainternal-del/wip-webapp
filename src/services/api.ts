@@ -714,6 +714,7 @@ export const tracksService = {
     const result = await apiClient.uploadTrack(file, {
       title: metadata.title,
       genre: metadata.genre,
+      cover_art_url: metadata.cover_art_url,
     })
     return result.track
   },
