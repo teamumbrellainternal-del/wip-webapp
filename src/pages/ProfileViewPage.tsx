@@ -22,6 +22,12 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   MapPin,
   Star,
   Music,
@@ -38,6 +44,7 @@ import {
   Eye,
   Loader2,
   Trash2,
+  X,
 } from 'lucide-react'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
@@ -92,6 +99,7 @@ export default function ProfileViewPage() {
   // Media (Explore) state
   const [media, setMedia] = useState<MediaItem[]>([])
   const [isUploadingMedia, setIsUploadingMedia] = useState(false)
+  const [previewMedia, setPreviewMedia] = useState<MediaItem | null>(null)
   const mediaInputRef = useRef<HTMLInputElement>(null)
 
   // Fetch tracks for the current user
@@ -837,14 +845,27 @@ export default function ProfileViewPage() {
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                   {media.map((item) => (
-                    <Card key={item.id} className="overflow-hidden border-border/50">
+                    <Card 
+                      key={item.id} 
+                      className="cursor-pointer overflow-hidden border-border/50 transition-shadow hover:shadow-md"
+                      onDoubleClick={() => setPreviewMedia(item)}
+                      title="Double-click to view"
+                    >
                       <div className="relative aspect-square">
                         {item.file_type.startsWith('video/') ? (
-                          <video
-                            src={item.url}
-                            className="h-full w-full object-cover"
-                            controls
-                          />
+                          <div className="relative h-full w-full">
+                            <video
+                              src={item.url}
+                              className="h-full w-full object-cover"
+                              muted
+                            />
+                            {/* Play icon overlay for videos */}
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/80">
+                                <Play className="h-5 w-5 text-purple-600" />
+                              </div>
+                            </div>
+                          </div>
                         ) : (
                           <img
                             src={item.url}
@@ -957,6 +978,51 @@ export default function ProfileViewPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Media Preview Modal */}
+      <Dialog open={!!previewMedia} onOpenChange={(open) => !open && setPreviewMedia(null)}>
+        <DialogContent className="flex max-h-[90vh] max-w-[90vw] flex-col p-0">
+          <DialogHeader className="flex flex-row items-center justify-between border-b px-4 py-3">
+            <DialogTitle className="truncate pr-4 text-sm font-medium">
+              {previewMedia?.filename}
+            </DialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              onClick={() => setPreviewMedia(null)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogHeader>
+          <div className="flex min-h-0 flex-1 items-center justify-center bg-black/5 p-4">
+            {previewMedia && (
+              <>
+                {/* Videos */}
+                {previewMedia.file_type.startsWith('video/') && (
+                  <video
+                    src={previewMedia.url}
+                    controls
+                    autoPlay
+                    className="max-h-[70vh] max-w-full"
+                  >
+                    Your browser does not support video playback.
+                  </video>
+                )}
+
+                {/* Images */}
+                {previewMedia.file_type.startsWith('image/') && (
+                  <img
+                    src={previewMedia.url}
+                    alt={previewMedia.filename}
+                    className="max-h-[70vh] max-w-full object-contain"
+                  />
+                )}
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   )
 }
