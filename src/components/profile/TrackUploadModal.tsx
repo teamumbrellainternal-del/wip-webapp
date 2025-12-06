@@ -26,7 +26,6 @@ import {
 } from '@/components/ui/select'
 import { tracksService } from '@/services/api'
 import { useToast } from '@/hooks/use-toast'
-import { logger } from '@/lib/logger'
 
 const GENRES = [
   'Rock',
@@ -88,7 +87,7 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
     const file = event.target.files?.[0]
     if (!file) return
 
-    logger.info('TrackUploadModal: File selected', { 
+    console.log('TrackUploadModal: File selected', { 
       name: file.name, 
       size: file.size, 
       type: file.type 
@@ -136,7 +135,7 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
       return
     }
 
-    logger.info('TrackUploadModal: Starting upload', { 
+    console.log('TrackUploadModal: Starting upload', { 
       title, 
       genre, 
       fileName: selectedFile.name 
@@ -151,7 +150,7 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
         genre,
       })
 
-      logger.info('TrackUploadModal: Upload successful')
+      console.log('TrackUploadModal: Upload successful')
 
       toast({
         title: 'Track uploaded!',
@@ -161,7 +160,7 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
       handleOpenChange(false)
       onSuccess?.()
     } catch (err) {
-      logger.error('TrackUploadModal: Upload failed', err)
+      console.error('TrackUploadModal: Upload failed', err)
       const errorMessage = err instanceof Error ? err.message : 'Failed to upload track'
       setError(errorMessage)
       toast({
