@@ -165,6 +165,9 @@ function setupRouter(): Router {
   router.get('/v1/profile/:artistId/tracks', profileTracksController.getArtistTracks) // Public
   router.delete('/v1/profile/tracks/:trackId', profileTracksController.deleteTrack, [authMiddleware])
 
+  // Profile media routes (Explore gallery)
+  router.get('/v1/profile/:artistId/media', filesController.getPublicMedia) // Public
+
   // Onboarding routes (auth required)
   router.get('/v1/onboarding/status', onboardingController.getOnboardingStatus, [authMiddleware])
   router.post('/v1/onboarding/step1', onboardingController.submitStep1, [authMiddleware])
