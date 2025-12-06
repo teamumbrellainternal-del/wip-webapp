@@ -20,7 +20,6 @@ import {
   Edit,
   Play,
   Pause,
-  Heart,
   CheckCircle2,
   ArrowLeft,
   Calendar,
@@ -731,7 +730,6 @@ export default function ProfileViewPage() {
                       track={track}
                       isPlaying={playingTrackId === track.id}
                       onPlay={() => handleTrackPlay(track.id)}
-                      showActions
                     />
                   ))}
                 </div>
@@ -897,10 +895,9 @@ interface TrackCardProps {
   track: Track
   isPlaying: boolean
   onPlay: () => void
-  showActions?: boolean
 }
 
-function TrackCard({ track, isPlaying, onPlay, showActions }: TrackCardProps) {
+function TrackCard({ track, isPlaying, onPlay }: TrackCardProps) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -1034,22 +1031,11 @@ function TrackCard({ track, isPlaying, onPlay, showActions }: TrackCardProps) {
       
       <CardContent className="p-4">
         <h4 className="mb-1 truncate font-semibold">{track.title}</h4>
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex items-center text-sm text-muted-foreground">
           <Badge variant="secondary" className="text-xs">
             {track.genre || 'Original'}
           </Badge>
-          <span>{track.play_count?.toLocaleString() || 0} plays</span>
         </div>
-        {showActions && (
-          <div className="mt-3 flex gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Heart className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Share2 className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
       </CardContent>
     </Card>
   )
