@@ -417,6 +417,239 @@ export const getArtistTracks: RouteHandler = async (ctx) => {
 }
 
 /**
+ * POST /v1/profile/tracks/direct
+ * Upload track directly (for local development)
+ * Accepts multipart/form-data with file and metadata
+ *
+ * This bypasses the signed URL flow and uploads directly to R2
+ */
+export const uploadTrackDirect: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  // Check if R2 storage is configured
+  if (!ctx.env.BUCKET) {
+    return errorResponse(
+      ErrorCodes.SERVICE_UNAVAILABLE,
+      'File storage is not configured',
+      503,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    // Parse multipart form data
+    const formData = await ctx.request.formData()
+    const file = formData.get('file') as File | null
+    const title = formData.get('title') as string | null
+    const genre = formData.get('genre') as string | null
+    const coverArtUrl = formData.get('cover_art_url') as string | null
+
+    if (!file) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'No file provided. Send file in form-data with key "file"',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    if (!title) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'Title is required',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    const contentType = file.type
+    const fileSize = file.size
+    const filename = file.name
+
+    console.log(`Track upload - filename: ${filename}, contentType: ${contentType}, size: ${fileSize}, title: ${title}`)
+
+    // Get artist profile
+    const artist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE user_id = ?'
+    ).bind(ctx.userId).first<{ id: string }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist profile not found',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Validate file type - must be audio
+    const ALLOWED_AUDIO_TYPES = [
+      'audio/mpeg',
+      'audio/mp3',
+      'audio/wav',
+      'audio/wave',
+      'audio/x-wav',
+      'audio/flac',
+      'audio/x-flac',
+      'audio/x-m4a',
+      'audio/m4a',
+      'audio/aac',
+      'audio/ogg',
+      'audio/webm',
+    ]
+
+    if (!ALLOWED_AUDIO_TYPES.includes(contentType)) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        `Invalid file type "${contentType}". Allowed types: MP3, WAV, FLAC, M4A, AAC, OGG`,
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Validate file size (50MB max)
+    const MAX_FILE_SIZE = 50 * 1024 * 1024
+    if (fileSize > MAX_FILE_SIZE) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        `File size ${Math.round(fileSize / (1024 * 1024))}MB exceeds maximum allowed size of 50MB`,
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Check storage quota (50GB per artist)
+    const STORAGE_QUOTA = 50 * 1024 * 1024 * 1024
+    const storageQuery = await ctx.env.DB.prepare(
+      'SELECT SUM(file_size_bytes) as total FROM files WHERE artist_id = ?'
+    ).bind(artist.id).first<{ total: number | null }>()
+
+    const currentUsage = storageQuery?.total || 0
+    if (currentUsage + fileSize > STORAGE_QUOTA) {
+      const usedGB = (currentUsage / (1024 * 1024 * 1024)).toFixed(2)
+      return errorResponse(
+        ErrorCodes.STORAGE_QUOTA_EXCEEDED,
+        `Storage quota exceeded. Current usage: ${usedGB}GB / 50GB`,
+        429,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Generate unique track ID and R2 key
+    const trackId = generateUUIDv4()
+    const timestamp = Date.now()
+    const safeFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_')
+    const r2Key = `tracks/${artist.id}/${timestamp}-${trackId}-${safeFilename}`
+
+    // Upload file to R2
+    const fileBuffer = await file.arrayBuffer()
+    await ctx.env.BUCKET.put(r2Key, fileBuffer, {
+      httpMetadata: {
+        contentType: contentType,
+      },
+      customMetadata: {
+        uploadedBy: ctx.userId,
+        uploadedAt: new Date().toISOString(),
+        originalFilename: filename,
+        trackId: trackId,
+        title: title,
+      },
+    })
+
+    console.log(`Track uploaded to R2: ${r2Key}`)
+
+    const now = new Date().toISOString()
+
+    // Get current max display_order for artist
+    const maxOrder = await ctx.env.DB.prepare(
+      'SELECT MAX(display_order) as max_order FROM tracks WHERE artist_id = ?'
+    ).bind(artist.id).first<{ max_order: number | null }>()
+
+    const displayOrder = (maxOrder?.max_order || 0) + 1
+
+    // Insert track metadata into tracks table
+    await ctx.env.DB.prepare(
+      `INSERT INTO tracks (
+        id, artist_id, title, duration_seconds, file_url, cover_art_url, genre,
+        release_year, spotify_url, apple_music_url, soundcloud_url,
+        display_order, plays, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`
+    ).bind(
+      trackId,
+      artist.id,
+      title,
+      null, // duration_seconds - would need audio analysis
+      r2Key,
+      coverArtUrl || null, // cover_art_url from uploaded image
+      genre || null,
+      new Date().getFullYear(),
+      null, // spotify_url
+      null, // apple_music_url
+      null, // soundcloud_url
+      displayOrder,
+      now,
+      now
+    ).run()
+
+    // Update storage quota tracking
+    const existingQuota = await ctx.env.DB.prepare(
+      'SELECT used_bytes FROM storage_quotas WHERE artist_id = ?'
+    ).bind(artist.id).first<{ used_bytes: number }>()
+
+    if (existingQuota) {
+      await ctx.env.DB.prepare(
+        'UPDATE storage_quotas SET used_bytes = used_bytes + ?, updated_at = ? WHERE artist_id = ?'
+      ).bind(fileSize, now, artist.id).run()
+    } else {
+      await ctx.env.DB.prepare(
+        'INSERT INTO storage_quotas (artist_id, used_bytes, limit_bytes, updated_at) VALUES (?, ?, ?, ?)'
+      ).bind(artist.id, fileSize, STORAGE_QUOTA, now).run()
+    }
+
+    // Get created track
+    const track = await ctx.env.DB.prepare(
+      'SELECT * FROM tracks WHERE id = ?'
+    ).bind(trackId).first()
+
+    return successResponse(
+      {
+        message: 'Track uploaded successfully',
+        track: {
+          ...track,
+          file_url: `/media/${r2Key}`,
+        },
+      },
+      201,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error uploading track directly:', error)
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Failed to upload track',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
  * DELETE /v1/profile/tracks/:trackId
  * Remove track and update storage quota
  *

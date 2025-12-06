@@ -1257,3 +1257,86 @@ export const uploadFileDirect: RouteHandler = async (ctx) => {
     )
   }
 }
+
+/**
+ * Get public media files for an artist's Explore gallery
+ * GET /v1/profile/:artistId/media
+ * 
+ * Returns images and videos from the files table for public display.
+ * This endpoint is public (no auth required) for viewing artist profiles.
+ */
+export const getPublicMedia: RouteHandler = async (ctx) => {
+  try {
+    const { artistId } = ctx.params
+
+    if (!artistId) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'Artist ID is required',
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Verify artist exists
+    const artist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE id = ?'
+    ).bind(artistId).first<{ id: string }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist not found',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Query files that are images or videos
+    const result = await ctx.env.DB.prepare(
+      `SELECT id, filename, file_size_bytes, mime_type, r2_key, category, created_at
+       FROM files 
+       WHERE artist_id = ? 
+       AND (category IN ('press_photo', 'video') 
+            OR mime_type LIKE 'image/%' 
+            OR mime_type LIKE 'video/%')
+       ORDER BY created_at DESC`
+    ).bind(artistId).all<{
+      id: string
+      filename: string
+      file_size_bytes: number
+      mime_type: string
+      r2_key: string
+      category: string
+      created_at: string
+    }>()
+
+    // Map to response format with public URLs
+    const media = (result.results || []).map((file) => ({
+      id: file.id,
+      filename: file.filename,
+      file_type: file.mime_type,
+      file_size: file.file_size_bytes,
+      url: `/media/${file.r2_key}`,
+      category: file.category,
+      uploaded_at: file.created_at,
+    }))
+
+    return successResponse(
+      { media },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error fetching public media:', error)
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Failed to fetch media',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}

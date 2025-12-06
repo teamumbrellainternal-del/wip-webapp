@@ -663,33 +663,63 @@ export const filesService = {
 }
 
 // ============================================================================
+// MEDIA SERVICES (Explore Gallery)
+// ============================================================================
+
+export interface MediaItem {
+  id: string
+  filename: string
+  file_type: string
+  file_size: number
+  url: string
+  category: string
+  uploaded_at: string
+}
+
+export const mediaService = {
+  /**
+   * Get public media (images/videos) for an artist's Explore gallery
+   */
+  getArtistMedia: (artistId: string) =>
+    apiRequest<{ media: MediaItem[] }>(`/profile/${artistId}/media`),
+}
+
+// ============================================================================
 // TRACKS SERVICES
 // ============================================================================
 
 export const tracksService = {
   /**
-   * Upload a track (D-028: Manual upload only for MVP)
+   * Get all tracks for the current user
    */
-  upload: (
+  list: () => apiRequest<{ tracks: Track[]; count: number }>('/tracks'),
+
+  /**
+   * Get tracks for a specific artist (public)
+   */
+  getByArtist: (artistId: string) =>
+    apiRequest<{ artistId: string; artistName: string; tracks: Track[]; count: number }>(
+      `/profile/${artistId}/tracks`
+    ),
+
+  /**
+   * Upload a track (D-028: Manual upload only for MVP)
+   * Uses apiClient.uploadTrack which handles FormData properly
+   */
+  upload: async (
     file: File,
     metadata: {
       title: string
       genre: string
       cover_art_url?: string
     }
-  ) => {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('title', metadata.title)
-    formData.append('genre', metadata.genre)
-    if (metadata.cover_art_url) {
-      formData.append('cover_art_url', metadata.cover_art_url)
-    }
-
-    return apiRequest<Track>('/tracks/upload', {
-      method: 'POST',
-      body: formData as unknown as Record<string, unknown>,
+  ): Promise<Track> => {
+    const result = await apiClient.uploadTrack(file, {
+      title: metadata.title,
+      genre: metadata.genre,
+      cover_art_url: metadata.cover_art_url,
     })
+    return result.track
   },
 
   /**

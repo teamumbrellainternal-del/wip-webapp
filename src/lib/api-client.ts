@@ -9,6 +9,7 @@ import type {
   Gig,
   Conversation,
   Message,
+  Track,
   ConnectionsListResponse,
   PendingRequestsResponse,
   SentRequestsResponse,
@@ -568,6 +569,77 @@ class APIClient {
 
     if (!data.success) {
       throw new Error(data.error?.message || 'Failed to upload file')
+    }
+
+    return data.data
+  }
+
+  /**
+   * Upload a track directly to R2
+   * Uses FormData to send file and metadata
+   */
+  async uploadTrack(
+    file: File,
+    metadata: { title: string; genre: string; cover_art_url?: string }
+  ): Promise<{ track: Track; message: string }> {
+    // Demo mode - simulate upload
+    if (DEMO_MODE) {
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+      return {
+        message: 'Track uploaded successfully',
+        track: {
+          id: `mock-track-${Date.now()}`,
+          artist_id: 'mock-artist',
+          title: metadata.title,
+          genre: metadata.genre,
+          duration_seconds: 180,
+          file_url: '/media/mock/track.mp3',
+          cover_art_url: metadata.cover_art_url,
+          play_count: 0,
+          created_at: new Date().toISOString(),
+        } as Track,
+      }
+    }
+
+    // Create FormData with the file and metadata
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('title', metadata.title)
+    formData.append('genre', metadata.genre)
+    if (metadata.cover_art_url) {
+      formData.append('cover_art_url', metadata.cover_art_url)
+    }
+
+    // Get auth headers (without Content-Type - browser sets it for FormData)
+    const headers: HeadersInit = {}
+    if (this.getToken) {
+      const token = await this.getToken()
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+    } else {
+      const session = getSession()
+      if (session?.token) {
+        headers['Authorization'] = `Bearer ${session.token}`
+      }
+    }
+
+    const response = await fetch(`${this.baseURL}/profile/tracks/direct`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    })
+
+    if (response.status === 401) {
+      clearSession()
+      triggerSessionTimeout()
+      throw new Error('Session expired. Please log in again.')
+    }
+
+    const data = await response.json()
+
+    if (!data.success) {
+      throw new Error(data.error?.message || 'Failed to upload track')
     }
 
     return data.data

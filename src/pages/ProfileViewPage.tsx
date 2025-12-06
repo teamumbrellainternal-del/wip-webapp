@@ -1,8 +1,9 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { apiClient } from '@/lib/api-client'
+import { tracksService, filesService, mediaService, type MediaItem } from '@/services/api'
 import type { Artist, Track, Review } from '@/types'
 import AppLayout from '@/components/layout/AppLayout'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -10,6 +11,17 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   MapPin,
   Star,
@@ -19,7 +31,6 @@ import {
   Edit,
   Play,
   Pause,
-  Heart,
   CheckCircle2,
   ArrowLeft,
   Calendar,
@@ -27,10 +38,13 @@ import {
   Camera,
   Eye,
   Loader2,
+  Trash2,
+  X,
 } from 'lucide-react'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
 import { MetaTags } from '@/components/MetaTags'
+import { TrackUploadModal } from '@/components/profile/TrackUploadModal'
 
 import { SocialLinksBarWithToolbox, type SocialLinksData } from '@/components/common/SocialIcons'
 
@@ -70,6 +84,41 @@ export default function ProfileViewPage() {
   const [isUploadingCover, setIsUploadingCover] = useState(false)
   const coverInputRef = useRef<HTMLInputElement>(null)
 
+  // Track upload modal state
+  const [trackUploadModalOpen, setTrackUploadModalOpen] = useState(false)
+
+  // Track delete confirmation state
+  const [deleteTrackId, setDeleteTrackId] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  // Media (Explore) state
+  const [media, setMedia] = useState<MediaItem[]>([])
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false)
+  const [previewMedia, setPreviewMedia] = useState<MediaItem | null>(null)
+  const mediaInputRef = useRef<HTMLInputElement>(null)
+
+  // Fetch tracks for the current user
+  const fetchTracks = useCallback(async () => {
+    try {
+      const response = await tracksService.list()
+      setTracks(response.tracks || [])
+    } catch (err) {
+      console.warn('Could not load tracks:', err)
+      setTracks([])
+    }
+  }, [])
+
+  // Fetch media for the Explore gallery
+  const fetchMedia = useCallback(async (artistId: string) => {
+    try {
+      const response = await mediaService.getArtistMedia(artistId)
+      setMedia(response.media || [])
+    } catch (err) {
+      console.warn('Could not load media:', err)
+      setMedia([])
+    }
+  }, [])
+
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
@@ -79,12 +128,12 @@ export default function ProfileViewPage() {
         const profileData = await apiClient.getProfile()
         setArtist(profileData)
 
-        try {
-          const tracksData: Track[] = []
-          setTracks(tracksData)
-        } catch (err) {
-          console.warn('Could not load tracks:', err)
-          setTracks([])
+        // Fetch tracks
+        await fetchTracks()
+
+        // Fetch media for Explore gallery
+        if (profileData.id) {
+          await fetchMedia(profileData.id)
         }
 
         try {
@@ -103,7 +152,7 @@ export default function ProfileViewPage() {
     }
 
     fetchProfileData()
-  }, [])
+  }, [fetchTracks, fetchMedia])
 
   const handleShare = () => {
     if (user?.id) {
@@ -121,6 +170,32 @@ export default function ProfileViewPage() {
       setPlayingTrackId(null)
     } else {
       setPlayingTrackId(trackId)
+    }
+  }
+
+  // Handle track deletion
+  const handleDeleteTrack = async () => {
+    if (!deleteTrackId) return
+
+    setIsDeleting(true)
+    try {
+      await tracksService.delete(deleteTrackId)
+      toast({
+        title: 'Track deleted',
+        description: 'The track has been removed from your portfolio.',
+      })
+      // Refresh tracks list
+      fetchTracks()
+    } catch (err) {
+      console.error('Failed to delete track:', err)
+      toast({
+        title: 'Delete failed',
+        description: err instanceof Error ? err.message : 'Failed to delete track',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsDeleting(false)
+      setDeleteTrackId(null)
     }
   }
 
@@ -189,6 +264,72 @@ export default function ProfileViewPage() {
       // Reset the file input
       if (coverInputRef.current) {
         coverInputRef.current.value = ''
+      }
+    }
+  }
+
+  // Handle media upload for Explore gallery
+  const handleMediaSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type (images and videos)
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+      'image/heic',
+      'video/mp4',
+      'video/quicktime',
+      'video/webm',
+      'video/x-msvideo',
+    ]
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please select an image (JPEG, PNG, WebP, GIF) or video (MP4, MOV, WebM)',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Validate file size (50MB max)
+    const maxSize = 50 * 1024 * 1024
+    if (file.size > maxSize) {
+      toast({
+        title: 'File too large',
+        description: `File size must be less than 50MB. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB`,
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setIsUploadingMedia(true)
+
+    try {
+      await filesService.upload(file)
+
+      toast({
+        title: 'Media uploaded!',
+        description: 'Your media has been added to your gallery.',
+      })
+
+      // Refresh media list
+      if (artist?.id) {
+        await fetchMedia(artist.id)
+      }
+    } catch (err) {
+      toast({
+        title: 'Upload failed',
+        description: err instanceof Error ? err.message : 'Failed to upload media',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsUploadingMedia(false)
+      // Reset the file input
+      if (mediaInputRef.current) {
+        mediaInputRef.current.value = ''
       }
     }
   }
@@ -608,7 +749,10 @@ export default function ProfileViewPage() {
             <TabsContent value="portfolio" className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Music Portfolio</h2>
-                <Button className="gap-2 bg-purple-500 hover:bg-purple-600">
+                <Button
+                  className="gap-2 bg-purple-500 hover:bg-purple-600"
+                  onClick={() => setTrackUploadModalOpen(true)}
+                >
                   <Music className="h-4 w-4" />
                   Add Track
                 </Button>
@@ -621,7 +765,10 @@ export default function ProfileViewPage() {
                     <p className="mb-4 text-muted-foreground">
                       Upload tracks to showcase your work to venues and collaborators
                     </p>
-                    <Button className="bg-purple-500 hover:bg-purple-600">
+                    <Button
+                      className="bg-purple-500 hover:bg-purple-600"
+                      onClick={() => setTrackUploadModalOpen(true)}
+                    >
                       Upload Your First Track
                     </Button>
                   </CardContent>
@@ -634,7 +781,7 @@ export default function ProfileViewPage() {
                       track={track}
                       isPlaying={playingTrackId === track.id}
                       onPlay={() => handleTrackPlay(track.id)}
-                      showActions
+                      onDelete={(id) => setDeleteTrackId(id)}
                     />
                   ))}
                 </div>
@@ -642,17 +789,96 @@ export default function ProfileViewPage() {
             </TabsContent>
 
             {/* Tab 3: Explore */}
-            <TabsContent value="explore">
-              <Card className="border-border/50">
-                <CardContent className="py-12 text-center">
-                  <Camera className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
-                  <h3 className="mb-2 text-xl font-semibold">Media Gallery</h3>
-                  <p className="mb-4 text-muted-foreground">
-                    Share photos and videos from your performances
-                  </p>
-                  <Button variant="outline">Upload Media</Button>
-                </CardContent>
-              </Card>
+            <TabsContent value="explore" className="space-y-4">
+              {/* Hidden file input for media upload */}
+              <input
+                ref={mediaInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/heic,video/mp4,video/quicktime,video/webm"
+                onChange={handleMediaSelect}
+                className="hidden"
+              />
+
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Media Gallery</h2>
+                <Button
+                  variant="outline"
+                  onClick={() => mediaInputRef.current?.click()}
+                  disabled={isUploadingMedia}
+                >
+                  {isUploadingMedia ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="mr-2 h-4 w-4" />
+                      Upload Media
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {media.length === 0 ? (
+                <Card className="border-border/50">
+                  <CardContent className="py-12 text-center">
+                    <Camera className="mx-auto mb-4 h-16 w-16 text-muted-foreground opacity-50" />
+                    <h3 className="mb-2 text-xl font-semibold">Share your moments</h3>
+                    <p className="mb-4 text-muted-foreground">
+                      Share photos and videos from your performances
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => mediaInputRef.current?.click()}
+                      disabled={isUploadingMedia}
+                    >
+                      {isUploadingMedia ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        'Upload Your First Media'
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                  {media.map((item) => (
+                    <Card
+                      key={item.id}
+                      className="cursor-pointer overflow-hidden border-border/50 transition-shadow hover:shadow-md"
+                      onDoubleClick={() => setPreviewMedia(item)}
+                      title="Double-click to view"
+                    >
+                      <div className="relative aspect-square">
+                        {item.file_type.startsWith('video/') ? (
+                          <div className="relative h-full w-full">
+                            <video src={item.url} className="h-full w-full object-cover" muted />
+                            {/* Play icon overlay for videos */}
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/80">
+                                <Play className="h-5 w-5 text-purple-600" />
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <img
+                            src={item.url}
+                            alt={item.filename}
+                            className="h-full w-full object-cover"
+                          />
+                        )}
+                      </div>
+                      <CardContent className="p-2">
+                        <p className="truncate text-sm text-muted-foreground">{item.filename}</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
             {/* Tab 4: Journey */}
@@ -712,27 +938,205 @@ export default function ProfileViewPage() {
           </Tabs>
         </div>
       </div>
+
+      {/* Track Upload Modal */}
+      <TrackUploadModal
+        open={trackUploadModalOpen}
+        onOpenChange={setTrackUploadModalOpen}
+        onSuccess={fetchTracks}
+      />
+
+      {/* Delete Track Confirmation Dialog */}
+      <AlertDialog open={!!deleteTrackId} onOpenChange={(open) => !open && setDeleteTrackId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Track?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The track will be permanently removed from your
+              portfolio.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteTrack}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Media Preview Modal */}
+      <Dialog open={!!previewMedia} onOpenChange={(open) => !open && setPreviewMedia(null)}>
+        <DialogContent className="flex max-h-[90vh] max-w-[90vw] flex-col p-0">
+          <DialogHeader className="flex flex-row items-center justify-between border-b px-4 py-3">
+            <DialogTitle className="truncate pr-4 text-sm font-medium">
+              {previewMedia?.filename}
+            </DialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              onClick={() => setPreviewMedia(null)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogHeader>
+          <div className="flex min-h-0 flex-1 items-center justify-center bg-black/5 p-4">
+            {previewMedia && (
+              <>
+                {/* Videos */}
+                {previewMedia.file_type.startsWith('video/') && (
+                  <video
+                    src={previewMedia.url}
+                    controls
+                    autoPlay
+                    className="max-h-[70vh] max-w-full"
+                  >
+                    Your browser does not support video playback.
+                  </video>
+                )}
+
+                {/* Images */}
+                {previewMedia.file_type.startsWith('image/') && (
+                  <img
+                    src={previewMedia.url}
+                    alt={previewMedia.filename}
+                    className="max-h-[70vh] max-w-full object-contain"
+                  />
+                )}
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   )
 }
 
-// Track Card Component
+// Track Card Component with Audio Player
 interface TrackCardProps {
   track: Track
   isPlaying: boolean
   onPlay: () => void
-  showActions?: boolean
+  onDelete?: (trackId: string) => void
 }
 
-function TrackCard({ track, isPlaying, onPlay, showActions }: TrackCardProps) {
-  const _formatDuration = (seconds: number) => {
+function TrackCard({ track, isPlaying, onPlay, onDelete }: TrackCardProps) {
+  const { toast } = useToast()
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false)
+
+  // Format time as M:SS
+  const formatTime = (seconds: number) => {
+    if (!seconds || isNaN(seconds)) return '0:00'
     const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
+    const secs = Math.floor(seconds % 60)
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  // Build audio URL from track's file_url (with null guard)
+  const audioUrl = track.file_url
+    ? track.file_url.startsWith('/media/')
+      ? track.file_url
+      : `/media/${track.file_url}`
+    : null
+
+  // Handle play/pause
+  const handlePlayPause = () => {
+    if (!audioUrl) {
+      toast({
+        title: 'Playback Error',
+        description: 'Audio file not available for this track',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const audio = audioRef.current
+    if (!audio) return
+
+    if (isAudioPlaying) {
+      audio.pause()
+    } else {
+      audio.play().catch((err) => {
+        console.error('Audio playback error:', err)
+        toast({
+          title: 'Playback Error',
+          description: 'Could not play this track. Please try again.',
+          variant: 'destructive',
+        })
+      })
+    }
+    onPlay() // Notify parent
+  }
+
+  // Handle audio events
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const handleTimeUpdate = () => setCurrentTime(audio.currentTime)
+    const handleLoadedMetadata = () => setDuration(audio.duration)
+    const handlePlay = () => setIsAudioPlaying(true)
+    const handlePause = () => setIsAudioPlaying(false)
+    const handleEnded = () => {
+      setIsAudioPlaying(false)
+      setCurrentTime(0)
+    }
+
+    audio.addEventListener('timeupdate', handleTimeUpdate)
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata)
+    audio.addEventListener('play', handlePlay)
+    audio.addEventListener('pause', handlePause)
+    audio.addEventListener('ended', handleEnded)
+
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate)
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
+      audio.removeEventListener('play', handlePlay)
+      audio.removeEventListener('pause', handlePause)
+      audio.removeEventListener('ended', handleEnded)
+    }
+  }, [])
+
+  // Sync with parent isPlaying state (for when another track starts playing)
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    if (!isPlaying && isAudioPlaying) {
+      audio.pause()
+    }
+  }, [isPlaying, isAudioPlaying])
+
+  // Handle progress bar scrubbing
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const newTime = parseFloat(e.target.value)
+    audio.currentTime = newTime
+    setCurrentTime(newTime)
+  }
+
   return (
-    <Card className="overflow-hidden border-border/50 transition-all hover:shadow-md">
+    <Card className="group overflow-hidden border-border/50 transition-all hover:shadow-md">
+      {/* Hidden audio element - only render if audioUrl exists */}
+      {audioUrl && <audio ref={audioRef} src={audioUrl} preload="metadata" />}
+
       <div className="relative aspect-square">
         {track.cover_art_url ? (
           <img src={track.cover_art_url} alt={track.title} className="h-full w-full object-cover" />
@@ -743,36 +1147,62 @@ function TrackCard({ track, isPlaying, onPlay, showActions }: TrackCardProps) {
         )}
         {/* Play/Pause Overlay */}
         <button
-          onClick={onPlay}
-          className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity hover:opacity-100"
+          onClick={handlePlayPause}
+          className={`absolute inset-0 flex items-center justify-center bg-black/40 transition-opacity ${
+            isAudioPlaying ? 'opacity-100' : 'opacity-0 hover:opacity-100'
+          }`}
         >
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90">
-            {isPlaying ? (
+            {isAudioPlaying ? (
               <Pause className="h-6 w-6 text-purple-600" />
             ) : (
               <Play className="h-6 w-6 text-purple-600" />
             )}
           </div>
         </button>
-      </div>
-      <CardContent className="p-4">
-        <h4 className="mb-1 truncate font-semibold">{track.title}</h4>
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <Badge variant="secondary" className="text-xs">
-            {track.genre || 'Original'}
-          </Badge>
-          <span>{track.play_count?.toLocaleString() || 0} plays</span>
-        </div>
-        {showActions && (
-          <div className="mt-3 flex gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Heart className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Share2 className="h-4 w-4" />
-            </Button>
+
+        {/* Progress Bar Overlay at bottom of image */}
+        {(isAudioPlaying || currentTime > 0) && (
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+            <input
+              type="range"
+              min={0}
+              max={duration || 100}
+              value={currentTime}
+              onChange={handleSeek}
+              className="h-1 w-full cursor-pointer appearance-none rounded-full bg-white/30 accent-purple-500 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+            />
+            <div className="mt-1 flex justify-between text-xs text-white/80">
+              <span>{formatTime(currentTime)}</span>
+              <span>{formatTime(duration)}</span>
+            </div>
           </div>
         )}
+      </div>
+
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <h4 className="mb-1 truncate font-semibold">{track.title}</h4>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Badge variant="secondary" className="text-xs">
+                {track.genre || 'Original'}
+              </Badge>
+            </div>
+          </div>
+          {onDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete(track.id)
+              }}
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+              title="Delete track"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </CardContent>
     </Card>
   )

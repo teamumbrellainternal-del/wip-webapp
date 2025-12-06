@@ -235,7 +235,7 @@ export interface Track {
   artist_id: string
   title: string
   duration_seconds: number
-  audio_url: string
+  file_url: string
   cover_art_url?: string
   genre: string
   play_count: number
