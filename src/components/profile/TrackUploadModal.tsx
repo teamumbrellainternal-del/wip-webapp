@@ -1,11 +1,11 @@
 /**
  * TrackUploadModal Component
  * Modal for uploading tracks to the artist's portfolio
- * with metadata (title, genre)
+ * with metadata (title, genre) and optional cover art
  */
 
 import { useState, useRef } from 'react'
-import { Music, Upload, Loader2, X } from 'lucide-react'
+import { Music, Upload, Loader2, X, ImagePlus } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { tracksService } from '@/services/api'
+import { tracksService, filesService } from '@/services/api'
 import { useToast } from '@/hooks/use-toast'
 
 const GENRES = [
@@ -44,8 +44,11 @@ const GENRES = [
 ]
 
 const ACCEPTED_AUDIO_TYPES = '.mp3,.wav,.flac,.m4a,.aac,.ogg'
+const ACCEPTED_IMAGE_TYPES = '.jpg,.jpeg,.png,.webp'
 const MAX_FILE_SIZE_MB = 50
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
+const MAX_COVER_SIZE_MB = 5
+const MAX_COVER_SIZE_BYTES = MAX_COVER_SIZE_MB * 1024 * 1024
 
 interface TrackUploadModalProps {
   open: boolean
@@ -56,9 +59,12 @@ interface TrackUploadModalProps {
 export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadModalProps) {
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const coverInputRef = useRef<HTMLInputElement>(null)
 
   // Form state
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [coverFile, setCoverFile] = useState<File | null>(null)
+  const [coverPreview, setCoverPreview] = useState<string | null>(null)
   const [title, setTitle] = useState('')
   const [genre, setGenre] = useState('')
   const [isUploading, setIsUploading] = useState(false)
@@ -74,20 +80,25 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
 
   const resetForm = () => {
     setSelectedFile(null)
+    setCoverFile(null)
+    setCoverPreview(null)
     setTitle('')
     setGenre('')
     setError(null)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
+    if (coverInputRef.current) {
+      coverInputRef.current.value = ''
+    }
   }
 
-  // Handle file selection
+  // Handle audio file selection
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
 
-    console.log('TrackUploadModal: File selected', { 
+    console.log('TrackUploadModal: Audio file selected', { 
       name: file.name, 
       size: file.size, 
       type: file.type 
@@ -116,6 +127,50 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
     }
   }
 
+  // Handle cover art selection
+  const handleCoverSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    console.log('TrackUploadModal: Cover art selected', { 
+      name: file.name, 
+      size: file.size, 
+      type: file.type 
+    })
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      setError('Please select a valid image file (JPG, PNG, or WebP)')
+      return
+    }
+
+    // Validate file size
+    if (file.size > MAX_COVER_SIZE_BYTES) {
+      setError(`Cover art must be less than ${MAX_COVER_SIZE_MB}MB`)
+      return
+    }
+
+    setCoverFile(file)
+    setError(null)
+
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(file)
+    setCoverPreview(previewUrl)
+  }
+
+  // Clean up preview URL on unmount
+  const clearCoverPreview = () => {
+    if (coverPreview) {
+      URL.revokeObjectURL(coverPreview)
+    }
+    setCoverPreview(null)
+    setCoverFile(null)
+    if (coverInputRef.current) {
+      coverInputRef.current.value = ''
+    }
+  }
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -138,16 +193,29 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
     console.log('TrackUploadModal: Starting upload', { 
       title, 
       genre, 
-      fileName: selectedFile.name 
+      fileName: selectedFile.name,
+      hasCoverArt: !!coverFile,
     })
 
     setIsUploading(true)
     setError(null)
 
     try {
+      let coverArtUrl: string | undefined
+
+      // Upload cover art first if provided
+      if (coverFile) {
+        console.log('TrackUploadModal: Uploading cover art...')
+        const coverResult = await filesService.upload(coverFile)
+        coverArtUrl = coverResult.file.url
+        console.log('TrackUploadModal: Cover art uploaded', coverArtUrl)
+      }
+
+      // Upload the track with cover art URL
       await tracksService.upload(selectedFile, {
         title: title.trim(),
         genre,
+        cover_art_url: coverArtUrl,
       })
 
       console.log('TrackUploadModal: Upload successful')
@@ -249,6 +317,60 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
                   </p>
                 </>
               )}
+            </div>
+          </div>
+
+          {/* Cover Art Upload */}
+          <div className="space-y-2">
+            <Label htmlFor="cover-art">Cover Art (Optional)</Label>
+            <div className="flex items-start gap-4">
+              {/* Cover Preview */}
+              <div
+                onClick={() => coverInputRef.current?.click()}
+                className={`
+                  relative flex h-24 w-24 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-colors
+                  ${coverPreview 
+                    ? 'border-purple-500' 
+                    : 'border-muted-foreground/25 hover:border-purple-500/50 hover:bg-muted/50'
+                  }
+                `}
+              >
+                <input
+                  ref={coverInputRef}
+                  id="cover-art"
+                  type="file"
+                  accept={ACCEPTED_IMAGE_TYPES}
+                  onChange={handleCoverSelect}
+                  className="hidden"
+                  disabled={isUploading}
+                />
+                
+                {coverPreview ? (
+                  <>
+                    <img 
+                      src={coverPreview} 
+                      alt="Cover preview" 
+                      className="h-full w-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        clearCoverPreview()
+                      }}
+                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </>
+                ) : (
+                  <ImagePlus className="h-8 w-8 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex-1 text-sm text-muted-foreground">
+                <p>Add a cover image for your track.</p>
+                <p className="mt-1 text-xs">JPG, PNG, or WebP. Max {MAX_COVER_SIZE_MB}MB.</p>
+              </div>
             </div>
           </div>
 
