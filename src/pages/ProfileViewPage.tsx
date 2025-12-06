@@ -717,8 +717,7 @@ export default function ProfileViewPage() {
                       ) : (
                         <div className="py-8 text-center text-muted-foreground">
                           <Music className="mx-auto mb-3 h-12 w-12 opacity-50" />
-                          <p className="mb-4">No tracks uploaded yet</p>
-                          <Button variant="outline">Upload Your First Track</Button>
+                          <p>No tracks uploaded yet</p>
                         </div>
                       )}
                     </CardContent>
