@@ -12,6 +12,16 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   MapPin,
   Star,
   Music,
@@ -27,6 +37,7 @@ import {
   Camera,
   Eye,
   Loader2,
+  Trash2,
 } from 'lucide-react'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
@@ -73,6 +84,10 @@ export default function ProfileViewPage() {
 
   // Track upload modal state
   const [trackUploadModalOpen, setTrackUploadModalOpen] = useState(false)
+
+  // Track delete confirmation state
+  const [deleteTrackId, setDeleteTrackId] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Media (Explore) state
   const [media, setMedia] = useState<MediaItem[]>([])
@@ -152,6 +167,32 @@ export default function ProfileViewPage() {
       setPlayingTrackId(null)
     } else {
       setPlayingTrackId(trackId)
+    }
+  }
+
+  // Handle track deletion
+  const handleDeleteTrack = async () => {
+    if (!deleteTrackId) return
+
+    setIsDeleting(true)
+    try {
+      await tracksService.delete(deleteTrackId)
+      toast({
+        title: 'Track deleted',
+        description: 'The track has been removed from your portfolio.',
+      })
+      // Refresh tracks list
+      fetchTracks()
+    } catch (err) {
+      console.error('Failed to delete track:', err)
+      toast({
+        title: 'Delete failed',
+        description: err instanceof Error ? err.message : 'Failed to delete track',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsDeleting(false)
+      setDeleteTrackId(null)
     }
   }
 
@@ -730,6 +771,7 @@ export default function ProfileViewPage() {
                       track={track}
                       isPlaying={playingTrackId === track.id}
                       onPlay={() => handleTrackPlay(track.id)}
+                      onDelete={(id) => setDeleteTrackId(id)}
                     />
                   ))}
                 </div>
@@ -886,6 +928,35 @@ export default function ProfileViewPage() {
         onOpenChange={setTrackUploadModalOpen}
         onSuccess={fetchTracks}
       />
+
+      {/* Delete Track Confirmation Dialog */}
+      <AlertDialog open={!!deleteTrackId} onOpenChange={(open) => !open && setDeleteTrackId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Track?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The track will be permanently removed from your portfolio.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteTrack}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   )
 }
@@ -895,9 +966,10 @@ interface TrackCardProps {
   track: Track
   isPlaying: boolean
   onPlay: () => void
+  onDelete?: (trackId: string) => void
 }
 
-function TrackCard({ track, isPlaying, onPlay }: TrackCardProps) {
+function TrackCard({ track, isPlaying, onPlay, onDelete }: TrackCardProps) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -982,7 +1054,7 @@ function TrackCard({ track, isPlaying, onPlay }: TrackCardProps) {
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0
 
   return (
-    <Card className="overflow-hidden border-border/50 transition-all hover:shadow-md">
+    <Card className="group overflow-hidden border-border/50 transition-all hover:shadow-md">
       {/* Hidden audio element */}
       <audio ref={audioRef} src={audioUrl} preload="metadata" />
       
@@ -1030,11 +1102,27 @@ function TrackCard({ track, isPlaying, onPlay }: TrackCardProps) {
       </div>
       
       <CardContent className="p-4">
-        <h4 className="mb-1 truncate font-semibold">{track.title}</h4>
-        <div className="flex items-center text-sm text-muted-foreground">
-          <Badge variant="secondary" className="text-xs">
-            {track.genre || 'Original'}
-          </Badge>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <h4 className="mb-1 truncate font-semibold">{track.title}</h4>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Badge variant="secondary" className="text-xs">
+                {track.genre || 'Original'}
+              </Badge>
+            </div>
+          </div>
+          {onDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete(track.id)
+              }}
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+              title="Delete track"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </CardContent>
     </Card>
