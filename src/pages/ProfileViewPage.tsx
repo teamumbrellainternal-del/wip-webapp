@@ -1036,6 +1036,7 @@ interface TrackCardProps {
 }
 
 function TrackCard({ track, isPlaying, onPlay, onDelete }: TrackCardProps) {
+  const { toast } = useToast()
   const audioRef = useRef<HTMLAudioElement>(null)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -1049,20 +1050,38 @@ function TrackCard({ track, isPlaying, onPlay, onDelete }: TrackCardProps) {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  // Build audio URL from track's file_url
-  const audioUrl = track.file_url?.startsWith('/media/') 
-    ? track.file_url 
-    : `/media/${track.file_url}`
+  // Build audio URL from track's file_url (with null guard)
+  const audioUrl = track.file_url
+    ? track.file_url.startsWith('/media/')
+      ? track.file_url
+      : `/media/${track.file_url}`
+    : null
 
   // Handle play/pause
   const handlePlayPause = () => {
+    if (!audioUrl) {
+      toast({
+        title: 'Playback Error',
+        description: 'Audio file not available for this track',
+        variant: 'destructive',
+      })
+      return
+    }
+
     const audio = audioRef.current
     if (!audio) return
 
     if (isAudioPlaying) {
       audio.pause()
     } else {
-      audio.play().catch(err => console.error('Audio playback error:', err))
+      audio.play().catch((err) => {
+        console.error('Audio playback error:', err)
+        toast({
+          title: 'Playback Error',
+          description: 'Could not play this track. Please try again.',
+          variant: 'destructive',
+        })
+      })
     }
     onPlay() // Notify parent
   }
@@ -1121,8 +1140,8 @@ function TrackCard({ track, isPlaying, onPlay, onDelete }: TrackCardProps) {
 
   return (
     <Card className="group overflow-hidden border-border/50 transition-all hover:shadow-md">
-      {/* Hidden audio element */}
-      <audio ref={audioRef} src={audioUrl} preload="metadata" />
+      {/* Hidden audio element - only render if audioUrl exists */}
+      {audioUrl && <audio ref={audioRef} src={audioUrl} preload="metadata" />}
       
       <div className="relative aspect-square">
         {track.cover_art_url ? (

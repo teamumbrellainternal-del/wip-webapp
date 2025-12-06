@@ -692,12 +692,15 @@ export const tracksService = {
   /**
    * Get all tracks for the current user
    */
-  list: () => apiRequest<Track[]>('/tracks'),
+  list: () => apiRequest<{ tracks: Track[]; count: number }>('/tracks'),
 
   /**
    * Get tracks for a specific artist (public)
    */
-  getByArtist: (artistId: string) => apiRequest<Track[]>(`/profile/${artistId}/tracks`),
+  getByArtist: (artistId: string) =>
+    apiRequest<{ artistId: string; artistName: string; tracks: Track[]; count: number }>(
+      `/profile/${artistId}/tracks`
+    ),
 
   /**
    * Upload a track (D-028: Manual upload only for MVP)
