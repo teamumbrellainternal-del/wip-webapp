@@ -701,27 +701,21 @@ export const tracksService = {
 
   /**
    * Upload a track (D-028: Manual upload only for MVP)
+   * Uses apiClient.uploadTrack which handles FormData properly
    */
-  upload: (
+  upload: async (
     file: File,
     metadata: {
       title: string
       genre: string
       cover_art_url?: string
     }
-  ) => {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('title', metadata.title)
-    formData.append('genre', metadata.genre)
-    if (metadata.cover_art_url) {
-      formData.append('cover_art_url', metadata.cover_art_url)
-    }
-
-    return apiRequest<Track>('/tracks/upload', {
-      method: 'POST',
-      body: formData as unknown as Record<string, unknown>,
+  ): Promise<Track> => {
+    const result = await apiClient.uploadTrack(file, {
+      title: metadata.title,
+      genre: metadata.genre,
     })
+    return result.track
   },
 
   /**

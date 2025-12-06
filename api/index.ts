@@ -161,6 +161,7 @@ function setupRouter(): Router {
 
   // Profile tracks routes (task-3.4)
   router.post('/v1/profile/tracks/upload', profileTracksController.generateTrackUploadUrl, [authMiddleware])
+  router.post('/v1/profile/tracks/direct', profileTracksController.uploadTrackDirect, [authMiddleware]) // Direct upload for local dev
   router.post('/v1/profile/tracks', profileTracksController.createTrack, [authMiddleware])
   router.get('/v1/profile/:artistId/tracks', profileTracksController.getArtistTracks) // Public
   router.delete('/v1/profile/tracks/:trackId', profileTracksController.deleteTrack, [authMiddleware])
