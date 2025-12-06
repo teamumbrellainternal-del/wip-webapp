@@ -98,15 +98,25 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
     const file = event.target.files?.[0]
     if (!file) return
 
-    console.log('TrackUploadModal: Audio file selected', { 
-      name: file.name, 
-      size: file.size, 
-      type: file.type 
+    console.log('TrackUploadModal: Audio file selected', {
+      name: file.name,
+      size: file.size,
+      type: file.type,
     })
 
     // Validate file type
-    const validTypes = ['audio/mpeg', 'audio/wav', 'audio/flac', 'audio/x-m4a', 'audio/aac', 'audio/ogg']
-    if (!validTypes.some(type => file.type.includes(type.split('/')[1])) && !file.name.match(/\.(mp3|wav|flac|m4a|aac|ogg)$/i)) {
+    const validTypes = [
+      'audio/mpeg',
+      'audio/wav',
+      'audio/flac',
+      'audio/x-m4a',
+      'audio/aac',
+      'audio/ogg',
+    ]
+    if (
+      !validTypes.some((type) => file.type.includes(type.split('/')[1])) &&
+      !file.name.match(/\.(mp3|wav|flac|m4a|aac|ogg)$/i)
+    ) {
       setError('Please select a valid audio file (MP3, WAV, FLAC, M4A, AAC, or OGG)')
       return
     }
@@ -132,10 +142,10 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
     const file = event.target.files?.[0]
     if (!file) return
 
-    console.log('TrackUploadModal: Cover art selected', { 
-      name: file.name, 
-      size: file.size, 
-      type: file.type 
+    console.log('TrackUploadModal: Cover art selected', {
+      name: file.name,
+      size: file.size,
+      type: file.type,
     })
 
     // Validate file type
@@ -174,7 +184,7 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!selectedFile) {
       setError('Please select an audio file')
       return
@@ -190,9 +200,9 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
       return
     }
 
-    console.log('TrackUploadModal: Starting upload', { 
-      title, 
-      genre, 
+    console.log('TrackUploadModal: Starting upload', {
+      title,
+      genre,
       fileName: selectedFile.name,
       hasCoverArt: !!coverFile,
     })
@@ -269,9 +279,10 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
               onClick={() => fileInputRef.current?.click()}
               className={`
                 relative cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors
-                ${selectedFile 
-                  ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/20' 
-                  : 'border-muted-foreground/25 hover:border-purple-500/50 hover:bg-muted/50'
+                ${
+                  selectedFile
+                    ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/20'
+                    : 'border-muted-foreground/25 hover:border-purple-500/50 hover:bg-muted/50'
                 }
               `}
             >
@@ -284,7 +295,7 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
                 className="hidden"
                 disabled={isUploading}
               />
-              
+
               {selectedFile ? (
                 <div className="flex items-center justify-center gap-3">
                   <Music className="h-8 w-8 text-purple-500" />
@@ -312,9 +323,7 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
                 <>
                   <Upload className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
                   <p className="text-sm font-medium">Click to select audio file</p>
-                  <p className="text-xs text-muted-foreground">
-                    Max {MAX_FILE_SIZE_MB}MB
-                  </p>
+                  <p className="text-xs text-muted-foreground">Max {MAX_FILE_SIZE_MB}MB</p>
                 </>
               )}
             </div>
@@ -329,9 +338,10 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
                 onClick={() => coverInputRef.current?.click()}
                 className={`
                   relative flex h-24 w-24 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-colors
-                  ${coverPreview 
-                    ? 'border-purple-500' 
-                    : 'border-muted-foreground/25 hover:border-purple-500/50 hover:bg-muted/50'
+                  ${
+                    coverPreview
+                      ? 'border-purple-500'
+                      : 'border-muted-foreground/25 hover:border-purple-500/50 hover:bg-muted/50'
                   }
                 `}
               >
@@ -344,12 +354,12 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
                   className="hidden"
                   disabled={isUploading}
                 />
-                
+
                 {coverPreview ? (
                   <>
-                    <img 
-                      src={coverPreview} 
-                      alt="Cover preview" 
+                    <img
+                      src={coverPreview}
+                      alt="Cover preview"
                       className="h-full w-full object-cover"
                     />
                     <button
@@ -406,9 +416,7 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
 
           {/* Error Message */}
           {error && (
-            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
-            </div>
+            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
           )}
 
           <DialogFooter className="gap-2 sm:gap-0">
@@ -443,4 +451,3 @@ export function TrackUploadModal({ open, onOpenChange, onSuccess }: TrackUploadM
     </Dialog>
   )
 }
-

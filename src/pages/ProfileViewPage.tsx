@@ -21,12 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   MapPin,
   Star,
@@ -280,8 +275,15 @@ export default function ProfileViewPage() {
 
     // Validate file type (images and videos)
     const allowedTypes = [
-      'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic',
-      'video/mp4', 'video/quicktime', 'video/webm', 'video/x-msvideo'
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+      'image/heic',
+      'video/mp4',
+      'video/quicktime',
+      'video/webm',
+      'video/x-msvideo',
     ]
     if (!allowedTypes.includes(file.type)) {
       toast({
@@ -307,7 +309,7 @@ export default function ProfileViewPage() {
 
     try {
       await filesService.upload(file)
-      
+
       toast({
         title: 'Media uploaded!',
         description: 'Your media has been added to your gallery.',
@@ -747,7 +749,7 @@ export default function ProfileViewPage() {
             <TabsContent value="portfolio" className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Music Portfolio</h2>
-                <Button 
+                <Button
                   className="gap-2 bg-purple-500 hover:bg-purple-600"
                   onClick={() => setTrackUploadModalOpen(true)}
                 >
@@ -763,7 +765,7 @@ export default function ProfileViewPage() {
                     <p className="mb-4 text-muted-foreground">
                       Upload tracks to showcase your work to venues and collaborators
                     </p>
-                    <Button 
+                    <Button
                       className="bg-purple-500 hover:bg-purple-600"
                       onClick={() => setTrackUploadModalOpen(true)}
                     >
@@ -799,7 +801,7 @@ export default function ProfileViewPage() {
 
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Media Gallery</h2>
-                <Button 
+                <Button
                   variant="outline"
                   onClick={() => mediaInputRef.current?.click()}
                   disabled={isUploadingMedia}
@@ -826,7 +828,7 @@ export default function ProfileViewPage() {
                     <p className="mb-4 text-muted-foreground">
                       Share photos and videos from your performances
                     </p>
-                    <Button 
+                    <Button
                       variant="outline"
                       onClick={() => mediaInputRef.current?.click()}
                       disabled={isUploadingMedia}
@@ -845,8 +847,8 @@ export default function ProfileViewPage() {
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                   {media.map((item) => (
-                    <Card 
-                      key={item.id} 
+                    <Card
+                      key={item.id}
                       className="cursor-pointer overflow-hidden border-border/50 transition-shadow hover:shadow-md"
                       onDoubleClick={() => setPreviewMedia(item)}
                       title="Double-click to view"
@@ -854,11 +856,7 @@ export default function ProfileViewPage() {
                       <div className="relative aspect-square">
                         {item.file_type.startsWith('video/') ? (
                           <div className="relative h-full w-full">
-                            <video
-                              src={item.url}
-                              className="h-full w-full object-cover"
-                              muted
-                            />
+                            <video src={item.url} className="h-full w-full object-cover" muted />
                             {/* Play icon overlay for videos */}
                             <div className="absolute inset-0 flex items-center justify-center bg-black/20">
                               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/80">
@@ -875,9 +873,7 @@ export default function ProfileViewPage() {
                         )}
                       </div>
                       <CardContent className="p-2">
-                        <p className="truncate text-sm text-muted-foreground">
-                          {item.filename}
-                        </p>
+                        <p className="truncate text-sm text-muted-foreground">{item.filename}</p>
                       </CardContent>
                     </Card>
                   ))}
@@ -956,7 +952,8 @@ export default function ProfileViewPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Track?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. The track will be permanently removed from your portfolio.
+              This action cannot be undone. The track will be permanently removed from your
+              portfolio.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1139,7 +1136,7 @@ function TrackCard({ track, isPlaying, onPlay, onDelete }: TrackCardProps) {
     <Card className="group overflow-hidden border-border/50 transition-all hover:shadow-md">
       {/* Hidden audio element - only render if audioUrl exists */}
       {audioUrl && <audio ref={audioRef} src={audioUrl} preload="metadata" />}
-      
+
       <div className="relative aspect-square">
         {track.cover_art_url ? (
           <img src={track.cover_art_url} alt={track.title} className="h-full w-full object-cover" />
@@ -1163,7 +1160,7 @@ function TrackCard({ track, isPlaying, onPlay, onDelete }: TrackCardProps) {
             )}
           </div>
         </button>
-        
+
         {/* Progress Bar Overlay at bottom of image */}
         {(isAudioPlaying || currentTime > 0) && (
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
@@ -1182,7 +1179,7 @@ function TrackCard({ track, isPlaying, onPlay, onDelete }: TrackCardProps) {
           </div>
         )}
       </div>
-      
+
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
