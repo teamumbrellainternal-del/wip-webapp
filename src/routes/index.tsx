@@ -312,9 +312,14 @@ export const router = createBrowserRouter([
   },
 
   // Venue Dashboard (Venue Mode)
+  // Note: No OnboardingGuard - venue users have different onboarding flow
   {
     path: '/venue/dashboard',
-    element: <VenueDashboardPage />,
+    element: (
+      <ProtectedRoute>
+        <VenueDashboardPage />
+      </ProtectedRoute>
+    ),
   },
 
   // Artist Toolbox
