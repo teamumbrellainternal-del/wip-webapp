@@ -3,7 +3,7 @@
  * Modal with promo pack generator, analytics, and next show buzz
  */
 
-import { Copy, Download, Sparkles, X, Users, Eye, Heart, UserPlus, TrendingUp } from 'lucide-react'
+import { Copy, Download, Sparkles, Users, Eye, Heart, UserPlus, TrendingUp } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
