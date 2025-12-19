@@ -54,8 +54,16 @@ export default function VenueDashboardPage() {
 
   const subTabs = [
     { id: 'overview' as const, label: 'Overview', icon: <Home className="h-4 w-4" /> },
-    { id: 'smart-booking' as const, label: 'Smart Booking', icon: <Calendar className="h-4 w-4" /> },
-    { id: 'co-marketing' as const, label: 'Co-Marketing Studio', icon: <Sparkles className="h-4 w-4" /> },
+    {
+      id: 'smart-booking' as const,
+      label: 'Smart Booking',
+      icon: <Calendar className="h-4 w-4" />,
+    },
+    {
+      id: 'co-marketing' as const,
+      label: 'Co-Marketing Studio',
+      icon: <Sparkles className="h-4 w-4" />,
+    },
     { id: 'find-artist' as const, label: 'Find Artist', icon: <Search className="h-4 w-4" /> },
   ]
 
@@ -131,7 +139,8 @@ export default function VenueDashboardPage() {
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-center gap-2 py-4">
               {subTabs.map((tab) => {
-                const isActive = activeTab === tab.id || (tab.id === 'co-marketing' && isCoMarketingOpen)
+                const isActive =
+                  activeTab === tab.id || (tab.id === 'co-marketing' && isCoMarketingOpen)
                 return (
                   <button
                     key={tab.id}
@@ -165,9 +174,7 @@ export default function VenueDashboardPage() {
 
       {/* Ask Violet Floating Button */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
-        <Button
-          className="rounded-full bg-slate-800 px-4 py-2 text-sm font-medium text-white shadow-lg hover:bg-slate-700"
-        >
+        <Button className="rounded-full bg-slate-800 px-4 py-2 text-sm font-medium text-white shadow-lg hover:bg-slate-700">
           Ask Violet
         </Button>
         <Button
@@ -183,4 +190,3 @@ export default function VenueDashboardPage() {
     </div>
   )
 }
-

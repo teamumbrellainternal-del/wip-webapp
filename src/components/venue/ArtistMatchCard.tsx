@@ -53,9 +53,7 @@ export function ArtistMatchCard({ artist }: ArtistMatchCardProps) {
 
         {/* Action Buttons */}
         <div className="flex gap-2">
-          <Button className="flex-1 bg-purple-600 hover:bg-purple-700">
-            Connect
-          </Button>
+          <Button className="flex-1 bg-purple-600 hover:bg-purple-700">Connect</Button>
           <Button variant="outline" className="flex-1">
             View Profile
           </Button>
@@ -64,4 +62,3 @@ export function ArtistMatchCard({ artist }: ArtistMatchCardProps) {
     </Card>
   )
 }
-

@@ -47,7 +47,9 @@ export function SmartBookingTab() {
           <Calendar className="h-6 w-6" />
           <div>
             <h2 className="text-2xl font-bold">Book Your Stage</h2>
-            <p className="text-purple-100">Manage shows and collaborate with artists effortlessly</p>
+            <p className="text-purple-100">
+              Manage shows and collaborate with artists effortlessly
+            </p>
           </div>
         </div>
       </div>
@@ -93,4 +95,3 @@ export function SmartBookingTab() {
     </div>
   )
 }
-

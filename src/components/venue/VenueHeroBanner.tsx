@@ -49,9 +49,7 @@ export function VenueHeroBanner({ venue }: VenueHeroBannerProps) {
               {/* Name with Verified Badge */}
               <div className="flex items-center gap-2">
                 <h1 className="text-4xl font-bold text-white md:text-5xl">{venue.name}</h1>
-                {venue.verified && (
-                  <CheckCircle className="h-6 w-6 fill-blue-400 text-white" />
-                )}
+                {venue.verified && <CheckCircle className="h-6 w-6 fill-blue-400 text-white" />}
               </div>
 
               {/* Tagline */}
@@ -59,11 +57,17 @@ export function VenueHeroBanner({ venue }: VenueHeroBannerProps) {
 
               {/* Badges Row */}
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary" className="flex items-center gap-1.5 bg-white/20 text-white hover:bg-white/30">
+                <Badge
+                  variant="secondary"
+                  className="flex items-center gap-1.5 bg-white/20 text-white hover:bg-white/30"
+                >
                   <MapPin className="h-3.5 w-3.5" />
                   {venue.location}
                 </Badge>
-                <Badge variant="secondary" className="flex items-center gap-1.5 bg-white/20 text-white hover:bg-white/30">
+                <Badge
+                  variant="secondary"
+                  className="flex items-center gap-1.5 bg-white/20 text-white hover:bg-white/30"
+                >
                   <Users className="h-3.5 w-3.5" />
                   {venue.capacity} capacity
                 </Badge>
@@ -95,7 +99,10 @@ export function VenueHeroBanner({ venue }: VenueHeroBannerProps) {
               <Calendar className="mr-2 h-4 w-4" />
               Book Show
             </Button>
-            <Button variant="outline" className="border-white/30 bg-white/10 text-white hover:bg-white/20">
+            <Button
+              variant="outline"
+              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
+            >
               <MessageSquare className="mr-2 h-4 w-4" />
               Message
             </Button>
@@ -105,4 +112,3 @@ export function VenueHeroBanner({ venue }: VenueHeroBannerProps) {
     </div>
   )
 }
-

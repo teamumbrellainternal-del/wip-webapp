@@ -4,12 +4,7 @@
  */
 
 import { Copy, Download, Sparkles, Users, Eye, Heart, UserPlus, TrendingUp } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
@@ -95,7 +90,8 @@ export function CoMarketingModal({ open, onOpenChange }: CoMarketingModalProps) 
                 <h3 className="font-semibold">Promo Pack Generator</h3>
               </div>
               <p className="mb-4 text-sm text-muted-foreground">
-                Every show deserves an audience. Auto-create your poster, QR, and caption in one click.
+                Every show deserves an audience. Auto-create your poster, QR, and caption in one
+                click.
               </p>
 
               {/* Social Media Caption */}
@@ -112,9 +108,7 @@ export function CoMarketingModal({ open, onOpenChange }: CoMarketingModalProps) 
 
               {/* Ticket QR Code */}
               <div className="mb-4 rounded-lg border bg-background p-4">
-                <p className="mb-2 text-sm font-medium text-muted-foreground">
-                  Ticket QR Code
-                </p>
+                <p className="mb-2 text-sm font-medium text-muted-foreground">Ticket QR Code</p>
                 <p className="mb-3 text-sm text-muted-foreground">
                   Direct link to ticket purchase page
                 </p>
@@ -240,4 +234,3 @@ export function CoMarketingModal({ open, onOpenChange }: CoMarketingModalProps) 
     </Dialog>
   )
 }
-

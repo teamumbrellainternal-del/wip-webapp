@@ -37,11 +37,11 @@ export function VenueStatsCard({
           <div>
             <p className="text-sm font-medium text-muted-foreground">{label}</p>
             <p className="mt-1 text-3xl font-bold text-foreground">{value}</p>
-            {subtext && (
-              <p className={cn('mt-1 text-xs', subtextColorClass)}>{subtext}</p>
-            )}
+            {subtext && <p className={cn('mt-1 text-xs', subtextColorClass)}>{subtext}</p>}
           </div>
-          <div className={cn('flex h-10 w-10 items-center justify-center rounded-full', iconBgColor)}>
+          <div
+            className={cn('flex h-10 w-10 items-center justify-center rounded-full', iconBgColor)}
+          >
             {icon}
           </div>
         </div>
@@ -49,4 +49,3 @@ export function VenueStatsCard({
     </Card>
   )
 }
-

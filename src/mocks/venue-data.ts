@@ -199,7 +199,8 @@ export interface PromoPackData {
 }
 
 export const mockPromoPackData: PromoPackData = {
-  socialCaption: '🎵 This Friday! Experience the incredible Sarah Chen Quartet live at The Purple Room. Limited tickets available. Grab yours now! 🎟️',
+  socialCaption:
+    '🎵 This Friday! Experience the incredible Sarah Chen Quartet live at The Purple Room. Limited tickets available. Grab yours now! 🎟️',
   ticketQrUrl: '/api/tickets/qr/show-1',
 }
 
@@ -250,4 +251,3 @@ export const mockNextShowBuzz: NextShowBuzz = {
   spotsLeft: 35,
   coMarketingReach: 5200,
 }
-

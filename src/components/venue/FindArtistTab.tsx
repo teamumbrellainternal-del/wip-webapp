@@ -60,7 +60,9 @@ export function FindArtistTab() {
           <Sparkles className="h-6 w-6" />
           <div>
             <h2 className="text-2xl font-bold">Discover Artists</h2>
-            <p className="text-purple-100">Find your next favorite act and build lasting collaborations</p>
+            <p className="text-purple-100">
+              Find your next favorite act and build lasting collaborations
+            </p>
           </div>
         </div>
       </div>
@@ -138,4 +140,3 @@ export function FindArtistTab() {
     </div>
   )
 }
-

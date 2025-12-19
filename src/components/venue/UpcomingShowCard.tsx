@@ -31,9 +31,7 @@ export function UpcomingShowCard({ show }: UpcomingShowCardProps) {
         {/* Hover Overlay with View Details Button */}
         {isHovered && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/40 transition-opacity">
-            <Button className="bg-purple-600 text-white hover:bg-purple-700">
-              View Details
-            </Button>
+            <Button className="bg-purple-600 text-white hover:bg-purple-700">View Details</Button>
           </div>
         )}
       </div>
@@ -46,4 +44,3 @@ export function UpcomingShowCard({ show }: UpcomingShowCardProps) {
     </Card>
   )
 }
-

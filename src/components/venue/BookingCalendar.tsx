@@ -91,10 +91,7 @@ export function BookingCalendar({ events }: BookingCalendarProps) {
         {/* Days of Week Header */}
         <div className="mb-2 grid grid-cols-7 gap-1">
           {daysOfWeek.map((day) => (
-            <div
-              key={day}
-              className="py-2 text-center text-sm font-medium text-muted-foreground"
-            >
+            <div key={day} className="py-2 text-center text-sm font-medium text-muted-foreground">
               {day}
             </div>
           ))}
@@ -113,7 +110,9 @@ export function BookingCalendar({ events }: BookingCalendarProps) {
                 key={index}
                 className={cn(
                   'min-h-[80px] rounded-lg border p-2 transition-colors',
-                  isValidDay ? 'bg-background hover:bg-muted/50' : 'bg-transparent border-transparent',
+                  isValidDay
+                    ? 'bg-background hover:bg-muted/50'
+                    : 'border-transparent bg-transparent',
                   dayIsToday && 'border-purple-500 bg-purple-50 dark:bg-purple-950/30',
                   event && 'bg-purple-50 dark:bg-purple-950/20'
                 )}
@@ -139,9 +138,7 @@ export function BookingCalendar({ events }: BookingCalendarProps) {
                         >
                           {event.status}
                         </Badge>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {event.artistName}
-                        </p>
+                        <p className="truncate text-xs text-muted-foreground">{event.artistName}</p>
                       </div>
                     )}
                   </>
@@ -154,4 +151,3 @@ export function BookingCalendar({ events }: BookingCalendarProps) {
     </Card>
   )
 }
-
