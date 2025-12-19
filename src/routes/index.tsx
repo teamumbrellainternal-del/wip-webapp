@@ -29,6 +29,7 @@ import FilesPage from '@/pages/FilesPage'
 import MessageFansPage from '@/pages/MessageFansPage'
 import CreativeStudioPage from '@/pages/CreativeStudioPage'
 import NetworkPage from '@/pages/NetworkPage'
+import VenueDashboardPage from '@/pages/venue/VenueDashboardPage'
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
@@ -308,6 +309,12 @@ export const router = createBrowserRouter([
         </OnboardingGuard>
       </ProtectedRoute>
     ),
+  },
+
+  // Venue Dashboard (Venue Mode)
+  {
+    path: '/venue/dashboard',
+    element: <VenueDashboardPage />,
   },
 
   // Artist Toolbox
