@@ -219,6 +219,121 @@ export interface GigOpportunity {
 }
 
 // ============================================================================
+// GIG MANAGEMENT TYPES (Phase B)
+// ============================================================================
+
+/**
+ * Input for creating a new gig (venue-only)
+ */
+export interface CreateGigInput {
+  title: string
+  description?: string
+  venue_name: string
+  location_city: string
+  location_state: string
+  location_address?: string
+  location_zip?: string
+  date: string // ISO date YYYY-MM-DD
+  start_time?: string // HH:MM format
+  end_time?: string // HH:MM format
+  genre?: string
+  capacity?: number
+  payment_amount?: number
+  payment_type?: 'flat' | 'hourly' | 'negotiable'
+}
+
+/**
+ * Input for updating an existing gig
+ */
+export type UpdateGigInput = Partial<CreateGigInput>
+
+/**
+ * Gig as returned from venue's "My Gigs" endpoint
+ */
+export interface VenueGig {
+  id: string
+  title: string
+  description?: string
+  venue_name: string
+  location: string
+  location_city: string
+  location_state: string
+  date: string
+  start_time?: string
+  end_time?: string
+  genre?: string
+  capacity?: number
+  filled_slots: number
+  payment_amount?: number
+  payment_type?: 'flat' | 'hourly' | 'negotiable'
+  status: 'open' | 'filled' | 'cancelled' | 'completed'
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * Application from an artist to a gig
+ */
+export interface GigApplication {
+  id: string
+  status: 'pending' | 'accepted' | 'rejected'
+  applied_at: string
+  artist: {
+    id: string
+    stage_name: string
+    bio?: string
+    base_rate_flat?: number
+    base_rate_hourly?: number
+    website_url?: string
+    avatar_url?: string
+    avg_rating: number
+    total_gigs: number
+  }
+}
+
+/**
+ * Artist's view of their own application
+ */
+export interface MyApplication {
+  id: string
+  status: 'pending' | 'accepted' | 'rejected'
+  applied_at: string
+  gig: {
+    id: string
+    title: string
+    venue_name: string
+    location: string
+    date: string
+    start_time?: string
+    payment_amount?: number
+    status: 'open' | 'filled' | 'cancelled' | 'completed'
+  }
+}
+
+/**
+ * Response from creating a gig
+ */
+export interface CreateGigResponse {
+  message: string
+  id: string
+  title: string
+  date: string
+  location: string
+  status: string
+}
+
+/**
+ * Response from applying to a gig
+ */
+export interface ApplyToGigResponse {
+  message: string
+  applicationId: string
+  gigId: string
+  gigTitle: string
+  appliedAt: string
+}
+
+// ============================================================================
 // DASHBOARD & ANALYTICS TYPES
 // ============================================================================
 

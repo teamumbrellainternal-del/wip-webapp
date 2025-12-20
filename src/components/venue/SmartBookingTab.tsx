@@ -4,14 +4,20 @@
  */
 
 import { useState } from 'react'
-import { Calendar, Search, Sparkles } from 'lucide-react'
+import { Calendar, Search, Sparkles, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { BookingCalendar } from './BookingCalendar'
 import { mockCalendarEvents, mockSmartFeatures, type SmartFeatures } from '@/mocks/venue-data'
+import type { VenueGig } from '@/types'
 
-export function SmartBookingTab() {
+interface SmartBookingTabProps {
+  gigs?: VenueGig[]
+  onCreateGig: () => void
+}
+
+export function SmartBookingTab({ gigs = [], onCreateGig }: SmartBookingTabProps) {
   const [smartFeatures, setSmartFeatures] = useState<SmartFeatures>(mockSmartFeatures)
 
   const toggleFeature = (feature: keyof SmartFeatures) => {
@@ -39,24 +45,43 @@ export function SmartBookingTab() {
     },
   ]
 
+  // Convert real gigs to calendar events format
+  const calendarEvents = gigs.length > 0
+    ? gigs.map((gig) => ({
+        id: gig.id,
+        artistName: gig.title, // Using title as artist name for now
+        date: gig.date,
+        status: gig.status === 'open' ? 'pending' as const : gig.status === 'completed' ? 'booked' as const : 'tentative' as const,
+      }))
+    : mockCalendarEvents
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Hero Section */}
       <div className="mb-6 rounded-xl bg-gradient-to-r from-purple-600 to-purple-700 p-6 text-white">
-        <div className="flex items-center gap-3">
-          <Calendar className="h-6 w-6" />
-          <div>
-            <h2 className="text-2xl font-bold">Book Your Stage</h2>
-            <p className="text-purple-100">
-              Manage shows and collaborate with artists effortlessly
-            </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Calendar className="h-6 w-6" />
+            <div>
+              <h2 className="text-2xl font-bold">Book Your Stage</h2>
+              <p className="text-purple-100">
+                Manage shows and collaborate with artists effortlessly
+              </p>
+            </div>
           </div>
+          <Button
+            onClick={onCreateGig}
+            className="bg-white text-purple-600 hover:bg-purple-50"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Post New Gig
+          </Button>
         </div>
       </div>
 
       {/* Calendar */}
       <div className="mb-6">
-        <BookingCalendar events={mockCalendarEvents} />
+        <BookingCalendar events={calendarEvents} />
       </div>
 
       {/* Book Artist CTA */}

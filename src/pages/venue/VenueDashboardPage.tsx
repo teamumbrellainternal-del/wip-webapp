@@ -7,7 +7,7 @@
  * - Find Artist: Artist discovery with matching
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Bell, Search, Home, Calendar, Sparkles, Loader2 } from 'lucide-react'
 import UmbrellaIcon from '@brand/assets/logos/umbrella-icon.svg'
@@ -21,9 +21,12 @@ import { VenueOverviewTab } from '@/components/venue/VenueOverviewTab'
 import { SmartBookingTab } from '@/components/venue/SmartBookingTab'
 import { FindArtistTab } from '@/components/venue/FindArtistTab'
 import { CoMarketingModal } from '@/components/venue/CoMarketingModal'
+import { CreateGigModal } from '@/components/venue/CreateGigModal'
+import { GigApplicationsModal } from '@/components/venue/GigApplicationsModal'
 import { mockVenueProfile, type VenueProfile } from '@/mocks/venue-data'
 import { apiClient } from '@/lib/api-client'
-import type { VenueProfileResponse } from '@/types'
+import { logger } from '@/utils/logger'
+import type { VenueProfileResponse, VenueGig } from '@/types'
 
 // Venue-specific top navigation
 const venueNavigationTabs = [
@@ -59,9 +62,31 @@ export default function VenueDashboardPage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<DashboardTab>('overview')
   const [isCoMarketingOpen, setIsCoMarketingOpen] = useState(false)
+  const [isCreateGigOpen, setIsCreateGigOpen] = useState(false)
+  const [selectedGigForApplications, setSelectedGigForApplications] = useState<VenueGig | null>(null)
   const [venueProfile, setVenueProfile] = useState<VenueProfile | null>(null)
+  const [venueApiData, setVenueApiData] = useState<VenueProfileResponse | null>(null)
+  const [gigs, setGigs] = useState<VenueGig[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [isLoadingGigs, setIsLoadingGigs] = useState(true)
+  const [_error, setError] = useState<string | null>(null)
+
+  // Fetch venue's gigs
+  const fetchGigs = useCallback(async () => {
+    logger.info('VenueDashboard:fetchGigs')
+    setIsLoadingGigs(true)
+    try {
+      const response = await apiClient.getMyGigs()
+      setGigs(response.gigs)
+      logger.info('VenueDashboard:fetchGigs:success', { count: response.gigs.length })
+    } catch (err) {
+      logger.error('VenueDashboard:fetchGigs:error', { error: err })
+      // Use empty array on error
+      setGigs([])
+    } finally {
+      setIsLoadingGigs(false)
+    }
+  }, [])
 
   // Fetch venue profile on mount
   useEffect(() => {
@@ -70,6 +95,7 @@ export default function VenueDashboardPage() {
         setIsLoading(true)
         setError(null)
         const venue = await apiClient.getVenueProfile()
+        setVenueApiData(venue)
         setVenueProfile(toVenueProfile(venue))
       } catch (err) {
         // If venue profile not found, redirect to onboarding
@@ -88,7 +114,16 @@ export default function VenueDashboardPage() {
     }
 
     fetchVenueProfile()
-  }, [navigate])
+    fetchGigs()
+  }, [navigate, fetchGigs])
+
+  const handleCreateGigSuccess = () => {
+    fetchGigs()
+  }
+
+  const handleViewApplications = (gig: VenueGig) => {
+    setSelectedGigForApplications(gig)
+  }
 
   const isActiveNavTab = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`)
@@ -223,8 +258,21 @@ export default function VenueDashboardPage() {
         {/* Tab Content - show when not loading */}
         {!isLoading && (
           <div className="bg-slate-50 dark:bg-slate-900/50">
-            {activeTab === 'overview' && <VenueOverviewTab />}
-            {activeTab === 'smart-booking' && <SmartBookingTab />}
+            {activeTab === 'overview' && (
+              <VenueOverviewTab
+                gigs={gigs}
+                isLoadingGigs={isLoadingGigs}
+                onViewApplications={handleViewApplications}
+                onRefreshGigs={fetchGigs}
+                onCreateGig={() => setIsCreateGigOpen(true)}
+              />
+            )}
+            {activeTab === 'smart-booking' && (
+              <SmartBookingTab
+                gigs={gigs}
+                onCreateGig={() => setIsCreateGigOpen(true)}
+              />
+            )}
             {activeTab === 'find-artist' && <FindArtistTab />}
           </div>
         )}
@@ -232,6 +280,24 @@ export default function VenueDashboardPage() {
 
       {/* Co-Marketing Studio Modal */}
       <CoMarketingModal open={isCoMarketingOpen} onOpenChange={setIsCoMarketingOpen} />
+
+      {/* Create Gig Modal */}
+      <CreateGigModal
+        open={isCreateGigOpen}
+        onOpenChange={setIsCreateGigOpen}
+        venueName={venueApiData?.name || venueProfile?.name || ''}
+        venueCity={venueApiData?.city || ''}
+        venueState={venueApiData?.state || ''}
+        onSuccess={handleCreateGigSuccess}
+      />
+
+      {/* Gig Applications Modal */}
+      <GigApplicationsModal
+        open={!!selectedGigForApplications}
+        onOpenChange={(open) => !open && setSelectedGigForApplications(null)}
+        gig={selectedGigForApplications}
+        onStatusChange={fetchGigs}
+      />
 
       {/* Ask Violet Floating Button */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
