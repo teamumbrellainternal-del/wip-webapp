@@ -38,6 +38,7 @@ import {
   Trash2,
   Music,
   Loader2,
+  CheckCircle2,
 } from 'lucide-react'
 
 interface MyGigsListProps {
@@ -57,6 +58,7 @@ const statusColors: Record<string, string> = {
 export function MyGigsList({ gigs, isLoading, onViewApplications, onRefresh }: MyGigsListProps) {
   const [deletingGigId, setDeletingGigId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [updatingStatusGigId, setUpdatingStatusGigId] = useState<string | null>(null)
 
   const handleDeleteGig = async () => {
     if (!deletingGigId) return
@@ -74,6 +76,29 @@ export function MyGigsList({ gigs, isLoading, onViewApplications, onRefresh }: M
       setIsDeleting(false)
       setDeletingGigId(null)
     }
+  }
+
+  const handleMarkAsCompleted = async (gigId: string) => {
+    logger.info('MyGigsList:markAsCompleted', { gigId })
+    setUpdatingStatusGigId(gigId)
+
+    try {
+      await apiClient.updateGig(gigId, { status: 'completed' })
+      logger.info('MyGigsList:markAsCompleted:success', { gigId })
+      onRefresh()
+    } catch (error) {
+      logger.error('MyGigsList:markAsCompleted:error', { error })
+    } finally {
+      setUpdatingStatusGigId(null)
+    }
+  }
+
+  // Check if a gig is in the past (date has passed)
+  const isGigPast = (dateStr: string) => {
+    const gigDate = new Date(dateStr)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return gigDate < today
   }
 
   const formatDate = (dateStr: string) => {
@@ -152,6 +177,15 @@ export function MyGigsList({ gigs, isLoading, onViewApplications, onRefresh }: M
                       <Pencil className="mr-2 h-4 w-4" />
                       Edit Gig
                     </DropdownMenuItem>
+                    {(gig.status === 'open' || gig.status === 'filled') && isGigPast(gig.date) && (
+                      <DropdownMenuItem
+                        onClick={() => handleMarkAsCompleted(gig.id)}
+                        disabled={updatingStatusGigId === gig.id}
+                      >
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        {updatingStatusGigId === gig.id ? 'Updating...' : 'Mark as Completed'}
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       className="text-red-600 focus:text-red-600"
                       onClick={() => setDeletingGigId(gig.id)}
@@ -213,8 +247,9 @@ export function MyGigsList({ gigs, isLoading, onViewApplications, onRefresh }: M
                 </div>
               )}
 
+              {/* Actions for open gigs */}
               {gig.status === 'open' && (
-                <div className="mt-4 flex gap-2">
+                <div className="mt-4 flex flex-wrap gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -223,6 +258,52 @@ export function MyGigsList({ gigs, isLoading, onViewApplications, onRefresh }: M
                   >
                     <Eye className="mr-2 h-4 w-4" />
                     View Applications
+                  </Button>
+                  {isGigPast(gig.date) && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => handleMarkAsCompleted(gig.id)}
+                      disabled={updatingStatusGigId === gig.id}
+                      className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700"
+                    >
+                      {updatingStatusGigId === gig.id ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Updating...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                          Mark as Completed
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {/* Mark as completed for filled gigs that are past */}
+              {gig.status === 'filled' && isGigPast(gig.date) && (
+                <div className="mt-4">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => handleMarkAsCompleted(gig.id)}
+                    disabled={updatingStatusGigId === gig.id}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    {updatingStatusGigId === gig.id ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Mark as Completed
+                      </>
+                    )}
                   </Button>
                 </div>
               )}

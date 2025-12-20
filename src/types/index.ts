@@ -245,7 +245,9 @@ export interface CreateGigInput {
 /**
  * Input for updating an existing gig
  */
-export type UpdateGigInput = Partial<CreateGigInput>
+export type UpdateGigInput = Partial<CreateGigInput> & {
+  status?: 'open' | 'filled' | 'cancelled' | 'completed'
+}
 
 /**
  * Gig as returned from venue's "My Gigs" endpoint

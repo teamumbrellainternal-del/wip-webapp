@@ -134,7 +134,7 @@ export function FilesModal({ open, onOpenChange, onBack }: FilesModalProps) {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [toast])
 
   useEffect(() => {
     if (open) {

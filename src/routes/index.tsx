@@ -32,6 +32,7 @@ import NetworkPage from '@/pages/NetworkPage'
 import VenueDashboardPage from '@/pages/venue/VenueDashboardPage'
 import VenueOnboardingStep1 from '@/pages/venue/onboarding/VenueOnboardingStep1'
 import VenueOnboardingStep2 from '@/pages/venue/onboarding/VenueOnboardingStep2'
+import VenueProfilePage from '@/pages/VenueProfilePage'
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
@@ -194,6 +195,18 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <OnboardingGuard>
           <GigDetailsPage />
+        </OnboardingGuard>
+      </ProtectedRoute>
+    ),
+  },
+
+  // Venue Profile (with dynamic ID - public venue profile for artists)
+  {
+    path: '/venue/:id',
+    element: (
+      <ProtectedRoute>
+        <OnboardingGuard>
+          <VenueProfilePage />
         </OnboardingGuard>
       </ProtectedRoute>
     ),

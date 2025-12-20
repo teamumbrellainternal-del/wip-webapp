@@ -764,6 +764,22 @@ export const updateGig: RouteHandler = async (ctx) => {
       values.push(body.payment_type)
     }
 
+    // Handle status updates with validation
+    if (body.status !== undefined) {
+      const validStatuses = ['open', 'filled', 'cancelled', 'completed']
+      if (!validStatuses.includes(body.status)) {
+        return errorResponse(
+          ErrorCodes.VALIDATION_ERROR,
+          `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
+          400,
+          'status',
+          ctx.requestId
+        )
+      }
+      updates.push('status = ?')
+      values.push(body.status)
+    }
+
     // Always update updated_at
     updates.push('updated_at = ?')
     values.push(new Date().toISOString())

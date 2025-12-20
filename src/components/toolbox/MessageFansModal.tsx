@@ -69,7 +69,7 @@ export function MessageFansModal({ open, onOpenChange, onBack }: MessageFansModa
       }
       fetchContactLists()
     }
-  }, [open])
+  }, [open, toast])
 
   // Calculate total recipient count
   const totalRecipients = Array.from(selectedListIds).reduce((total, listId) => {
