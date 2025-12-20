@@ -30,6 +30,8 @@ import MessageFansPage from '@/pages/MessageFansPage'
 import CreativeStudioPage from '@/pages/CreativeStudioPage'
 import NetworkPage from '@/pages/NetworkPage'
 import VenueDashboardPage from '@/pages/venue/VenueDashboardPage'
+import VenueOnboardingStep1 from '@/pages/venue/onboarding/VenueOnboardingStep1'
+import VenueOnboardingStep2 from '@/pages/venue/onboarding/VenueOnboardingStep2'
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
@@ -307,6 +309,24 @@ export const router = createBrowserRouter([
         <OnboardingGuard>
           <SettingsPage />
         </OnboardingGuard>
+      </ProtectedRoute>
+    ),
+  },
+
+  // Venue Onboarding Routes (Protected but no OnboardingGuard)
+  {
+    path: '/venue/onboarding/step1',
+    element: (
+      <ProtectedRoute>
+        <VenueOnboardingStep1 />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/venue/onboarding/step2',
+    element: (
+      <ProtectedRoute>
+        <VenueOnboardingStep2 />
       </ProtectedRoute>
     ),
   },

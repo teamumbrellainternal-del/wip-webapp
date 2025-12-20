@@ -7,9 +7,9 @@
  * - Find Artist: Artist discovery with matching
  */
 
-import { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { Bell, Search, Home, Calendar, Sparkles } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Bell, Search, Home, Calendar, Sparkles, Loader2 } from 'lucide-react'
 import UmbrellaIcon from '@brand/assets/logos/umbrella-icon.svg'
 import { Button } from '@/components/ui/button'
 import { ProfileDropdown } from '@/components/layout/ProfileDropdown'
@@ -21,7 +21,9 @@ import { VenueOverviewTab } from '@/components/venue/VenueOverviewTab'
 import { SmartBookingTab } from '@/components/venue/SmartBookingTab'
 import { FindArtistTab } from '@/components/venue/FindArtistTab'
 import { CoMarketingModal } from '@/components/venue/CoMarketingModal'
-import { mockVenueProfile } from '@/mocks/venue-data'
+import { mockVenueProfile, type VenueProfile } from '@/mocks/venue-data'
+import { apiClient } from '@/lib/api-client'
+import type { VenueProfileResponse } from '@/types'
 
 // Venue-specific top navigation
 const venueNavigationTabs = [
@@ -35,10 +37,58 @@ const venueNavigationTabs = [
 // Sub-tabs within the dashboard
 type DashboardTab = 'overview' | 'smart-booking' | 'co-marketing' | 'find-artist'
 
+// Convert API response to mock data format for compatibility with existing components
+function toVenueProfile(venue: VenueProfileResponse): VenueProfile {
+  return {
+    id: venue.id,
+    name: venue.name,
+    tagline: venue.tagline || '',
+    location: venue.city + (venue.state ? `, ${venue.state}` : ''),
+    capacity: venue.capacity || 0,
+    status: venue.status,
+    eventsHosted: venue.events_hosted,
+    networkSize: venue.total_artists_booked * 50, // Estimate network from artists
+    avatarInitials: venue.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase(),
+    bannerUrl: venue.cover_url || 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1600&h=400&fit=crop',
+    verified: venue.verified,
+  }
+}
+
 export default function VenueDashboardPage() {
   const location = useLocation()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<DashboardTab>('overview')
   const [isCoMarketingOpen, setIsCoMarketingOpen] = useState(false)
+  const [venueProfile, setVenueProfile] = useState<VenueProfile | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Fetch venue profile on mount
+  useEffect(() => {
+    const fetchVenueProfile = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        const venue = await apiClient.getVenueProfile()
+        setVenueProfile(toVenueProfile(venue))
+      } catch (err) {
+        // If venue profile not found, redirect to onboarding
+        if (err instanceof Error && err.message.includes('not found')) {
+          navigate('/venue/onboarding/step1')
+          return
+        }
+        // For other errors, show error state but use mock data as fallback
+        console.error('Failed to fetch venue profile:', err)
+        setError('Failed to load venue profile')
+        // Use mock data as fallback for demo purposes
+        setVenueProfile(mockVenueProfile)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchVenueProfile()
+  }, [navigate])
 
   const isActiveNavTab = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`)
@@ -131,42 +181,53 @@ export default function VenueDashboardPage() {
 
       {/* Main Content */}
       <main className="flex-1">
-        {/* Hero Banner */}
-        <VenueHeroBanner venue={mockVenueProfile} />
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex h-64 items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+          </div>
+        )}
 
-        {/* Sub-tabs Navigation */}
-        <div className="border-b bg-background">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-center gap-2 py-4">
-              {subTabs.map((tab) => {
-                const isActive =
-                  activeTab === tab.id || (tab.id === 'co-marketing' && isCoMarketingOpen)
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleTabClick(tab.id)}
-                    className={cn(
-                      'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all',
-                      isActive
-                        ? 'bg-purple-600 text-white shadow-md'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                    )}
-                  >
-                    {tab.icon}
-                    {tab.label}
-                  </button>
-                )
-              })}
+        {/* Hero Banner - show when loaded */}
+        {!isLoading && venueProfile && <VenueHeroBanner venue={venueProfile} />}
+
+        {/* Sub-tabs Navigation - show when not loading */}
+        {!isLoading && (
+          <div className="border-b bg-background">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center justify-center gap-2 py-4">
+                {subTabs.map((tab) => {
+                  const isActive =
+                    activeTab === tab.id || (tab.id === 'co-marketing' && isCoMarketingOpen)
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => handleTabClick(tab.id)}
+                      className={cn(
+                        'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all',
+                        isActive
+                          ? 'bg-purple-600 text-white shadow-md'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      )}
+                    >
+                      {tab.icon}
+                      {tab.label}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Tab Content */}
-        <div className="bg-slate-50 dark:bg-slate-900/50">
-          {activeTab === 'overview' && <VenueOverviewTab />}
-          {activeTab === 'smart-booking' && <SmartBookingTab />}
-          {activeTab === 'find-artist' && <FindArtistTab />}
-        </div>
+        {/* Tab Content - show when not loading */}
+        {!isLoading && (
+          <div className="bg-slate-50 dark:bg-slate-900/50">
+            {activeTab === 'overview' && <VenueOverviewTab />}
+            {activeTab === 'smart-booking' && <SmartBookingTab />}
+            {activeTab === 'find-artist' && <FindArtistTab />}
+          </div>
+        )}
       </main>
 
       {/* Co-Marketing Studio Modal */}

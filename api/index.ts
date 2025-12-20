@@ -40,6 +40,7 @@ import * as pusherController from './controllers/pusher'
 import * as mediaController from './controllers/media'
 import * as connectionsController from './controllers/connections'
 import * as notificationsController from './controllers/notifications'
+import * as venueController from './controllers/venue'
 import { aggregateAnalytics, handleAnalyticsCron } from './controllers/cron/analytics'
 import { requireAdmin } from './middleware/admin'
 import { requireRole } from './middleware/role'
@@ -223,6 +224,12 @@ function setupRouter(): Router {
   router.put('/v1/gigs/:id/applications/:appId', gigsController.updateApplicationStatus, [authMiddleware, requireRole('venue')]) // Accept/reject (venue only)
   router.post('/v1/gigs/:id/apply', gigsController.applyToGig, [authMiddleware, requireRole('artist')]) // Apply to gig (artist only)
   router.delete('/v1/gigs/:id/apply', gigsController.withdrawApplication, [authMiddleware, requireRole('artist')]) // Withdraw application (artist only)
+
+  // Venue routes - with RBAC role guards
+  router.get('/v1/venue/profile', venueController.getVenueProfile, [authMiddleware, requireRole('venue')]) // Get own venue profile
+  router.post('/v1/venue/profile', venueController.createVenueProfile, [authMiddleware, requireRole('venue')]) // Create venue profile (onboarding)
+  router.put('/v1/venue/profile', venueController.updateVenueProfile, [authMiddleware, requireRole('venue')]) // Update venue profile
+  router.get('/v1/venue/profile/:id', venueController.getPublicVenueProfile) // Public venue profile
 
   // Artists routes
   router.get('/v1/artists', artistsController.discoverArtists, [authMiddleware]) // Auth required for distance calculation (task-5.4)

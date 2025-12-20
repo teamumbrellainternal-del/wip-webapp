@@ -73,6 +73,103 @@ export interface ArtistSearchParams {
 }
 
 // ============================================================================
+// VENUE TYPES
+// ============================================================================
+
+export type VenueStatus = 'open_for_bookings' | 'closed' | 'limited'
+export type VenueType = 'club' | 'bar' | 'theater' | 'arena' | 'outdoor' | 'restaurant' | 'other'
+export type StageSize = 'small' | 'medium' | 'large'
+
+export interface VenueProfileResponse {
+  id: string
+  user_id: string
+  name: string
+  tagline: string | null
+  venue_type: VenueType | null
+  address_line1: string | null
+  address_line2: string | null
+  city: string
+  state: string | null
+  zip_code: string | null
+  country: string
+  capacity: number | null
+  standing_capacity: number | null
+  seated_capacity: number | null
+  stage_size: StageSize | null
+  sound_system: string | null
+  has_green_room: boolean
+  has_parking: boolean
+  status: VenueStatus
+  booking_lead_days: number
+  preferred_genres: string[]
+  avatar_url: string | null
+  cover_url: string | null
+  verified: boolean
+  events_hosted: number
+  total_artists_booked: number
+  created_at: string
+  updated_at: string
+}
+
+export interface PublicVenueProfile {
+  id: string
+  name: string
+  tagline: string | null
+  venue_type: VenueType | null
+  city: string
+  state: string | null
+  capacity: number | null
+  stage_size: StageSize | null
+  status: VenueStatus
+  avatar_url: string | null
+  cover_url: string | null
+  verified: boolean
+  events_hosted: number
+  total_artists_booked: number
+}
+
+export interface CreateVenueInput {
+  name: string
+  city: string
+  tagline?: string
+  venue_type?: VenueType
+  state?: string
+  capacity?: number
+  standing_capacity?: number
+  seated_capacity?: number
+  stage_size?: StageSize
+  sound_system?: string
+  has_green_room?: boolean
+  has_parking?: boolean
+  booking_lead_days?: number
+  preferred_genres?: string[]
+}
+
+export interface UpdateVenueInput {
+  name?: string
+  tagline?: string
+  venue_type?: VenueType
+  address_line1?: string
+  address_line2?: string
+  city?: string
+  state?: string
+  zip_code?: string
+  country?: string
+  capacity?: number
+  standing_capacity?: number
+  seated_capacity?: number
+  stage_size?: StageSize
+  sound_system?: string
+  has_green_room?: boolean
+  has_parking?: boolean
+  status?: VenueStatus
+  booking_lead_days?: number
+  preferred_genres?: string[]
+  avatar_url?: string
+  cover_url?: string
+}
+
+// ============================================================================
 // GIG TYPES
 // ============================================================================
 

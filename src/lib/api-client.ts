@@ -17,6 +17,10 @@ import type {
   MutualConnectionsResponse,
   NotificationsResponse,
   UnreadCountResponse,
+  VenueProfileResponse,
+  PublicVenueProfile,
+  CreateVenueInput,
+  UpdateVenueInput,
 } from '@/types'
 import { getSession, clearSession } from '@/lib/session'
 import { triggerSessionTimeout } from '@/contexts/SessionTimeoutContext'
@@ -299,6 +303,56 @@ class APIClient {
       method: 'PUT',
       body: JSON.stringify({ role }),
     })
+  }
+
+  // ============================================================================
+  // VENUE PROFILE ENDPOINTS
+  // ============================================================================
+
+  /**
+   * Get current user's venue profile
+   */
+  async getVenueProfile(): Promise<VenueProfileResponse> {
+    const response = await this.request<{ venue: VenueProfileResponse }>('/venue/profile')
+    return response.venue
+  }
+
+  /**
+   * Create venue profile (during onboarding)
+   */
+  async createVenueProfile(data: CreateVenueInput): Promise<VenueProfileResponse> {
+    const response = await this.request<{ venue: VenueProfileResponse; message: string }>(
+      '/venue/profile',
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    )
+    return response.venue
+  }
+
+  /**
+   * Update venue profile
+   */
+  async updateVenueProfile(data: UpdateVenueInput): Promise<VenueProfileResponse> {
+    const response = await this.request<{ venue: VenueProfileResponse; message: string }>(
+      '/venue/profile',
+      {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }
+    )
+    return response.venue
+  }
+
+  /**
+   * Get public venue profile by ID
+   */
+  async getPublicVenueProfile(venueId: string): Promise<PublicVenueProfile> {
+    const response = await this.request<{ venue: PublicVenueProfile }>(
+      `/venue/profile/${venueId}`
+    )
+    return response.venue
   }
 
   // Marketplace endpoints (stubs for future implementation)

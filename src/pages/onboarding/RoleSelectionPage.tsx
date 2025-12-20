@@ -44,8 +44,8 @@ export default function RoleSelectionPage() {
       await apiClient.updateUserRole('venue')
       // Refresh auth context to get updated role
       await checkSession()
-      // Redirect to venue dashboard (no onboarding flow for venues yet)
-      navigate('/venue/dashboard')
+      // Redirect to venue onboarding
+      navigate('/venue/onboarding/step1')
     } catch (error) {
       console.error('Failed to set role:', error)
       // Still try to navigate if API call failed

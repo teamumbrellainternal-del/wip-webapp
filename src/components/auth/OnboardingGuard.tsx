@@ -12,7 +12,7 @@ interface OnboardingGuardProps {
  * 
  * Role-based routing (RBAC Phase 5):
  * - No role selected → /onboarding/role-selection
- * - Venue role → /venue/dashboard (skips artist onboarding)
+ * - Venue role, incomplete → /venue/onboarding/step1
  * - Artist role, incomplete → /onboarding/artists/step1
  * - Onboarding complete → render children
  */
@@ -33,8 +33,8 @@ export default function OnboardingGuard({ children }: OnboardingGuardProps) {
 
     // Step 2: Route based on role
     if (user.role === 'venue') {
-      // Venue users go directly to venue dashboard (no artist onboarding)
-      return <Navigate to="/venue/dashboard" replace />
+      // Venue users go to venue onboarding
+      return <Navigate to="/venue/onboarding/step1" replace />
     }
 
     // Step 3: Artist role - continue to artist onboarding
