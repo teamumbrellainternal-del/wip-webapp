@@ -42,6 +42,7 @@ import * as connectionsController from './controllers/connections'
 import * as notificationsController from './controllers/notifications'
 import { aggregateAnalytics, handleAnalyticsCron } from './controllers/cron/analytics'
 import { requireAdmin } from './middleware/admin'
+import { requireRole } from './middleware/role'
 
 /**
  * Worker environment bindings
@@ -71,11 +72,19 @@ export interface Env {
 
 /**
  * Authentication middleware wrapper
+ * Sets ctx.userId (string) and ctx.user (full User object) for role-based checks
  */
 async function authMiddleware(ctx: any, next: () => Promise<Response>): Promise<Response> {
   try {
-    const user = await authenticateRequest(ctx.request, ctx.env)
-    ctx.userId = user.userId
+    const clerkUser = await authenticateRequest(ctx.request, ctx.env)
+    ctx.userId = clerkUser.userId
+
+    // Fetch full user record for role-based middleware (RBAC Phase 6)
+    const user = await ctx.env.DB.prepare('SELECT * FROM users WHERE id = ?')
+      .bind(clerkUser.userId)
+      .first()
+    ctx.user = user
+
     return next()
   } catch (error) {
     return errorResponse(
@@ -148,6 +157,7 @@ function setupRouter(): Router {
 
   // Account routes (auth required)
   router.delete('/v1/account', accountController.deleteAccount, [authMiddleware])
+  router.put('/v1/users/role', accountController.updateUserRole, [authMiddleware])
 
   // Profile routes (auth required)
   router.get('/v1/profile', profileController.getProfile, [authMiddleware])
@@ -201,18 +211,18 @@ function setupRouter(): Router {
   router.post('/v1/reviews', reviewsController.submitReview) // Public (token-based)
   router.get('/v1/reviews/invite/:token', reviewsController.getReviewByToken) // Public (for pre-filling form)
 
-  // Gigs routes
-  router.get('/v1/gigs', gigsController.listGigs, [authMiddleware]) // Browse marketplace
-  router.post('/v1/gigs', gigsController.createGig, [authMiddleware]) // Create gig (venue owners)
-  router.get('/v1/gigs/mine', gigsController.getMyGigs, [authMiddleware]) // My posted gigs (venue owners)
-  router.get('/v1/gigs/applications', gigsController.getMyApplications, [authMiddleware]) // My applications (artists)
-  router.get('/v1/gigs/:id', gigsController.getGig, [authMiddleware]) // View gig details
-  router.put('/v1/gigs/:id', gigsController.updateGig, [authMiddleware]) // Update gig (venue owners)
-  router.delete('/v1/gigs/:id', gigsController.deleteGig, [authMiddleware]) // Cancel gig (venue owners)
-  router.get('/v1/gigs/:id/applications', gigsController.getGigApplications, [authMiddleware]) // View applications (venue owners)
-  router.put('/v1/gigs/:id/applications/:appId', gigsController.updateApplicationStatus, [authMiddleware]) // Accept/reject (venue owners)
-  router.post('/v1/gigs/:id/apply', gigsController.applyToGig, [authMiddleware]) // Apply to gig (artists)
-  router.delete('/v1/gigs/:id/apply', gigsController.withdrawApplication, [authMiddleware]) // Withdraw application (artists)
+  // Gigs routes - with RBAC role guards (Phase 6)
+  router.get('/v1/gigs', gigsController.listGigs, [authMiddleware]) // Browse marketplace (all roles)
+  router.post('/v1/gigs', gigsController.createGig, [authMiddleware, requireRole('venue')]) // Create gig (venue only)
+  router.get('/v1/gigs/mine', gigsController.getMyGigs, [authMiddleware, requireRole('venue')]) // My posted gigs (venue only)
+  router.get('/v1/gigs/applications', gigsController.getMyApplications, [authMiddleware, requireRole('artist')]) // My applications (artist only)
+  router.get('/v1/gigs/:id', gigsController.getGig, [authMiddleware]) // View gig details (all roles)
+  router.put('/v1/gigs/:id', gigsController.updateGig, [authMiddleware, requireRole('venue')]) // Update gig (venue only)
+  router.delete('/v1/gigs/:id', gigsController.deleteGig, [authMiddleware, requireRole('venue')]) // Cancel gig (venue only)
+  router.get('/v1/gigs/:id/applications', gigsController.getGigApplications, [authMiddleware, requireRole('venue')]) // View applications (venue only)
+  router.put('/v1/gigs/:id/applications/:appId', gigsController.updateApplicationStatus, [authMiddleware, requireRole('venue')]) // Accept/reject (venue only)
+  router.post('/v1/gigs/:id/apply', gigsController.applyToGig, [authMiddleware, requireRole('artist')]) // Apply to gig (artist only)
+  router.delete('/v1/gigs/:id/apply', gigsController.withdrawApplication, [authMiddleware, requireRole('artist')]) // Withdraw application (artist only)
 
   // Artists routes
   router.get('/v1/artists', artistsController.discoverArtists, [authMiddleware]) // Auth required for distance calculation (task-5.4)

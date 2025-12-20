@@ -540,6 +540,7 @@ export async function handleSessionCheck(request: Request, env: Env): Promise<Re
         id: dbUser.id,
         clerk_user_id: dbUser.clerk_id,
         email: dbUser.email,
+        role: dbUser.role || null,
         onboarding_complete: Boolean(dbUser.onboarding_complete),
       },
       session: {

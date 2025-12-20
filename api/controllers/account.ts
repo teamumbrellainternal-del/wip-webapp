@@ -245,3 +245,96 @@ export const deleteAccount: RouteHandler = async (ctx) => {
     )
   }
 }
+
+/**
+ * Update user role
+ * PUT /v1/users/role
+ *
+ * Updates the user's role for RBAC. This is typically called during onboarding
+ * when a user selects their role (Artist, Venue, Fan, or Collective).
+ *
+ * @param ctx - Request context with userId from auth middleware
+ * @returns Updated user object with new role
+ */
+export const updateUserRole: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    // Parse and validate role from request body
+    const body = await ctx.request.json() as { role: string }
+    const { role } = body
+
+    // Validate role against allowed values
+    const validRoles = ['artist', 'venue', 'fan', 'collective']
+    if (!role || !validRoles.includes(role)) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        `Invalid role. Must be one of: ${validRoles.join(', ')}`,
+        400,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Update user role in database
+    const now = new Date().toISOString()
+    const result = await ctx.env.DB.prepare(
+      'UPDATE users SET role = ?, updated_at = ? WHERE id = ?'
+    ).bind(role, now, ctx.userId).run()
+
+    if (result.meta.changes === 0) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'User not found',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Fetch and return updated user
+    const user = await ctx.env.DB.prepare(
+      'SELECT id, email, role, onboarding_complete FROM users WHERE id = ?'
+    ).bind(ctx.userId).first<{ id: string; email: string; role: string; onboarding_complete: number }>()
+
+    if (!user) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'User not found after update',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    return successResponse(
+      {
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          onboarding_complete: Boolean(user.onboarding_complete),
+        },
+      },
+      200,
+      ctx.requestId
+    )
+  } catch (error) {
+    console.error('Error updating user role:', error)
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Failed to update user role',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}

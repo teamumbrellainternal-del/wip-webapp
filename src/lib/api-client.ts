@@ -291,6 +291,16 @@ class APIClient {
     })
   }
 
+  // User role management
+  async updateUserRole(
+    role: 'artist' | 'venue' | 'fan' | 'collective'
+  ): Promise<{ user: { id: string; email: string; role: string; onboarding_complete: boolean } }> {
+    return this.request('/users/role', {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
+    })
+  }
+
   // Marketplace endpoints (stubs for future implementation)
   async listGigs(): Promise<Gig[]> {
     return this.request<Gig[]>('/gigs')
