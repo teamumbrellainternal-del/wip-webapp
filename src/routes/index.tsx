@@ -43,7 +43,7 @@ const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
  * 1. ProtectedRoute - Ensures user is authenticated
  * 2. OnboardingGuard - Ensures user has completed onboarding (D-006)
  *
- * Public routes: /auth, /terms, /privacy
+ * Public routes: /auth, /terms, /privacy, /artist/:id, /venue/:id
  * All other routes require authentication and onboarding completion
  */
 export const router = createBrowserRouter([
@@ -176,16 +176,10 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // Artist Profile (with dynamic ID)
+  // Artist Profile (with dynamic ID) - PUBLIC for SEO indexing
   {
     path: '/artist/:id',
-    element: (
-      <ProtectedRoute>
-        <OnboardingGuard>
-          <ProfilePage />
-        </OnboardingGuard>
-      </ProtectedRoute>
-    ),
+    element: <ProfilePage />,
   },
 
   // Gig Details (with dynamic ID)
@@ -200,16 +194,10 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // Venue Profile (with dynamic ID - public venue profile for artists)
+  // Venue Profile (with dynamic ID) - PUBLIC for SEO indexing
   {
     path: '/venue/:id',
-    element: (
-      <ProtectedRoute>
-        <OnboardingGuard>
-          <VenueProfilePage />
-        </OnboardingGuard>
-      </ProtectedRoute>
-    ),
+    element: <VenueProfilePage />,
   },
 
   // Profile Management (D-022: Separate /profile/edit route)

@@ -41,6 +41,7 @@ import * as mediaController from './controllers/media'
 import * as connectionsController from './controllers/connections'
 import * as notificationsController from './controllers/notifications'
 import * as venueController from './controllers/venue'
+import * as sitemapController from './controllers/sitemap'
 import { aggregateAnalytics, handleAnalyticsCron } from './controllers/cron/analytics'
 import { requireAdmin } from './middleware/admin'
 import { requireRole } from './middleware/role'
@@ -146,6 +147,9 @@ function setupRouter(): Router {
 
   // Public routes (no auth required)
   router.get('/v1/health', async (ctx) => handleHealthCheck(ctx.env))
+
+  // Sitemap for SEO (public)
+  router.get('/sitemap.xml', sitemapController.getSitemap)
 
   // Media routes (public - serves files from R2)
   router.get('/media/*', mediaController.serveFile)

@@ -30,7 +30,9 @@ import {
 } from 'lucide-react'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
+import { PublicProfileCTAButton, PublicProfileCTABanner } from '@/components/common/PublicProfileCTA'
 import { MetaTags } from '@/components/MetaTags'
+import { VenueJsonLd } from '@/components/seo'
 
 const venueTypeLabels: Record<string, string> = {
   bar: 'Bar',
@@ -62,6 +64,7 @@ export default function VenueProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [startingConversation, setStartingConversation] = useState(false)
 
+  const isAuthenticated = !!user
   const isOwnProfile = user?.id === id
 
   useEffect(() => {
@@ -155,6 +158,16 @@ export default function VenueProfilePage() {
         url={`/venue/${id}`}
         type="profile"
       />
+      <VenueJsonLd
+        id={venue.id}
+        name={venue.name}
+        description={venue.tagline}
+        image={venue.avatar_url}
+        venueType={venue.venue_type}
+        city={venue.city}
+        state={venue.state}
+        capacity={venue.capacity}
+      />
 
       <div className="flex min-h-[calc(100vh-4rem)] flex-col">
         {/* Cover Image Section */}
@@ -234,23 +247,30 @@ export default function VenueProfilePage() {
                   {/* Action Buttons */}
                   {!isOwnProfile && (
                     <div className="flex gap-2">
-                      <Button
-                        className="gap-2 bg-indigo-600 hover:bg-indigo-700"
-                        onClick={handleContactVenue}
-                        disabled={startingConversation}
-                      >
-                        {startingConversation ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Starting...
-                          </>
-                        ) : (
-                          <>
-                            <MessageCircle className="h-4 w-4" />
-                            Contact Venue
-                          </>
-                        )}
-                      </Button>
+                      {isAuthenticated ? (
+                        <Button
+                          className="gap-2 bg-indigo-600 hover:bg-indigo-700"
+                          onClick={handleContactVenue}
+                          disabled={startingConversation}
+                        >
+                          {startingConversation ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Starting...
+                            </>
+                          ) : (
+                            <>
+                              <MessageCircle className="h-4 w-4" />
+                              Contact Venue
+                            </>
+                          )}
+                        </Button>
+                      ) : (
+                        <PublicProfileCTAButton
+                          returnUrl={`/venue/${id}`}
+                          profileType="venue"
+                        />
+                      )}
                     </div>
                   )}
                 </div>
@@ -408,29 +428,48 @@ export default function VenueProfilePage() {
                     <p className="mb-4 text-sm text-muted-foreground">
                       Reach out to {venue.name} about booking opportunities
                     </p>
-                    <Button
-                      className="w-full gap-2 bg-indigo-600 hover:bg-indigo-700"
-                      onClick={handleContactVenue}
-                      disabled={startingConversation}
-                    >
-                      {startingConversation ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Starting...
-                        </>
-                      ) : (
-                        <>
-                          <MessageCircle className="h-4 w-4" />
-                          Send Message
-                        </>
-                      )}
-                    </Button>
+                    {isAuthenticated ? (
+                      <Button
+                        className="w-full gap-2 bg-indigo-600 hover:bg-indigo-700"
+                        onClick={handleContactVenue}
+                        disabled={startingConversation}
+                      >
+                        {startingConversation ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Starting...
+                          </>
+                        ) : (
+                          <>
+                            <MessageCircle className="h-4 w-4" />
+                            Send Message
+                          </>
+                        )}
+                      </Button>
+                    ) : (
+                      <PublicProfileCTAButton
+                        returnUrl={`/venue/${id}`}
+                        profileType="venue"
+                        ctaText="Join to Contact"
+                      />
+                    )}
                   </CardContent>
                 </Card>
               )}
             </div>
           </div>
         </div>
+
+        {/* Join Umbrella CTA Banner for unauthenticated users */}
+        {!isAuthenticated && (
+          <div className="mx-auto w-full max-w-6xl px-4 pb-6">
+            <PublicProfileCTABanner
+              returnUrl={`/venue/${id}`}
+              profileType="venue"
+              profileName={venue.name}
+            />
+          </div>
+        )}
       </div>
     </AppLayout>
   )

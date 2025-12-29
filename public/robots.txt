@@ -1,0 +1,28 @@
+# Umbrella - robots.txt
+# Allow search engines to index public profiles
+
+User-agent: *
+
+# Public profile pages - allow indexing
+Allow: /artist/
+Allow: /venue/
+
+# Protected app sections - do not index
+Disallow: /dashboard
+Disallow: /profile/
+Disallow: /messages
+Disallow: /settings
+Disallow: /onboarding
+Disallow: /marketplace
+Disallow: /network
+Disallow: /violet
+Disallow: /growth
+Disallow: /tools
+Disallow: /auth
+
+# API endpoints - do not index
+Disallow: /v1/
+
+# Sitemap location
+Sitemap: https://app.umbrellalive.com/sitemap.xml
+

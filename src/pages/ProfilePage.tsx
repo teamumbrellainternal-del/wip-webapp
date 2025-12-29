@@ -52,7 +52,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
+import { PublicProfileCTAButton, PublicProfileCTABanner } from '@/components/common/PublicProfileCTA'
 import { MetaTags } from '@/components/MetaTags'
+import { ArtistJsonLd } from '@/components/seo'
 import { ConnectionButton, MutualConnections } from '@/components/connections'
 
 import { SocialLinksBar, type SocialLinksData } from '@/components/common/SocialIcons'
@@ -81,6 +83,7 @@ export default function ProfilePage() {
   const [reportDetails, setReportDetails] = useState('')
   const [startingConversation, setStartingConversation] = useState(false)
 
+  const isAuthenticated = !!user
   const isOwnProfile = user?.id === id
 
   useEffect(() => {
@@ -277,6 +280,22 @@ export default function ProfilePage() {
         url={`/artist/${id}`}
         type="profile"
       />
+      <ArtistJsonLd
+        id={artist.id}
+        name={artist.artist_name || 'Artist'}
+        description={artist.bio}
+        image={artist.avatar_url}
+        genre={artist.genres?.[0]}
+        location={artist.location}
+        instagramHandle={artist.instagram_handle}
+        spotifyUrl={artist.spotify_url}
+        youtubeUrl={artist.youtube_url}
+        soundcloudUrl={artist.soundcloud_url}
+        websiteUrl={artist.website_url}
+        facebookUrl={artist.facebook_url}
+        twitterUrl={artist.twitter_url}
+        tiktokHandle={artist.tiktok_handle}
+      />
 
       <div className="flex min-h-[calc(100vh-4rem)] flex-col">
         {/* Cover Image Section */}
@@ -289,10 +308,10 @@ export default function ProfilePage() {
               variant="secondary"
               size="sm"
               className="gap-2 bg-white/90 hover:bg-white"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate(isAuthenticated ? '/dashboard' : '/')}
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
+              {isAuthenticated ? 'Back to Dashboard' : 'Back'}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -361,52 +380,62 @@ export default function ProfilePage() {
                   {/* Action Buttons */}
                   {!isOwnProfile && (
                     <div className="flex flex-col gap-2">
-                      <div className="flex gap-2">
-                        {/* Primary: Connection Button */}
-                        {artist.user_id && (
-                          <ConnectionButton
-                            userId={artist.user_id}
-                            artistId={artist.id}
-                            status={connectionStatus}
-                            connectionId={connectionId}
-                            onStatusChange={(newStatus) => setConnectionStatus(newStatus)}
-                          />
-                        )}
-                        {/* Secondary: Follow Button */}
-                        <Button variant="outline" className="gap-2" onClick={handleFollowToggle}>
-                          {isFollowing ? (
-                            <>
-                              <UserMinus className="h-4 w-4" />
-                              Unfollow
-                            </>
-                          ) : (
-                            <>
-                              <UserPlus className="h-4 w-4" />
-                              Follow
-                            </>
+                      {isAuthenticated ? (
+                        <>
+                          <div className="flex gap-2">
+                            {/* Primary: Connection Button */}
+                            {artist.user_id && (
+                              <ConnectionButton
+                                userId={artist.user_id}
+                                artistId={artist.id}
+                                status={connectionStatus}
+                                connectionId={connectionId}
+                                onStatusChange={(newStatus) => setConnectionStatus(newStatus)}
+                              />
+                            )}
+                            {/* Secondary: Follow Button */}
+                            <Button variant="outline" className="gap-2" onClick={handleFollowToggle}>
+                              {isFollowing ? (
+                                <>
+                                  <UserMinus className="h-4 w-4" />
+                                  Unfollow
+                                </>
+                              ) : (
+                                <>
+                                  <UserPlus className="h-4 w-4" />
+                                  Follow
+                                </>
+                              )}
+                            </Button>
+                            <Button
+                              className="gap-2 bg-purple-500 hover:bg-purple-600"
+                              onClick={handleBookArtist}
+                              disabled={startingConversation}
+                            >
+                              {startingConversation ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  Starting...
+                                </>
+                              ) : (
+                                <>
+                                  <MessageCircle className="h-4 w-4" />
+                                  Book Artist
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                          {/* Mutual Connections indicator */}
+                          {artist.user_id && connectionStatus !== 'self' && (
+                            <MutualConnections userId={artist.user_id} className="mt-1" />
                           )}
-                        </Button>
-                        <Button
-                          className="gap-2 bg-purple-500 hover:bg-purple-600"
-                          onClick={handleBookArtist}
-                          disabled={startingConversation}
-                        >
-                          {startingConversation ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                              Starting...
-                            </>
-                          ) : (
-                            <>
-                              <MessageCircle className="h-4 w-4" />
-                              Book Artist
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                      {/* Mutual Connections indicator */}
-                      {artist.user_id && connectionStatus !== 'self' && (
-                        <MutualConnections userId={artist.user_id} className="mt-1" />
+                        </>
+                      ) : (
+                        /* Unauthenticated users see Join CTA */
+                        <PublicProfileCTAButton
+                          returnUrl={`/artist/${id}`}
+                          profileType="artist"
+                        />
                       )}
                     </div>
                   )}
@@ -644,28 +673,47 @@ export default function ProfilePage() {
                   <p className="mb-4 text-muted-foreground">
                     Reach out to book this artist for your next event
                   </p>
-                  <Button
-                    className="bg-purple-500 hover:bg-purple-600"
-                    onClick={handleBookArtist}
-                    disabled={startingConversation}
-                  >
-                    {startingConversation ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Starting...
-                      </>
-                    ) : (
-                      <>
-                        <MessageCircle className="mr-2 h-4 w-4" />
-                        Send Booking Inquiry
-                      </>
-                    )}
-                  </Button>
+                  {isAuthenticated ? (
+                    <Button
+                      className="bg-purple-500 hover:bg-purple-600"
+                      onClick={handleBookArtist}
+                      disabled={startingConversation}
+                    >
+                      {startingConversation ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Starting...
+                        </>
+                      ) : (
+                        <>
+                          <MessageCircle className="mr-2 h-4 w-4" />
+                          Send Booking Inquiry
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <PublicProfileCTAButton
+                      returnUrl={`/artist/${id}`}
+                      profileType="artist"
+                      ctaText="Join to Book"
+                    />
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
         </div>
+
+        {/* Join Umbrella CTA Banner for unauthenticated users */}
+        {!isAuthenticated && (
+          <div className="mx-auto w-full max-w-6xl px-4 pb-6">
+            <PublicProfileCTABanner
+              returnUrl={`/artist/${id}`}
+              profileType="artist"
+              profileName={artist.artist_name}
+            />
+          </div>
+        )}
       </div>
 
       {/* Report Dialog */}
