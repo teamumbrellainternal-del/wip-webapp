@@ -9,6 +9,7 @@
 export interface Artist {
   id: string
   user_id: string
+  slug: string | null // SEO-friendly URL slug
 
   // Identity (Onboarding Step 1)
   stage_name: string
@@ -121,6 +122,7 @@ export interface UpdateArtistInput {
  */
 export interface ArtistPublicProfile {
   id: string
+  slug: string | null // SEO-friendly URL slug
   stage_name: string
   location_city: string | null
   location_state: string | null
@@ -269,6 +271,7 @@ export function isVerified(artist: Artist): boolean {
 export function sanitizeArtistPublic(artist: Artist): ArtistPublicProfile {
   return {
     id: artist.id,
+    slug: artist.slug,
     stage_name: artist.stage_name,
     location_city: artist.location_city,
     location_state: artist.location_state,

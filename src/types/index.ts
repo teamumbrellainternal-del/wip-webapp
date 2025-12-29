@@ -39,6 +39,7 @@ export interface SocialLinks {
 export interface Artist {
   id: string
   user_id?: string // User ID for starting conversations
+  slug?: string // SEO-friendly URL slug (e.g., "john-doe")
   artist_name: string
   full_name: string
   bio?: string
@@ -83,6 +84,7 @@ export type StageSize = 'small' | 'medium' | 'large'
 export interface VenueProfileResponse {
   id: string
   user_id: string
+  slug?: string // SEO-friendly URL slug (e.g., "the-blue-note")
   name: string
   tagline: string | null
   venue_type: VenueType | null
@@ -113,6 +115,7 @@ export interface VenueProfileResponse {
 
 export interface PublicVenueProfile {
   id: string
+  slug?: string // SEO-friendly URL slug (e.g., "the-blue-note")
   name: string
   tagline: string | null
   venue_type: VenueType | null

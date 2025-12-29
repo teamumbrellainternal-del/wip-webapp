@@ -203,7 +203,9 @@ export default function ProfilePage() {
   }
 
   const handleShare = () => {
-    const profileUrl = `${window.location.origin}/artist/${id}`
+    // Use slug for SEO-friendly URL if available, fallback to ID
+    const profileIdentifier = artist?.slug || id
+    const profileUrl = `${window.location.origin}/artist/${profileIdentifier}`
     navigator.clipboard.writeText(profileUrl)
     toast({
       title: 'Profile link copied',

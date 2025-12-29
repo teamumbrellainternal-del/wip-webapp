@@ -24,6 +24,7 @@ export type StageSize = 'small' | 'medium' | 'large'
 export interface Venue {
   id: string
   user_id: string
+  slug: string | null // SEO-friendly URL slug
 
   // Identity
   name: string
@@ -125,6 +126,7 @@ export interface UpdateVenueInput {
  */
 export interface PublicVenueProfile {
   id: string
+  slug: string | null // SEO-friendly URL slug
   name: string
   tagline: string | null
   venue_type: VenueType | null
@@ -146,6 +148,7 @@ export interface PublicVenueProfile {
 export interface VenueProfileResponse {
   id: string
   user_id: string
+  slug: string | null // SEO-friendly URL slug
   name: string
   tagline: string | null
   venue_type: VenueType | null
@@ -181,6 +184,7 @@ export function toVenueProfileResponse(venue: Venue): VenueProfileResponse {
   return {
     id: venue.id,
     user_id: venue.user_id,
+    slug: venue.slug,
     name: venue.name,
     tagline: venue.tagline,
     venue_type: venue.venue_type,
@@ -216,6 +220,7 @@ export function toVenueProfileResponse(venue: Venue): VenueProfileResponse {
 export function toPublicVenueProfile(venue: Venue): PublicVenueProfile {
   return {
     id: venue.id,
+    slug: venue.slug,
     name: venue.name,
     tagline: venue.tagline,
     venue_type: venue.venue_type,

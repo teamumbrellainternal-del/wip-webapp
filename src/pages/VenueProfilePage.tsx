@@ -67,6 +67,9 @@ export default function VenueProfilePage() {
   const isAuthenticated = !!user
   const isOwnProfile = user?.id === id
 
+  // Use slug for SEO-friendly URLs if available
+  const profileIdentifier = venue?.slug || id
+
   useEffect(() => {
     if (!id) return
 
@@ -155,7 +158,7 @@ export default function VenueProfilePage() {
           venue.tagline ||
           `${venue.name} - ${venue.venue_type ? venueTypeLabels[venue.venue_type] : 'Venue'} in ${venue.city}${venue.state ? `, ${venue.state}` : ''}. ${venue.events_hosted} events hosted.`
         }
-        url={`/venue/${id}`}
+        url={`/venue/${profileIdentifier}`}
         type="profile"
       />
       <VenueJsonLd
@@ -267,7 +270,7 @@ export default function VenueProfilePage() {
                         </Button>
                       ) : (
                         <PublicProfileCTAButton
-                          returnUrl={`/venue/${id}`}
+                          returnUrl={`/venue/${profileIdentifier}`}
                           profileType="venue"
                         />
                       )}
@@ -448,7 +451,7 @@ export default function VenueProfilePage() {
                       </Button>
                     ) : (
                       <PublicProfileCTAButton
-                        returnUrl={`/venue/${id}`}
+                        returnUrl={`/venue/${profileIdentifier}`}
                         profileType="venue"
                         ctaText="Join to Contact"
                       />
@@ -464,7 +467,7 @@ export default function VenueProfilePage() {
         {!isAuthenticated && (
           <div className="mx-auto w-full max-w-6xl px-4 pb-6">
             <PublicProfileCTABanner
-              returnUrl={`/venue/${id}`}
+              returnUrl={`/venue/${profileIdentifier}`}
               profileType="venue"
               profileName={venue.name}
             />

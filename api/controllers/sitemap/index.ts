@@ -21,6 +21,7 @@ const CACHE_TTL_SECONDS = 86400 // 24 hours
  */
 interface ProfileRecord {
   id: string
+  slug: string | null
   updated_at: string
 }
 
@@ -38,26 +39,29 @@ function generateUrlEntry(loc: string, lastmod: string, priority: string = '0.8'
 
 /**
  * Generate full XML sitemap
+ * Uses slug for SEO-friendly URLs when available, falls back to ID
  */
 function generateSitemapXml(artists: ProfileRecord[], venues: ProfileRecord[]): string {
   const urlEntries: string[] = []
 
-  // Add artist profile URLs
+  // Add artist profile URLs (prefer slug for SEO-friendly URLs)
   for (const artist of artists) {
+    const identifier = artist.slug || artist.id
     urlEntries.push(
       generateUrlEntry(
-        `${BASE_URL}/artist/${artist.id}`,
+        `${BASE_URL}/artist/${identifier}`,
         artist.updated_at,
         '0.8'
       )
     )
   }
 
-  // Add venue profile URLs
+  // Add venue profile URLs (prefer slug for SEO-friendly URLs)
   for (const venue of venues) {
+    const identifier = venue.slug || venue.id
     urlEntries.push(
       generateUrlEntry(
-        `${BASE_URL}/venue/${venue.id}`,
+        `${BASE_URL}/venue/${identifier}`,
         venue.updated_at,
         '0.7'
       )
@@ -99,14 +103,14 @@ export const getSitemap: RouteHandler = async (ctx) => {
 
     logger.info('SitemapController', 'getSitemap', 'Generating fresh sitemap', { requestId })
 
-    // Query all artists
+    // Query all artists (include slug for SEO-friendly URLs)
     const artistsResult = await ctx.env.DB.prepare(
-      'SELECT id, updated_at FROM artists ORDER BY updated_at DESC'
+      'SELECT id, slug, updated_at FROM artists ORDER BY updated_at DESC'
     ).all<ProfileRecord>()
 
-    // Query all venues  
+    // Query all venues (include slug for SEO-friendly URLs)
     const venuesResult = await ctx.env.DB.prepare(
-      'SELECT id, updated_at FROM venues ORDER BY updated_at DESC'
+      'SELECT id, slug, updated_at FROM venues ORDER BY updated_at DESC'
     ).all<ProfileRecord>()
 
     const artists = artistsResult.results || []

@@ -1,0 +1,2 @@
+export { SlugEditor } from './SlugEditor'
+

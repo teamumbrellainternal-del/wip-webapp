@@ -172,7 +172,9 @@ function setupRouter(): Router {
   router.get('/v1/profile/actions', profileController.getProfileActions, [authMiddleware])
   router.post('/v1/profile/avatar', profileController.uploadAvatar, [authMiddleware])
   router.post('/v1/profile/cover', profileController.uploadCover, [authMiddleware])
-  router.get('/v1/profile/:id', profileController.getPublicProfile) // Public profile
+  router.put('/v1/profile/slug', profileController.updateSlug, [authMiddleware]) // Update custom URL slug
+  router.get('/v1/profile/slug/:slug/available', profileController.checkSlugAvailability) // Check slug availability (public)
+  router.get('/v1/profile/:id', profileController.getPublicProfile) // Public profile (supports ID or slug)
 
   // Profile tracks routes (task-3.4)
   router.post('/v1/profile/tracks/upload', profileTracksController.generateTrackUploadUrl, [authMiddleware])
@@ -233,7 +235,9 @@ function setupRouter(): Router {
   router.get('/v1/venue/profile', venueController.getVenueProfile, [authMiddleware, requireRole('venue')]) // Get own venue profile
   router.post('/v1/venue/profile', venueController.createVenueProfile, [authMiddleware, requireRole('venue')]) // Create venue profile (onboarding)
   router.put('/v1/venue/profile', venueController.updateVenueProfile, [authMiddleware, requireRole('venue')]) // Update venue profile
-  router.get('/v1/venue/profile/:id', venueController.getPublicVenueProfile) // Public venue profile
+  router.put('/v1/venue/profile/slug', venueController.updateVenueSlug, [authMiddleware, requireRole('venue')]) // Update custom URL slug
+  router.get('/v1/venue/profile/slug/:slug/available', venueController.checkVenueSlugAvailability) // Check slug availability (public)
+  router.get('/v1/venue/profile/:id', venueController.getPublicVenueProfile) // Public venue profile (supports ID or slug)
 
   // Artists routes
   router.get('/v1/artists', artistsController.discoverArtists, [authMiddleware]) // Auth required for distance calculation (task-5.4)

@@ -15,6 +15,7 @@ import {
   toVenueProfileResponse,
   toPublicVenueProfile,
 } from '../models/venue'
+import { generateSlug, generateUniqueSlug, validateSlug, normalizeSlug } from '../utils/slug'
 
 /**
  * GET /v1/venue/profile
@@ -334,19 +335,34 @@ export const updateVenueProfile: RouteHandler = async (ctx) => {
 
 /**
  * GET /v1/venue/profile/:id
- * Get a public venue profile by ID
+ * Get a public venue profile by ID or slug
+ * Supports both UUID and slug-based lookups for SEO-friendly URLs
  */
 export const getPublicVenueProfile: RouteHandler = async (ctx) => {
-  const venueId = ctx.params.id
+  const venueIdOrSlug = ctx.params.id
 
-  logger.info('venue:getPublicProfile', { venueId })
+  logger.info('venue:getPublicProfile', { venueIdOrSlug })
 
   try {
-    const venue = await ctx.env.DB.prepare(
-      'SELECT * FROM venues WHERE id = ?'
-    )
-      .bind(venueId)
-      .first<Venue>()
+    // Determine if id is a UUID or a slug
+    // UUID v4 pattern: 8-4-4-4-12 hex characters
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(venueIdOrSlug)
+
+    let venue: Venue | null
+    if (isUUID) {
+      venue = await ctx.env.DB.prepare(
+        'SELECT * FROM venues WHERE id = ?'
+      )
+        .bind(venueIdOrSlug)
+        .first<Venue>()
+    } else {
+      // Lookup by slug
+      venue = await ctx.env.DB.prepare(
+        'SELECT * FROM venues WHERE slug = ?'
+      )
+        .bind(venueIdOrSlug.toLowerCase())
+        .first<Venue>()
+    }
 
     if (!venue) {
       return errorResponse(
@@ -363,12 +379,189 @@ export const getPublicVenueProfile: RouteHandler = async (ctx) => {
     })
   } catch (error) {
     logger.error('venue:getPublicProfile:error', {
-      venueId,
+      venueIdOrSlug,
       error: error instanceof Error ? error.message : String(error),
     })
     return errorResponse(
       ErrorCodes.INTERNAL_ERROR,
       'Failed to fetch venue profile',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
+ * PUT /v1/venue/profile/slug
+ * Update venue profile slug (custom URL)
+ * Allows venues to customize their profile URL slug
+ */
+export const updateVenueSlug: RouteHandler = async (ctx) => {
+  const userId = ctx.userId
+
+  if (!userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    const body = await ctx.request.json() as { slug?: string }
+    const { slug } = body
+
+    if (!slug) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'Slug is required',
+        400,
+        'slug',
+        ctx.requestId
+      )
+    }
+
+    // Normalize and validate the slug
+    const normalizedSlug = normalizeSlug(slug)
+    const validation = validateSlug(normalizedSlug)
+
+    if (!validation.valid) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        validation.error || 'Invalid slug',
+        400,
+        'slug',
+        ctx.requestId
+      )
+    }
+
+    // Get venue profile
+    const venue = await ctx.env.DB.prepare(
+      'SELECT id, slug FROM venues WHERE user_id = ?'
+    ).bind(userId).first<{ id: string; slug: string | null }>()
+
+    if (!venue) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Venue profile not found',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Check if slug is already taken by another venue
+    const existingVenue = await ctx.env.DB.prepare(
+      'SELECT id FROM venues WHERE slug = ? AND id != ?'
+    ).bind(normalizedSlug, venue.id).first<{ id: string }>()
+
+    if (existingVenue) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'This URL is already taken. Please choose a different slug.',
+        400,
+        'slug',
+        ctx.requestId
+      )
+    }
+
+    // Update the slug
+    await ctx.env.DB.prepare(
+      'UPDATE venues SET slug = ?, updated_at = ? WHERE id = ?'
+    ).bind(normalizedSlug, new Date().toISOString(), venue.id).run()
+
+    logger.info('venue:updateSlug', 'Venue slug updated', {
+      venueId: venue.id,
+      oldSlug: venue.slug,
+      newSlug: normalizedSlug,
+    })
+
+    return successResponse({
+      message: 'Profile URL updated successfully',
+      slug: normalizedSlug,
+      url: `/venue/${normalizedSlug}`,
+    }, 200, ctx.requestId)
+  } catch (error) {
+    logger.error('venue:updateSlug:error', {
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+    })
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Failed to update profile URL',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
+ * GET /v1/venue/profile/slug/:slug/available
+ * Check venue slug availability
+ * Returns whether a slug is available for use
+ */
+export const checkVenueSlugAvailability: RouteHandler = async (ctx) => {
+  const { slug } = ctx.params
+
+  if (!slug) {
+    return errorResponse(
+      ErrorCodes.VALIDATION_ERROR,
+      'Slug is required',
+      400,
+      'slug',
+      ctx.requestId
+    )
+  }
+
+  try {
+    // Normalize and validate the slug
+    const normalizedSlug = normalizeSlug(slug)
+    const validation = validateSlug(normalizedSlug)
+
+    if (!validation.valid) {
+      return successResponse({
+        available: false,
+        slug: normalizedSlug,
+        error: validation.error,
+      }, 200, ctx.requestId)
+    }
+
+    // Check if slug exists in database
+    const existingVenue = await ctx.env.DB.prepare(
+      'SELECT id FROM venues WHERE slug = ?'
+    ).bind(normalizedSlug).first<{ id: string }>()
+
+    const available = !existingVenue
+
+    // Generate suggestion if not available
+    let suggestion: string | undefined
+    if (!available) {
+      // Get all existing slugs that start with the normalized slug
+      const similarSlugs = await ctx.env.DB.prepare(
+        'SELECT slug FROM venues WHERE slug LIKE ?'
+      ).bind(`${normalizedSlug}%`).all<{ slug: string }>()
+
+      const existingSlugs = new Set(similarSlugs.results?.map(r => r.slug) || [])
+      suggestion = generateUniqueSlug(normalizedSlug, existingSlugs)
+    }
+
+    return successResponse({
+      available,
+      slug: normalizedSlug,
+      suggestion,
+    }, 200, ctx.requestId)
+  } catch (error) {
+    logger.error('venue:checkSlugAvailability:error', {
+      slug,
+      error: error instanceof Error ? error.message : String(error),
+    })
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Failed to check slug availability',
       500,
       undefined,
       ctx.requestId
