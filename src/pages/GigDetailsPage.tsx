@@ -357,11 +357,7 @@ export default function GigDetailsPage() {
                         disabled={withdrawing}
                         className="text-red-600 hover:bg-red-50 hover:text-red-700"
                       >
-                        {withdrawing ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          'Withdraw'
-                        )}
+                        {withdrawing ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Withdraw'}
                       </Button>
                     )}
                   </div>
@@ -370,7 +366,7 @@ export default function GigDetailsPage() {
                       ? 'Congratulations! The venue has accepted your application. They will reach out with next steps.'
                       : applicationStatus === 'rejected'
                         ? 'Unfortunately, the venue has selected another artist for this gig.'
-                        : 'The venue is reviewing your application. They\'ll notify you once they make a decision.'}
+                        : "The venue is reviewing your application. They'll notify you once they make a decision."}
                   </p>
                 </div>
               ) : isGigClosed ? (

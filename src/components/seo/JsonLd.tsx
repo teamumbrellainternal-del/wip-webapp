@@ -1,7 +1,7 @@
 /**
  * JSON-LD Structured Data Component
  * Provides Schema.org markup for SEO and rich search results
- * 
+ *
  * @see https://schema.org/MusicGroup for artist schema
  * @see https://schema.org/LocalBusiness for venue schema
  */
@@ -64,7 +64,7 @@ function getAbsoluteImageUrl(imageUrl: string | null | undefined): string | unde
  */
 function generateArtistJsonLd(props: ArtistJsonLdProps): object {
   const sameAs: string[] = []
-  
+
   if (props.socialLinks) {
     if (props.socialLinks.instagram) {
       sameAs.push(`https://instagram.com/${props.socialLinks.instagram.replace('@', '')}`)
@@ -129,7 +129,7 @@ function generateVenueJsonLd(props: VenueJsonLdProps): object {
     other: 'EventVenue',
   }
 
-  const schemaType = props.venueType 
+  const schemaType = props.venueType
     ? venueTypeToSchemaType[props.venueType] || 'MusicVenue'
     : 'MusicVenue'
 
@@ -158,15 +158,11 @@ function generateVenueJsonLd(props: VenueJsonLdProps): object {
  * Injects structured data into page head for SEO
  */
 export function JsonLd(props: JsonLdProps) {
-  const jsonLd = props.type === 'artist'
-    ? generateArtistJsonLd(props)
-    : generateVenueJsonLd(props)
+  const jsonLd = props.type === 'artist' ? generateArtistJsonLd(props) : generateVenueJsonLd(props)
 
   return (
     <Helmet>
-      <script type="application/ld+json">
-        {JSON.stringify(jsonLd)}
-      </script>
+      <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
     </Helmet>
   )
 }
@@ -266,4 +262,3 @@ export function VenueJsonLd({
 }
 
 export default JsonLd
-

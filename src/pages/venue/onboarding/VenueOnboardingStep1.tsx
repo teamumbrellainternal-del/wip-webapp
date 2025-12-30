@@ -142,9 +142,7 @@ export default function VenueOnboardingStep1() {
       </div>
 
       {/* Step indicator */}
-      <div className="mt-12 text-right pr-8 text-sm text-muted-foreground">
-        Step 1 of 2
-      </div>
+      <div className="mt-12 pr-8 text-right text-sm text-muted-foreground">Step 1 of 2</div>
 
       {/* Main content */}
       <div className="flex flex-1 items-center justify-center p-6">
@@ -155,12 +153,8 @@ export default function VenueOnboardingStep1() {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900">
                 <Building2 className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <h1 className="text-2xl font-bold text-foreground">
-                Tell us about your venue
-              </h1>
-              <p className="mt-2 text-muted-foreground">
-                Help artists discover your space
-              </p>
+              <h1 className="text-2xl font-bold text-foreground">Tell us about your venue</h1>
+              <p className="mt-2 text-muted-foreground">Help artists discover your space</p>
             </div>
 
             {/* Error alert */}
@@ -185,10 +179,7 @@ export default function VenueOnboardingStep1() {
                         Venue Name <span className="text-red-500">*</span>
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="The Velvet Room"
-                          {...field}
-                        />
+                        <Input placeholder="The Velvet Room" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -253,7 +244,8 @@ export default function VenueOnboardingStep1() {
                         </div>
                       </FormControl>
                       <FormDescription>
-                        Your venue profile will be at: umbrellalive.com/venue/{field.value || 'your-venue'}
+                        Your venue profile will be at: umbrellalive.com/venue/
+                        {field.value || 'your-venue'}
                       </FormDescription>
                       {slugAvailability.available === false && slugAvailability.suggestion && (
                         <p className="text-xs text-amber-600">
@@ -341,11 +333,7 @@ export default function VenueOnboardingStep1() {
                         <FormControl>
                           <div className="relative">
                             <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                            <Input
-                              className="pl-10"
-                              placeholder="San Francisco"
-                              {...field}
-                            />
+                            <Input className="pl-10" placeholder="San Francisco" {...field} />
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -369,12 +357,7 @@ export default function VenueOnboardingStep1() {
                 </div>
 
                 {/* Submit button */}
-                <Button
-                  type="submit"
-                  className="w-full"
-                  size="lg"
-                  disabled={isLoading}
-                >
+                <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -395,4 +378,3 @@ export default function VenueOnboardingStep1() {
     </div>
   )
 }
-

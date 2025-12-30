@@ -40,22 +40,15 @@ export function PublicProfileCTAButton({
       profileType,
       returnUrl,
     })
-    
-    const authUrl = returnUrl 
-      ? `/auth?returnUrl=${encodeURIComponent(returnUrl)}`
-      : '/auth'
+
+    const authUrl = returnUrl ? `/auth?returnUrl=${encodeURIComponent(returnUrl)}` : '/auth'
     navigate(authUrl)
   }
 
-  const defaultText = profileType === 'artist' 
-    ? 'Join to Connect' 
-    : 'Join to Book'
+  const defaultText = profileType === 'artist' ? 'Join to Connect' : 'Join to Book'
 
   return (
-    <Button
-      onClick={handleClick}
-      className="gap-2 bg-purple-500 hover:bg-purple-600"
-    >
+    <Button onClick={handleClick} className="gap-2 bg-purple-500 hover:bg-purple-600">
       <UserPlus className="h-4 w-4" />
       {ctaText || defaultText}
     </Button>
@@ -80,52 +73,49 @@ export function PublicProfileCTABanner({
       profileName,
       returnUrl,
     })
-    
-    const authUrl = returnUrl 
-      ? `/auth?returnUrl=${encodeURIComponent(returnUrl)}`
-      : '/auth'
+
+    const authUrl = returnUrl ? `/auth?returnUrl=${encodeURIComponent(returnUrl)}` : '/auth'
     navigate(authUrl)
   }
 
-  const benefits = profileType === 'artist' 
-    ? [
-        { icon: MessageCircle, text: 'Send booking inquiries' },
-        { icon: UserPlus, text: 'Connect with artists' },
-        { icon: Star, text: 'Leave reviews' },
-      ]
-    : [
-        { icon: MessageCircle, text: 'Contact venues directly' },
-        { icon: Music, text: 'Apply to gigs' },
-        { icon: UserPlus, text: 'Build your network' },
-      ]
+  const benefits =
+    profileType === 'artist'
+      ? [
+          { icon: MessageCircle, text: 'Send booking inquiries' },
+          { icon: UserPlus, text: 'Connect with artists' },
+          { icon: Star, text: 'Leave reviews' },
+        ]
+      : [
+          { icon: MessageCircle, text: 'Contact venues directly' },
+          { icon: Music, text: 'Apply to gigs' },
+          { icon: UserPlus, text: 'Build your network' },
+        ]
 
   return (
     <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 dark:border-purple-800 dark:from-purple-950/50 dark:to-pink-950/50">
       <CardContent className="flex flex-col items-center gap-4 p-6 text-center md:flex-row md:text-left">
         <div className="flex-1">
           <h3 className="mb-2 text-lg font-semibold text-purple-900 dark:text-purple-100">
-            {profileName 
+            {profileName
               ? `Want to connect with ${profileName}?`
-              : `Ready to ${profileType === 'artist' ? 'book artists' : 'find gigs'}?`
-            }
+              : `Ready to ${profileType === 'artist' ? 'book artists' : 'find gigs'}?`}
           </h3>
           <p className="mb-3 text-sm text-purple-700 dark:text-purple-300">
             Join Umbrella to unlock all features:
           </p>
           <div className="flex flex-wrap justify-center gap-4 md:justify-start">
             {benefits.map(({ icon: Icon, text }) => (
-              <div key={text} className="flex items-center gap-1.5 text-sm text-purple-600 dark:text-purple-400">
+              <div
+                key={text}
+                className="flex items-center gap-1.5 text-sm text-purple-600 dark:text-purple-400"
+              >
                 <Icon className="h-4 w-4" />
                 <span>{text}</span>
               </div>
             ))}
           </div>
         </div>
-        <Button
-          onClick={handleClick}
-          size="lg"
-          className="gap-2 bg-purple-500 hover:bg-purple-600"
-        >
+        <Button onClick={handleClick} size="lg" className="gap-2 bg-purple-500 hover:bg-purple-600">
           <UserPlus className="h-5 w-5" />
           Join Umbrella
         </Button>
@@ -146,11 +136,7 @@ export default function PublicProfileCTA({
 }: PublicProfileCTAProps) {
   if (variant === 'button') {
     return (
-      <PublicProfileCTAButton
-        returnUrl={returnUrl}
-        profileType={profileType}
-        ctaText={ctaText}
-      />
+      <PublicProfileCTAButton returnUrl={returnUrl} profileType={profileType} ctaText={ctaText} />
     )
   }
 
@@ -162,4 +148,3 @@ export default function PublicProfileCTA({
     />
   )
 }
-

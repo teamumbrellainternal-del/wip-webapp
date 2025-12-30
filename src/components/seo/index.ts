@@ -4,4 +4,3 @@
  */
 
 export { JsonLd, ArtistJsonLd, VenueJsonLd } from './JsonLd'
-

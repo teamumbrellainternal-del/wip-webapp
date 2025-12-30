@@ -31,7 +31,9 @@ export function VenueOverviewTab({
   // Calculate stats from real gig data
   const openGigs = gigs.filter((g) => g.status === 'open')
   const completedGigs = gigs.filter((g) => g.status === 'completed')
-  const nextGig = openGigs.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0]
+  const nextGig = openGigs.sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  )[0]
   const nextGigDate = nextGig
     ? new Date(nextGig.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     : 'None scheduled'

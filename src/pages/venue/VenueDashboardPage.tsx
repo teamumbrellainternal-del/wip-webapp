@@ -51,8 +51,15 @@ function toVenueProfile(venue: VenueProfileResponse): VenueProfile {
     status: venue.status,
     eventsHosted: venue.events_hosted,
     networkSize: venue.total_artists_booked * 50, // Estimate network from artists
-    avatarInitials: venue.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase(),
-    bannerUrl: venue.cover_url || 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1600&h=400&fit=crop',
+    avatarInitials: venue.name
+      .split(' ')
+      .map((w) => w[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase(),
+    bannerUrl:
+      venue.cover_url ||
+      'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1600&h=400&fit=crop',
     verified: venue.verified,
   }
 }
@@ -63,7 +70,9 @@ export default function VenueDashboardPage() {
   const [activeTab, setActiveTab] = useState<DashboardTab>('overview')
   const [isCoMarketingOpen, setIsCoMarketingOpen] = useState(false)
   const [isCreateGigOpen, setIsCreateGigOpen] = useState(false)
-  const [selectedGigForApplications, setSelectedGigForApplications] = useState<VenueGig | null>(null)
+  const [selectedGigForApplications, setSelectedGigForApplications] = useState<VenueGig | null>(
+    null
+  )
   const [venueProfile, setVenueProfile] = useState<VenueProfile | null>(null)
   const [venueApiData, setVenueApiData] = useState<VenueProfileResponse | null>(null)
   const [gigs, setGigs] = useState<VenueGig[]>([])
@@ -268,10 +277,7 @@ export default function VenueDashboardPage() {
               />
             )}
             {activeTab === 'smart-booking' && (
-              <SmartBookingTab
-                gigs={gigs}
-                onCreateGig={() => setIsCreateGigOpen(true)}
-              />
+              <SmartBookingTab gigs={gigs} onCreateGig={() => setIsCreateGigOpen(true)} />
             )}
             {activeTab === 'find-artist' && <FindArtistTab />}
           </div>

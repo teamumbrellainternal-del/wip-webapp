@@ -56,39 +56,47 @@ export function SlugEditor({ currentSlug, type, onSlugUpdate }: SlugEditorProps)
   }
 
   // Check slug availability
-  const checkAvailability = useCallback(async (slugToCheck: string) => {
-    if (!slugToCheck || slugToCheck.length < 3) {
-      setAvailability(null)
-      return
-    }
-
-    // Don't check if it's the same as current slug
-    if (slugToCheck === currentSlug) {
-      setAvailability({ available: true, slug: slugToCheck })
-      return
-    }
-
-    setIsChecking(true)
-    try {
-      const endpoint = type === 'artist'
-        ? `/v1/profile/slug/${slugToCheck}/available`
-        : `/v1/venue/profile/slug/${slugToCheck}/available`
-
-      const response = await fetch(endpoint)
-      const data = await response.json()
-
-      if (data.success) {
-        setAvailability(data.data)
-      } else {
-        setAvailability({ available: false, slug: slugToCheck, error: data.error })
+  const checkAvailability = useCallback(
+    async (slugToCheck: string) => {
+      if (!slugToCheck || slugToCheck.length < 3) {
+        setAvailability(null)
+        return
       }
-    } catch (error) {
-      console.error('Error checking slug availability:', error)
-      setAvailability({ available: false, slug: slugToCheck, error: 'Failed to check availability' })
-    } finally {
-      setIsChecking(false)
-    }
-  }, [currentSlug, type])
+
+      // Don't check if it's the same as current slug
+      if (slugToCheck === currentSlug) {
+        setAvailability({ available: true, slug: slugToCheck })
+        return
+      }
+
+      setIsChecking(true)
+      try {
+        const endpoint =
+          type === 'artist'
+            ? `/v1/profile/slug/${slugToCheck}/available`
+            : `/v1/venue/profile/slug/${slugToCheck}/available`
+
+        const response = await fetch(endpoint)
+        const data = await response.json()
+
+        if (data.success) {
+          setAvailability(data.data)
+        } else {
+          setAvailability({ available: false, slug: slugToCheck, error: data.error })
+        }
+      } catch (error) {
+        console.error('Error checking slug availability:', error)
+        setAvailability({
+          available: false,
+          slug: slugToCheck,
+          error: 'Failed to check availability',
+        })
+      } finally {
+        setIsChecking(false)
+      }
+    },
+    [currentSlug, type]
+  )
 
   // Handle slug input change
   const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -185,14 +193,17 @@ export function SlugEditor({ currentSlug, type, onSlugUpdate }: SlugEditorProps)
           Custom Profile URL
         </Label>
         <p className="text-sm text-muted-foreground">
-          Choose a custom URL for your public profile. This makes it easier to share and helps with search engine visibility.
+          Choose a custom URL for your public profile. This makes it easier to share and helps with
+          search engine visibility.
         </p>
       </div>
 
       <div className="space-y-3">
         {/* URL Preview */}
         <div className="flex items-center gap-2 rounded-md bg-muted p-3 text-sm">
-          <span className="text-muted-foreground">{BASE_URL}/{profilePath}/</span>
+          <span className="text-muted-foreground">
+            {BASE_URL}/{profilePath}/
+          </span>
           <span className="font-medium">{slug || currentSlug || 'your-name'}</span>
           <Button
             type="button"
@@ -274,4 +285,3 @@ export function SlugEditor({ currentSlug, type, onSlugUpdate }: SlugEditorProps)
 }
 
 export default SlugEditor
-

@@ -46,14 +46,20 @@ export function SmartBookingTab({ gigs = [], onCreateGig }: SmartBookingTabProps
   ]
 
   // Convert real gigs to calendar events format
-  const calendarEvents = gigs.length > 0
-    ? gigs.map((gig) => ({
-        id: gig.id,
-        artistName: gig.title, // Using title as artist name for now
-        date: gig.date,
-        status: gig.status === 'open' ? 'pending' as const : gig.status === 'completed' ? 'booked' as const : 'tentative' as const,
-      }))
-    : mockCalendarEvents
+  const calendarEvents =
+    gigs.length > 0
+      ? gigs.map((gig) => ({
+          id: gig.id,
+          artistName: gig.title, // Using title as artist name for now
+          date: gig.date,
+          status:
+            gig.status === 'open'
+              ? ('pending' as const)
+              : gig.status === 'completed'
+                ? ('booked' as const)
+                : ('tentative' as const),
+        }))
+      : mockCalendarEvents
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -69,10 +75,7 @@ export function SmartBookingTab({ gigs = [], onCreateGig }: SmartBookingTabProps
               </p>
             </div>
           </div>
-          <Button
-            onClick={onCreateGig}
-            className="bg-white text-purple-600 hover:bg-purple-50"
-          >
+          <Button onClick={onCreateGig} className="bg-white text-purple-600 hover:bg-purple-50">
             <Plus className="mr-2 h-4 w-4" />
             Post New Gig
           </Button>

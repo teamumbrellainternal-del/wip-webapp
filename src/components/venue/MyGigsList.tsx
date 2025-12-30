@@ -144,10 +144,7 @@ export function MyGigsList({ gigs, isLoading, onViewApplications, onRefresh }: M
     <>
       <div className="space-y-4">
         {gigs.map((gig) => (
-          <Card
-            key={gig.id}
-            className="overflow-hidden transition-shadow hover:shadow-md"
-          >
+          <Card key={gig.id} className="overflow-hidden transition-shadow hover:shadow-md">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -158,7 +155,7 @@ export function MyGigsList({ gigs, isLoading, onViewApplications, onRefresh }: M
                     </Badge>
                   </div>
                   {gig.genre && (
-                    <p className="mt-1 text-sm text-muted-foreground capitalize">{gig.genre}</p>
+                    <p className="mt-1 text-sm capitalize text-muted-foreground">{gig.genre}</p>
                   )}
                 </div>
 
@@ -200,9 +197,7 @@ export function MyGigsList({ gigs, isLoading, onViewApplications, onRefresh }: M
 
             <CardContent className="pt-0">
               {gig.description && (
-                <p className="mb-4 line-clamp-2 text-sm text-muted-foreground">
-                  {gig.description}
-                </p>
+                <p className="mb-4 line-clamp-2 text-sm text-muted-foreground">{gig.description}</p>
               )}
 
               <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
@@ -241,7 +236,9 @@ export function MyGigsList({ gigs, isLoading, onViewApplications, onRefresh }: M
                   <div className="ml-2 h-2 flex-1 rounded-full bg-muted">
                     <div
                       className="h-full rounded-full bg-purple-600"
-                      style={{ width: `${Math.min(100, (gig.filled_slots / gig.capacity) * 100)}%` }}
+                      style={{
+                        width: `${Math.min(100, (gig.filled_slots / gig.capacity) * 100)}%`,
+                      }}
                     />
                   </div>
                 </div>
@@ -265,7 +262,7 @@ export function MyGigsList({ gigs, isLoading, onViewApplications, onRefresh }: M
                       size="sm"
                       onClick={() => handleMarkAsCompleted(gig.id)}
                       disabled={updatingStatusGigId === gig.id}
-                      className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700"
+                      className="flex-1 bg-green-600 hover:bg-green-700 sm:flex-none"
                     >
                       {updatingStatusGigId === gig.id ? (
                         <>
@@ -344,4 +341,3 @@ export function MyGigsList({ gigs, isLoading, onViewApplications, onRefresh }: M
     </>
   )
 }
-

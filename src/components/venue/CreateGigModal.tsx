@@ -430,7 +430,11 @@ export function CreateGigModal({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="bg-purple-600 hover:bg-purple-700">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -447,4 +451,3 @@ export function CreateGigModal({
     </Dialog>
   )
 }
-

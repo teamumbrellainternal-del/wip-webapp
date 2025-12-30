@@ -52,7 +52,10 @@ import {
 } from '@/components/ui/dropdown-menu'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
-import { PublicProfileCTAButton, PublicProfileCTABanner } from '@/components/common/PublicProfileCTA'
+import {
+  PublicProfileCTAButton,
+  PublicProfileCTABanner,
+} from '@/components/common/PublicProfileCTA'
 import { MetaTags } from '@/components/MetaTags'
 import { ArtistJsonLd } from '@/components/seo'
 import { ConnectionButton, MutualConnections } from '@/components/connections'
@@ -396,7 +399,11 @@ export default function ProfilePage() {
                               />
                             )}
                             {/* Secondary: Follow Button */}
-                            <Button variant="outline" className="gap-2" onClick={handleFollowToggle}>
+                            <Button
+                              variant="outline"
+                              className="gap-2"
+                              onClick={handleFollowToggle}
+                            >
                               {isFollowing ? (
                                 <>
                                   <UserMinus className="h-4 w-4" />
@@ -434,10 +441,7 @@ export default function ProfilePage() {
                         </>
                       ) : (
                         /* Unauthenticated users see Join CTA */
-                        <PublicProfileCTAButton
-                          returnUrl={`/artist/${id}`}
-                          profileType="artist"
-                        />
+                        <PublicProfileCTAButton returnUrl={`/artist/${id}`} profileType="artist" />
                       )}
                     </div>
                   )}

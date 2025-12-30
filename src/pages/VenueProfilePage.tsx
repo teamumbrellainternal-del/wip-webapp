@@ -30,7 +30,10 @@ import {
 } from 'lucide-react'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
-import { PublicProfileCTAButton, PublicProfileCTABanner } from '@/components/common/PublicProfileCTA'
+import {
+  PublicProfileCTAButton,
+  PublicProfileCTABanner,
+} from '@/components/common/PublicProfileCTA'
 import { MetaTags } from '@/components/MetaTags'
 import { VenueJsonLd } from '@/components/seo'
 
@@ -406,7 +409,11 @@ export default function VenueProfilePage() {
                             : ''
                         }
                       >
-                        {venue.status === 'open_for_bookings' ? 'Accepting Bookings' : venue.status === 'limited' ? 'Limited Availability' : 'Not Available'}
+                        {venue.status === 'open_for_bookings'
+                          ? 'Accepting Bookings'
+                          : venue.status === 'limited'
+                            ? 'Limited Availability'
+                            : 'Not Available'}
                       </Badge>
                     </div>
                     {venue.verified && (
@@ -477,4 +484,3 @@ export default function VenueProfilePage() {
     </AppLayout>
   )
 }
-

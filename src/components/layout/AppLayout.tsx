@@ -36,7 +36,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, isLoading } = useAuth()
-  
+
   const isAuthenticated = !!user
 
   const isActiveTab = (path: string) => {
@@ -62,7 +62,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
             {/* Left Side: Logo + Navigation Tabs */}
             <div className="flex items-center gap-8">
               {/* Logo */}
-              <Link to={isAuthenticated ? '/dashboard' : '/'} className="flex flex-shrink-0 items-center gap-2">
+              <Link
+                to={isAuthenticated ? '/dashboard' : '/'}
+                className="flex flex-shrink-0 items-center gap-2"
+              >
                 <img src={UmbrellaIcon} alt="Umbrella" className="h-8 w-8 rounded-lg" />
                 <span className="hidden text-lg font-bold sm:inline">Umbrella</span>
               </Link>
@@ -119,17 +122,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
               ) : (
                 // Unauthenticated user - show sign in / join buttons
                 <>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="gap-2"
-                    onClick={handleSignIn}
-                  >
+                  <Button variant="ghost" size="sm" className="gap-2" onClick={handleSignIn}>
                     <LogIn className="h-4 w-4" />
                     <span className="hidden sm:inline">Sign In</span>
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     className="gap-2 bg-purple-500 hover:bg-purple-600"
                     onClick={handleJoinUmbrella}
                   >

@@ -204,7 +204,7 @@ export function GigApplicationsModal({
                     </Avatar>
 
                     {/* Artist Info */}
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <h4 className="font-semibold text-foreground">
                           {application.artist.stage_name}
@@ -315,4 +315,3 @@ export function GigApplicationsModal({
     </Dialog>
   )
 }
-

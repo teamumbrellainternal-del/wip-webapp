@@ -9,7 +9,7 @@ interface OnboardingGuardProps {
 /**
  * OnboardingGuard ensures users have completed onboarding before accessing protected routes
  * Per D-006: Incomplete OAuth users redirected to Step 1 on return
- * 
+ *
  * Role-based routing (RBAC Phase 5):
  * - No role selected → /onboarding/role-selection
  * - Venue role, incomplete → /venue/onboarding/step1

@@ -356,9 +356,7 @@ class APIClient {
    * Get public venue profile by ID
    */
   async getPublicVenueProfile(venueId: string): Promise<PublicVenueProfile> {
-    const response = await this.request<{ venue: PublicVenueProfile }>(
-      `/venue/profile/${venueId}`
-    )
+    const response = await this.request<{ venue: PublicVenueProfile }>(`/venue/profile/${venueId}`)
     return response.venue
   }
 

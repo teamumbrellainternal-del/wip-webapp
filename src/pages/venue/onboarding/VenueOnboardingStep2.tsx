@@ -121,8 +121,7 @@ export default function VenueOnboardingStep2() {
         sound_system: data.sound_system || undefined,
         has_green_room: data.has_green_room,
         has_parking: data.has_parking,
-        preferred_genres:
-          data.preferred_genres.length > 0 ? data.preferred_genres : undefined,
+        preferred_genres: data.preferred_genres.length > 0 ? data.preferred_genres : undefined,
       }
 
       // Create venue profile
@@ -163,9 +162,7 @@ export default function VenueOnboardingStep2() {
       </div>
 
       {/* Step indicator */}
-      <div className="mt-12 text-right pr-8 text-sm text-muted-foreground">
-        Step 2 of 2
-      </div>
+      <div className="mt-12 pr-8 text-right text-sm text-muted-foreground">Step 2 of 2</div>
 
       {/* Main content */}
       <div className="flex flex-1 items-center justify-center p-6">
@@ -176,12 +173,8 @@ export default function VenueOnboardingStep2() {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900">
                 <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <h1 className="text-2xl font-bold text-foreground">
-                Venue details
-              </h1>
-              <p className="mt-2 text-muted-foreground">
-                Help artists know what to expect
-              </p>
+              <h1 className="text-2xl font-bold text-foreground">Venue details</h1>
+              <p className="mt-2 text-muted-foreground">Help artists know what to expect</p>
             </div>
 
             {/* Error alert */}
@@ -203,11 +196,7 @@ export default function VenueOnboardingStep2() {
                     <FormItem>
                       <FormLabel>Capacity</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="280"
-                          {...field}
-                        />
+                        <Input type="number" placeholder="280" {...field} />
                       </FormControl>
                       <FormDescription>
                         Maximum number of guests your venue can accommodate
@@ -258,9 +247,7 @@ export default function VenueOnboardingStep2() {
                           {...field}
                         />
                       </FormControl>
-                      <FormDescription>
-                        Describe your audio setup (optional)
-                      </FormDescription>
+                      <FormDescription>Describe your audio setup (optional)</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -276,14 +263,9 @@ export default function VenueOnboardingStep2() {
                       render={({ field }) => (
                         <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
-                          <FormLabel className="font-normal cursor-pointer">
-                            Green Room
-                          </FormLabel>
+                          <FormLabel className="cursor-pointer font-normal">Green Room</FormLabel>
                         </FormItem>
                       )}
                     />
@@ -293,12 +275,9 @@ export default function VenueOnboardingStep2() {
                       render={({ field }) => (
                         <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
-                          <FormLabel className="font-normal cursor-pointer">
+                          <FormLabel className="cursor-pointer font-normal">
                             Parking Available
                           </FormLabel>
                         </FormItem>
@@ -318,9 +297,7 @@ export default function VenueOnboardingStep2() {
                   </FormDescription>
                   <div className="flex flex-wrap gap-2">
                     {GENRE_OPTIONS.map((genre) => {
-                      const isSelected = form
-                        .watch('preferred_genres')
-                        .includes(genre)
+                      const isSelected = form.watch('preferred_genres').includes(genre)
                       return (
                         <button
                           key={genre}
@@ -351,12 +328,7 @@ export default function VenueOnboardingStep2() {
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back
                   </Button>
-                  <Button
-                    type="submit"
-                    className="flex-1"
-                    size="lg"
-                    disabled={isLoading}
-                  >
+                  <Button type="submit" className="flex-1" size="lg" disabled={isLoading}>
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -378,4 +350,3 @@ export default function VenueOnboardingStep2() {
     </div>
   )
 }
-
