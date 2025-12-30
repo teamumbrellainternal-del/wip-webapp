@@ -106,25 +106,34 @@ export default function ProfilePage() {
         const reviewsData = await artistsService.getReviews(id)
         setReviews(reviewsData)
 
-        // Fetch follow status (works for both authenticated and unauthenticated users)
-        try {
-          const followStatus = await artistsService.getFollowStatus(id)
-          setIsFollowing(followStatus.is_following)
-        } catch {
-          // If follow status fetch fails, default to not following
-          setIsFollowing(false)
-        }
-
-        // Fetch connection status (requires authentication)
-        try {
-          // Need to get the user_id for the artist to check connection status
-          if (artistData.user_id) {
-            const connStatus = await apiClient.getConnectionStatus(artistData.user_id)
-            setConnectionStatus(connStatus.status)
-            setConnectionId(connStatus.connection_id)
+        // Only fetch auth-required data if user is logged in
+        // This prevents 401 errors and session timeout modals for public profile viewers
+        if (user) {
+          // Fetch follow status (requires authentication)
+          try {
+            const followStatus = await artistsService.getFollowStatus(id)
+            setIsFollowing(followStatus.is_following)
+          } catch {
+            // If follow status fetch fails, default to not following
+            setIsFollowing(false)
           }
-        } catch {
-          // If connection status fetch fails, default to none
+
+          // Fetch connection status (requires authentication)
+          try {
+            // Need to get the user_id for the artist to check connection status
+            if (artistData.user_id) {
+              const connStatus = await apiClient.getConnectionStatus(artistData.user_id)
+              setConnectionStatus(connStatus.status)
+              setConnectionId(connStatus.connection_id)
+            }
+          } catch {
+            // If connection status fetch fails, default to none
+            setConnectionStatus('none')
+            setConnectionId(null)
+          }
+        } else {
+          // Default values for unauthenticated users
+          setIsFollowing(false)
           setConnectionStatus('none')
           setConnectionId(null)
         }
