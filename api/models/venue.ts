@@ -78,6 +78,7 @@ export interface CreateVenueInput {
   city: string
 
   // Optional fields (Step 1)
+  slug?: string // SEO-friendly URL slug (auto-generated from name if not provided)
   tagline?: string
   venue_type?: VenueType
   state?: string

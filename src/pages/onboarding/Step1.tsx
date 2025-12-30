@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { apiClient } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,32 +16,89 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Loader2, AlertCircle, MapPin, ArrowRight } from 'lucide-react'
+import { Loader2, AlertCircle, MapPin, ArrowRight, Link2, Check, X } from 'lucide-react'
 import OnboardingLayout from '@/components/onboarding/OnboardingLayout'
 import { validateMaxLength, VALIDATION_LIMITS } from '@/lib/validation'
 
 interface Step1FormData {
   full_name: string
   stage_name: string
+  slug: string
   location: string
   primary_genre: string
   bio: string
+}
+
+// Helper to generate slug from name
+function generateSlugFromName(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\s_]+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 50)
 }
 
 export default function OnboardingStep1() {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [slugAvailability, setSlugAvailability] = useState<{
+    checking: boolean
+    available: boolean | null
+    suggestion?: string
+  }>({ checking: false, available: null })
 
   const form = useForm<Step1FormData>({
     defaultValues: {
       full_name: '',
       stage_name: '',
+      slug: '',
       location: '',
       primary_genre: '',
       bio: '',
     },
   })
+
+  // Watch stage_name to auto-generate slug
+  const stageName = useWatch({ control: form.control, name: 'stage_name' })
+  const currentSlug = useWatch({ control: form.control, name: 'slug' })
+
+  // Auto-generate slug when stage_name changes and slug is empty or matches previous auto-generated
+  useEffect(() => {
+    if (stageName && !currentSlug) {
+      const generatedSlug = generateSlugFromName(stageName)
+      form.setValue('slug', generatedSlug)
+    }
+  }, [stageName, currentSlug, form])
+
+  // Check slug availability
+  const checkSlugAvailability = useCallback(async (slug: string) => {
+    if (!slug || slug.length < 3) {
+      setSlugAvailability({ checking: false, available: null })
+      return
+    }
+
+    setSlugAvailability({ checking: true, available: null })
+    try {
+      const response = await fetch(`/v1/profile/slug/${slug}/available`)
+      const data = await response.json()
+      if (data.success) {
+        setSlugAvailability({
+          checking: false,
+          available: data.data.available,
+          suggestion: data.data.suggestion,
+        })
+      } else {
+        setSlugAvailability({ checking: false, available: false })
+      }
+    } catch {
+      setSlugAvailability({ checking: false, available: null })
+    }
+  }, [])
 
   const onSubmit = async (data: Step1FormData) => {
     setError(null)
@@ -56,6 +113,7 @@ export default function OnboardingStep1() {
       // Prepare API payload (map to existing API structure)
       const payload = {
         stage_name: data.stage_name,
+        slug: data.slug || undefined, // Include slug in payload
         location_city: city,
         location_state: state,
         legal_name: data.full_name || undefined,
@@ -160,6 +218,86 @@ export default function OnboardingStep1() {
                   )}
                 />
               </div>
+
+              {/* Profile URL (Slug) */}
+              <FormField
+                control={form.control}
+                name="slug"
+                rules={{
+                  required: 'Profile URL is required',
+                  minLength: {
+                    value: 3,
+                    message: 'Profile URL must be at least 3 characters',
+                  },
+                  maxLength: {
+                    value: 50,
+                    message: 'Profile URL must be 50 characters or less',
+                  },
+                  pattern: {
+                    value: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+                    message: 'Only lowercase letters, numbers, and hyphens allowed',
+                  },
+                }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium">
+                      Profile URL <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          placeholder="your-artist-name"
+                          className="h-12 rounded-lg border-border bg-muted/50 pl-10 pr-10 focus:border-purple-500 focus:ring-purple-500/20"
+                          {...field}
+                          onChange={(e) => {
+                            // Normalize input as user types
+                            const value = e.target.value
+                              .toLowerCase()
+                              .replace(/[^a-z0-9-]/g, '')
+                              .replace(/-+/g, '-')
+                            field.onChange(value)
+                          }}
+                          onBlur={(e) => {
+                            field.onBlur()
+                            checkSlugAvailability(e.target.value)
+                          }}
+                        />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          {slugAvailability.checking && (
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          )}
+                          {!slugAvailability.checking && slugAvailability.available === true && (
+                            <Check className="h-4 w-4 text-green-500" />
+                          )}
+                          {!slugAvailability.checking && slugAvailability.available === false && (
+                            <X className="h-4 w-4 text-red-500" />
+                          )}
+                        </div>
+                      </div>
+                    </FormControl>
+                    <FormDescription className="text-xs text-muted-foreground">
+                      Your profile will be at: umbrellalive.com/artist/{field.value || 'your-name'}
+                    </FormDescription>
+                    {slugAvailability.available === false && slugAvailability.suggestion && (
+                      <p className="text-xs text-amber-600">
+                        This URL is taken. Try:{' '}
+                        <button
+                          type="button"
+                          className="font-medium underline"
+                          onClick={() => {
+                            form.setValue('slug', slugAvailability.suggestion!)
+                            setSlugAvailability({ checking: false, available: true })
+                          }}
+                        >
+                          {slugAvailability.suggestion}
+                        </button>
+                      </p>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Location & Primary Genre Row */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

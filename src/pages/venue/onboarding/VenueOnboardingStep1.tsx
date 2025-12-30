@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -22,14 +22,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Loader2, AlertCircle, MapPin, ArrowRight, Building2 } from 'lucide-react'
+import { Loader2, AlertCircle, MapPin, ArrowRight, Building2, Link2, Check, X } from 'lucide-react'
 
 interface VenueStep1FormData {
   name: string
+  slug: string
   tagline: string
   venue_type: string
   city: string
   state: string
+}
+
+// Helper to generate slug from name
+function generateSlugFromName(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\s_]+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 50)
 }
 
 const VENUE_TYPES = [
@@ -46,16 +60,59 @@ export default function VenueOnboardingStep1() {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [slugAvailability, setSlugAvailability] = useState<{
+    checking: boolean
+    available: boolean | null
+    suggestion?: string
+  }>({ checking: false, available: null })
 
   const form = useForm<VenueStep1FormData>({
     defaultValues: {
       name: '',
+      slug: '',
       tagline: '',
       venue_type: '',
       city: '',
       state: '',
     },
   })
+
+  // Watch venue name to auto-generate slug
+  const venueName = useWatch({ control: form.control, name: 'name' })
+  const currentSlug = useWatch({ control: form.control, name: 'slug' })
+
+  // Auto-generate slug when name changes and slug is empty
+  useEffect(() => {
+    if (venueName && !currentSlug) {
+      const generatedSlug = generateSlugFromName(venueName)
+      form.setValue('slug', generatedSlug)
+    }
+  }, [venueName, currentSlug, form])
+
+  // Check slug availability
+  const checkSlugAvailability = useCallback(async (slug: string) => {
+    if (!slug || slug.length < 3) {
+      setSlugAvailability({ checking: false, available: null })
+      return
+    }
+
+    setSlugAvailability({ checking: true, available: null })
+    try {
+      const response = await fetch(`/v1/venue/profile/slug/${slug}/available`)
+      const data = await response.json()
+      if (data.success) {
+        setSlugAvailability({
+          checking: false,
+          available: data.data.available,
+          suggestion: data.data.suggestion,
+        })
+      } else {
+        setSlugAvailability({ checking: false, available: false })
+      }
+    } catch {
+      setSlugAvailability({ checking: false, available: null })
+    }
+  }, [])
 
   const onSubmit = async (data: VenueStep1FormData) => {
     setError(null)
@@ -133,6 +190,86 @@ export default function VenueOnboardingStep1() {
                           {...field}
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Profile URL (Slug) */}
+                <FormField
+                  control={form.control}
+                  name="slug"
+                  rules={{
+                    required: 'Profile URL is required',
+                    minLength: {
+                      value: 3,
+                      message: 'Profile URL must be at least 3 characters',
+                    },
+                    maxLength: {
+                      value: 50,
+                      message: 'Profile URL must be 50 characters or less',
+                    },
+                    pattern: {
+                      value: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+                      message: 'Only lowercase letters, numbers, and hyphens allowed',
+                    },
+                  }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Profile URL <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            placeholder="the-velvet-room"
+                            className="pl-10 pr-10"
+                            {...field}
+                            onChange={(e) => {
+                              // Normalize input as user types
+                              const value = e.target.value
+                                .toLowerCase()
+                                .replace(/[^a-z0-9-]/g, '')
+                                .replace(/-+/g, '-')
+                              field.onChange(value)
+                            }}
+                            onBlur={(e) => {
+                              field.onBlur()
+                              checkSlugAvailability(e.target.value)
+                            }}
+                          />
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            {slugAvailability.checking && (
+                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                            )}
+                            {!slugAvailability.checking && slugAvailability.available === true && (
+                              <Check className="h-4 w-4 text-green-500" />
+                            )}
+                            {!slugAvailability.checking && slugAvailability.available === false && (
+                              <X className="h-4 w-4 text-red-500" />
+                            )}
+                          </div>
+                        </div>
+                      </FormControl>
+                      <FormDescription>
+                        Your venue profile will be at: umbrellalive.com/venue/{field.value || 'your-venue'}
+                      </FormDescription>
+                      {slugAvailability.available === false && slugAvailability.suggestion && (
+                        <p className="text-xs text-amber-600">
+                          This URL is taken. Try:{' '}
+                          <button
+                            type="button"
+                            className="font-medium underline"
+                            onClick={() => {
+                              form.setValue('slug', slugAvailability.suggestion!)
+                              setSlugAvailability({ checking: false, available: true })
+                            }}
+                          >
+                            {slugAvailability.suggestion}
+                          </button>
+                        </p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}

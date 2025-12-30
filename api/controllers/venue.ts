@@ -105,18 +105,59 @@ export const createVenueProfile: RouteHandler = async (ctx) => {
     const now = new Date().toISOString()
     const venueId = uuidv4()
 
+    // Process slug: use provided slug, or auto-generate from venue name
+    let slug: string
+    if (input.slug) {
+      // Validate and normalize provided slug
+      const normalizedSlug = normalizeSlug(input.slug)
+      const slugValidation = validateSlug(normalizedSlug)
+      if (!slugValidation.valid) {
+        return errorResponse(
+          ErrorCodes.VALIDATION_ERROR,
+          slugValidation.error || 'Invalid profile URL',
+          400,
+          { field: 'slug' },
+          ctx.requestId
+        )
+      }
+
+      // Check uniqueness
+      const existingSlug = await ctx.env.DB.prepare(
+        'SELECT id FROM venues WHERE slug = ?'
+      ).bind(normalizedSlug).first<{ id: string }>()
+
+      if (existingSlug) {
+        return errorResponse(
+          ErrorCodes.VALIDATION_ERROR,
+          'This profile URL is already taken. Please choose a different one.',
+          400,
+          { field: 'slug' },
+          ctx.requestId
+        )
+      }
+      slug = normalizedSlug
+    } else {
+      // Auto-generate slug from venue name
+      const allSlugs = await ctx.env.DB.prepare(
+        'SELECT slug FROM venues WHERE slug IS NOT NULL'
+      ).all<{ slug: string }>()
+      const existingSlugs = new Set(allSlugs.results?.map(r => r.slug) || [])
+      slug = generateUniqueSlug(input.name, existingSlugs)
+    }
+
     // Insert venue profile
     await ctx.env.DB.prepare(
       `INSERT INTO venues (
-        id, user_id, name, tagline, venue_type, city, state,
+        id, user_id, slug, name, tagline, venue_type, city, state,
         capacity, standing_capacity, seated_capacity, stage_size,
         sound_system, has_green_room, has_parking, booking_lead_days,
         preferred_genres, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
       .bind(
         venueId,
         userId,
+        slug,
         input.name,
         input.tagline || null,
         input.venue_type || null,
