@@ -34,7 +34,9 @@ export function PublicProfileCTAButton({
   const navigate = useNavigate()
 
   const handleClick = () => {
-    logger.info('PublicProfileCTA', 'handleClick', 'User clicked Join Umbrella CTA', {
+    logger.info('User clicked Join Umbrella CTA', {
+      component: 'PublicProfileCTA',
+      action: 'handleClick',
       profileType,
       returnUrl,
     })
@@ -71,7 +73,9 @@ export function PublicProfileCTABanner({
   const navigate = useNavigate()
 
   const handleClick = () => {
-    logger.info('PublicProfileCTA', 'handleClick', 'User clicked Join Umbrella banner CTA', {
+    logger.info('User clicked Join Umbrella banner CTA', {
+      component: 'PublicProfileCTA',
+      action: 'handleClick',
       profileType,
       profileName,
       returnUrl,

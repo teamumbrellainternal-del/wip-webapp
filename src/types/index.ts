@@ -56,6 +56,17 @@ export interface Artist {
   avatar_url?: string
   banner_url?: string
   social_links: SocialLinks
+  // Flat social link fields (returned by API alongside social_links object)
+  website_url?: string | null
+  instagram_handle?: string | null
+  tiktok_handle?: string | null
+  youtube_url?: string | null
+  spotify_url?: string | null
+  apple_music_url?: string | null
+  soundcloud_url?: string | null
+  facebook_url?: string | null
+  twitter_url?: string | null
+  bandcamp_url?: string | null
   created_at: string
   updated_at: string
 }

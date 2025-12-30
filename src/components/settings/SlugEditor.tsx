@@ -173,7 +173,7 @@ export function SlugEditor({ currentSlug, type, onSlugUpdate }: SlugEditorProps)
     if (currentSlug && !slug) {
       setSlug(currentSlug)
     }
-  }, [currentSlug])
+  }, [currentSlug, slug])
 
   if (!user) return null
 
