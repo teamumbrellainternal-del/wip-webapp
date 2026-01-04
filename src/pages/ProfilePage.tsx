@@ -146,7 +146,7 @@ export default function ProfilePage() {
     }
 
     fetchProfileData()
-  }, [id])
+  }, [id, user])
 
   const handleFollowToggle = async () => {
     if (!id) return
