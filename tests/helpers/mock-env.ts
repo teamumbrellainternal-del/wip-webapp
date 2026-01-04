@@ -343,6 +343,27 @@ export class MockD1Database implements D1Database {
     if (query.includes('from artists')) {
       const artists = this.tables.get('artists')!
 
+      // Handle slug-related queries
+      if (query.includes('where slug is not null')) {
+        const results = Array.from(artists.values())
+          .filter((a) => a.slug != null)
+          .map((a) => ({ slug: a.slug }))
+        return mode === 'all' ? results : results[0] || null
+      }
+
+      if (query.includes('where slug =')) {
+        const result = Array.from(artists.values()).find((a) => a.slug === values[0])
+        return mode === 'all' ? (result ? [result] : []) : result || null
+      }
+
+      if (query.includes('where slug like')) {
+        const pattern = values[0].replace('%', '')
+        const results = Array.from(artists.values())
+          .filter((a) => a.slug && a.slug.startsWith(pattern))
+          .map((a) => ({ slug: a.slug }))
+        return mode === 'all' ? results : results[0] || null
+      }
+
       if (query.includes('where user_id')) {
         const result = Array.from(artists.values()).find((a) => a.user_id === values[0])
         return mode === 'all' ? (result ? [result] : []) : result || null
@@ -361,6 +382,27 @@ export class MockD1Database implements D1Database {
     // Venues table
     if (query.includes('from venues')) {
       const venues = this.tables.get('venues')!
+
+      // Handle slug-related queries
+      if (query.includes('where slug is not null')) {
+        const results = Array.from(venues.values())
+          .filter((v) => v.slug != null)
+          .map((v) => ({ slug: v.slug }))
+        return mode === 'all' ? results : results[0] || null
+      }
+
+      if (query.includes('where slug =')) {
+        const result = Array.from(venues.values()).find((v) => v.slug === values[0])
+        return mode === 'all' ? (result ? [result] : []) : result || null
+      }
+
+      if (query.includes('where slug like')) {
+        const pattern = values[0].replace('%', '')
+        const results = Array.from(venues.values())
+          .filter((v) => v.slug && v.slug.startsWith(pattern))
+          .map((v) => ({ slug: v.slug }))
+        return mode === 'all' ? results : results[0] || null
+      }
 
       if (query.includes('where user_id')) {
         const result = Array.from(venues.values()).find((v) => v.user_id === values[0])

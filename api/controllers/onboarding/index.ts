@@ -1108,7 +1108,7 @@ export const submitArtistStep1: RouteHandler = async (ctx) => {
       // Auto-generate slug from stage_name
       const allSlugs = await ctx.env.DB.prepare(
         'SELECT slug FROM artists WHERE slug IS NOT NULL'
-      ).all<{ slug: string }>()
+      ).bind().all<{ slug: string }>()
       const existingSlugs = new Set(allSlugs.results?.map(r => r.slug) || [])
       slug = generateUniqueSlug(body.stage_name, existingSlugs)
     }

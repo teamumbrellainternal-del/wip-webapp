@@ -140,7 +140,7 @@ export const createVenueProfile: RouteHandler = async (ctx) => {
       // Auto-generate slug from venue name
       const allSlugs = await ctx.env.DB.prepare(
         'SELECT slug FROM venues WHERE slug IS NOT NULL'
-      ).all<{ slug: string }>()
+      ).bind().all<{ slug: string }>()
       const existingSlugs = new Set(allSlugs.results?.map(r => r.slug) || [])
       slug = generateUniqueSlug(input.name, existingSlugs)
     }
