@@ -31,6 +31,7 @@ import {
 import { serializeArrayField } from '../../models/artist'
 import { createResendService } from '../../services/resend'
 import { logger } from '../../utils/logger'
+import { generateSlug, generateUniqueSlug, validateSlug, normalizeSlug } from '../../utils/slug'
 
 /**
  * Onboarding session stored in KV (temporary data, deleted after completion or timeout)
@@ -1067,10 +1068,50 @@ export const submitArtistStep1: RouteHandler = async (ctx) => {
 
     // Check if artist record already exists for this user
     const existingArtist = await ctx.env.DB.prepare(
-      'SELECT id FROM artists WHERE user_id = ?'
+      'SELECT id, slug FROM artists WHERE user_id = ?'
     )
       .bind(ctx.userId)
-      .first<{ id: string }>()
+      .first<{ id: string; slug: string | null }>()
+
+    // Process slug: use provided slug, or auto-generate from stage_name
+    let slug: string
+    if (body.slug) {
+      // Validate and normalize provided slug
+      const normalizedSlug = normalizeSlug(body.slug)
+      const slugValidation = validateSlug(normalizedSlug)
+      if (!slugValidation.valid) {
+        return errorResponse(
+          ErrorCodes.VALIDATION_ERROR,
+          slugValidation.error || 'Invalid profile URL',
+          400,
+          { field: 'slug' },
+          ctx.requestId
+        )
+      }
+
+      // Check uniqueness (allow if it's the same artist's current slug)
+      const existingSlug = await ctx.env.DB.prepare(
+        'SELECT id FROM artists WHERE slug = ? AND id != ?'
+      ).bind(normalizedSlug, existingArtist?.id || '').first<{ id: string }>()
+
+      if (existingSlug) {
+        return errorResponse(
+          ErrorCodes.VALIDATION_ERROR,
+          'This profile URL is already taken. Please choose a different one.',
+          400,
+          { field: 'slug' },
+          ctx.requestId
+        )
+      }
+      slug = normalizedSlug
+    } else {
+      // Auto-generate slug from stage_name
+      const allSlugs = await ctx.env.DB.prepare(
+        'SELECT slug FROM artists WHERE slug IS NOT NULL'
+      ).bind().all<{ slug: string }>()
+      const existingSlugs = new Set(allSlugs.results?.map(r => r.slug) || [])
+      slug = generateUniqueSlug(body.stage_name, existingSlugs)
+    }
 
     // Process genre_primary array (first becomes primary_genre, rest become secondary_genres)
     let primaryGenre = null
@@ -1090,6 +1131,7 @@ export const submitArtistStep1: RouteHandler = async (ctx) => {
       await ctx.env.DB.prepare(
         `UPDATE artists SET
           stage_name = ?,
+          slug = ?,
           legal_name = ?,
           pronouns = ?,
           location_city = ?,
@@ -1105,6 +1147,7 @@ export const submitArtistStep1: RouteHandler = async (ctx) => {
       )
         .bind(
           body.stage_name,
+          slug,
           body.legal_name || null,
           body.pronouns || null,
           body.location_city,
@@ -1140,7 +1183,7 @@ export const submitArtistStep1: RouteHandler = async (ctx) => {
 
       await ctx.env.DB.prepare(
         `INSERT INTO artists (
-          id, user_id,
+          id, user_id, slug,
           stage_name, legal_name, pronouns,
           location_city, location_state, location_country, location_zip,
           phone_number,
@@ -1148,7 +1191,7 @@ export const submitArtistStep1: RouteHandler = async (ctx) => {
           step_1_complete,
           created_at, updated_at
         ) VALUES (
-          ?, ?,
+          ?, ?, ?,
           ?, ?, ?,
           ?, ?, 'US', ?,
           ?,
@@ -1160,6 +1203,7 @@ export const submitArtistStep1: RouteHandler = async (ctx) => {
         .bind(
           artistId,
           ctx.userId,
+          slug,
           body.stage_name,
           body.legal_name || null,
           body.pronouns || null,

@@ -29,6 +29,10 @@ import FilesPage from '@/pages/FilesPage'
 import MessageFansPage from '@/pages/MessageFansPage'
 import CreativeStudioPage from '@/pages/CreativeStudioPage'
 import NetworkPage from '@/pages/NetworkPage'
+import VenueDashboardPage from '@/pages/venue/VenueDashboardPage'
+import VenueOnboardingStep1 from '@/pages/venue/onboarding/VenueOnboardingStep1'
+import VenueOnboardingStep2 from '@/pages/venue/onboarding/VenueOnboardingStep2'
+import VenueProfilePage from '@/pages/VenueProfilePage'
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
@@ -39,7 +43,7 @@ const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
  * 1. ProtectedRoute - Ensures user is authenticated
  * 2. OnboardingGuard - Ensures user has completed onboarding (D-006)
  *
- * Public routes: /auth, /terms, /privacy
+ * Public routes: /auth, /terms, /privacy, /artist/:id, /venue/:id
  * All other routes require authentication and onboarding completion
  */
 export const router = createBrowserRouter([
@@ -172,16 +176,10 @@ export const router = createBrowserRouter([
     ),
   },
 
-  // Artist Profile (with dynamic ID)
+  // Artist Profile (with dynamic ID) - PUBLIC for SEO indexing
   {
     path: '/artist/:id',
-    element: (
-      <ProtectedRoute>
-        <OnboardingGuard>
-          <ProfilePage />
-        </OnboardingGuard>
-      </ProtectedRoute>
-    ),
+    element: <ProfilePage />,
   },
 
   // Gig Details (with dynamic ID)
@@ -194,6 +192,12 @@ export const router = createBrowserRouter([
         </OnboardingGuard>
       </ProtectedRoute>
     ),
+  },
+
+  // Venue Profile (with dynamic ID) - PUBLIC for SEO indexing
+  {
+    path: '/venue/:id',
+    element: <VenueProfilePage />,
   },
 
   // Profile Management (D-022: Separate /profile/edit route)
@@ -306,6 +310,35 @@ export const router = createBrowserRouter([
         <OnboardingGuard>
           <SettingsPage />
         </OnboardingGuard>
+      </ProtectedRoute>
+    ),
+  },
+
+  // Venue Onboarding Routes (Protected but no OnboardingGuard)
+  {
+    path: '/venue/onboarding/step1',
+    element: (
+      <ProtectedRoute>
+        <VenueOnboardingStep1 />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/venue/onboarding/step2',
+    element: (
+      <ProtectedRoute>
+        <VenueOnboardingStep2 />
+      </ProtectedRoute>
+    ),
+  },
+
+  // Venue Dashboard (Venue Mode)
+  // Note: No OnboardingGuard - venue users have different onboarding flow
+  {
+    path: '/venue/dashboard',
+    element: (
+      <ProtectedRoute>
+        <VenueDashboardPage />
       </ProtectedRoute>
     ),
   },

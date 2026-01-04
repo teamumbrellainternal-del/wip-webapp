@@ -1,21 +1,23 @@
 /**
  * AppLayout Component
- * Main authenticated app shell with navigation bar for Umbrella
+ * Main app shell with navigation bar for Umbrella
  *
  * Features:
  * - Top navigation bar with logo, tabs, notifications, profile
  * - D-044: Tools navigation item
  * - D-098: Settings access via profile dropdown
+ * - Public page support: simplified header for unauthenticated users
  */
 
-import { Link, useLocation } from 'react-router-dom'
-import { Bell } from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Bell, LogIn, UserPlus } from 'lucide-react'
 import UmbrellaIcon from '@brand/assets/logos/umbrella-icon.svg'
 import { Button } from '@/components/ui/button'
 import { ProfileDropdown } from './ProfileDropdown'
 import { NotificationPanel } from './NotificationPanel'
 import { Footer } from './Footer'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -32,9 +34,23 @@ const navigationTabs = [
 
 export default function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation()
+  const navigate = useNavigate()
+  const { user, isLoading } = useAuth()
+
+  const isAuthenticated = !!user
 
   const isActiveTab = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`)
+  }
+
+  const handleSignIn = () => {
+    const returnUrl = location.pathname
+    navigate(`/auth?returnUrl=${encodeURIComponent(returnUrl)}`)
+  }
+
+  const handleJoinUmbrella = () => {
+    const returnUrl = location.pathname
+    navigate(`/auth?returnUrl=${encodeURIComponent(returnUrl)}`)
   }
 
   return (
@@ -46,74 +62,106 @@ export default function AppLayout({ children }: AppLayoutProps) {
             {/* Left Side: Logo + Navigation Tabs */}
             <div className="flex items-center gap-8">
               {/* Logo */}
-              <Link to="/dashboard" className="flex flex-shrink-0 items-center gap-2">
+              <Link
+                to={isAuthenticated ? '/dashboard' : '/'}
+                className="flex flex-shrink-0 items-center gap-2"
+              >
                 <img src={UmbrellaIcon} alt="Umbrella" className="h-8 w-8 rounded-lg" />
                 <span className="hidden text-lg font-bold sm:inline">Umbrella</span>
               </Link>
 
-              {/* Main Navigation Tabs - Hidden on mobile */}
-              <nav className="hidden items-center gap-6 md:flex">
-                {navigationTabs.map((tab) => {
+              {/* Main Navigation Tabs - Only show for authenticated users */}
+              {isAuthenticated && (
+                <nav className="hidden items-center gap-6 md:flex">
+                  {navigationTabs.map((tab) => {
+                    const active = isActiveTab(tab.path)
+                    return (
+                      <Link
+                        key={tab.path}
+                        to={tab.path}
+                        className={cn(
+                          'relative py-4 text-sm font-medium transition-colors hover:text-primary',
+                          active ? 'text-foreground' : 'text-muted-foreground'
+                        )}
+                      >
+                        {tab.label}
+                        {active && (
+                          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                        )}
+                      </Link>
+                    )
+                  })}
+                </nav>
+              )}
+            </div>
+
+            {/* Right Side: Different content based on auth state */}
+            <div className="flex items-center gap-3">
+              {isLoading ? (
+                // Loading state - show skeleton
+                <div className="h-8 w-20 animate-pulse rounded bg-muted" />
+              ) : isAuthenticated ? (
+                // Authenticated user - show full navigation
+                <>
+                  {/* Notification Bell with Dropdown */}
+                  <NotificationPanel>
+                    <Button variant="ghost" size="icon" className="relative">
+                      <Bell className="h-5 w-5" />
+                      <span className="sr-only">Notifications</span>
+                    </Button>
+                  </NotificationPanel>
+
+                  {/* Profile Dropdown - D-098: Settings access */}
+                  <ProfileDropdown />
+
+                  {/* View My Profile Button - Hidden on mobile */}
+                  <Button asChild size="sm" className="hidden lg:inline-flex">
+                    <Link to="/profile/view">View My Profile</Link>
+                  </Button>
+                </>
+              ) : (
+                // Unauthenticated user - show sign in / join buttons
+                <>
+                  <Button variant="ghost" size="sm" className="gap-2" onClick={handleSignIn}>
+                    <LogIn className="h-4 w-4" />
+                    <span className="hidden sm:inline">Sign In</span>
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="gap-2 bg-purple-500 hover:bg-purple-600"
+                    onClick={handleJoinUmbrella}
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Join Umbrella</span>
+                    <span className="sm:hidden">Join</span>
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile Navigation - Only show for authenticated users */}
+          {isAuthenticated && (
+            <nav className="border-t md:hidden">
+              <div className="flex items-center justify-around py-2">
+                {navigationTabs.slice(0, 5).map((tab) => {
                   const active = isActiveTab(tab.path)
                   return (
                     <Link
                       key={tab.path}
                       to={tab.path}
                       className={cn(
-                        'relative py-4 text-sm font-medium transition-colors hover:text-primary',
-                        active ? 'text-foreground' : 'text-muted-foreground'
+                        'rounded-md px-3 py-2 text-xs font-medium transition-colors',
+                        active ? 'bg-accent text-foreground' : 'text-muted-foreground'
                       )}
                     >
                       {tab.label}
-                      {active && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-                      )}
                     </Link>
                   )
                 })}
-              </nav>
-            </div>
-
-            {/* Right Side: Notifications, Profile */}
-            <div className="flex items-center gap-3">
-              {/* Notification Bell with Dropdown */}
-              <NotificationPanel>
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="h-5 w-5" />
-                  <span className="sr-only">Notifications</span>
-                </Button>
-              </NotificationPanel>
-
-              {/* Profile Dropdown - D-098: Settings access */}
-              <ProfileDropdown />
-
-              {/* View My Profile Button - Hidden on mobile */}
-              <Button asChild size="sm" className="hidden lg:inline-flex">
-                <Link to="/profile/view">View My Profile</Link>
-              </Button>
-            </div>
-          </div>
-
-          {/* Mobile Navigation - Shown on small screens */}
-          <nav className="border-t md:hidden">
-            <div className="flex items-center justify-around py-2">
-              {navigationTabs.slice(0, 5).map((tab) => {
-                const active = isActiveTab(tab.path)
-                return (
-                  <Link
-                    key={tab.path}
-                    to={tab.path}
-                    className={cn(
-                      'rounded-md px-3 py-2 text-xs font-medium transition-colors',
-                      active ? 'bg-accent text-foreground' : 'text-muted-foreground'
-                    )}
-                  >
-                    {tab.label}
-                  </Link>
-                )
-              })}
-            </div>
-          </nav>
+              </div>
+            </nav>
+          )}
         </div>
       </header>
 

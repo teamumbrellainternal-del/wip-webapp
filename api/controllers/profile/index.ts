@@ -24,6 +24,7 @@ import {
 } from '../../models/artist'
 import { createResendService } from '../../services/resend'
 import { logger } from '../../utils/logger'
+import { generateSlug, generateUniqueSlug, validateSlug, normalizeSlug } from '../../utils/slug'
 
 /**
  * Get artist profile (own profile with full data)
@@ -375,9 +376,10 @@ export const deleteProfile: RouteHandler = async (ctx) => {
 }
 
 /**
- * Get public profile by ID
+ * Get public profile by ID or slug
  * GET /v1/profile/:id
  * Returns public fields only (per D-024 for portfolio retrieval)
+ * Supports both UUID and slug-based lookups for SEO-friendly URLs
  */
 export const getPublicProfile: RouteHandler = async (ctx) => {
   const { id } = ctx.params
@@ -385,7 +387,7 @@ export const getPublicProfile: RouteHandler = async (ctx) => {
   if (!id) {
     return errorResponse(
       ErrorCodes.VALIDATION_ERROR,
-      'Profile ID required',
+      'Profile ID or slug required',
       400,
       'id',
       ctx.requestId
@@ -393,10 +395,22 @@ export const getPublicProfile: RouteHandler = async (ctx) => {
   }
 
   try {
-    // Get artist profile by ID
-    const artist = await ctx.env.DB.prepare(
-      'SELECT * FROM artists WHERE id = ?'
-    ).bind(id).first<Artist>()
+    // Determine if id is a UUID or a slug
+    // UUID v4 pattern: 8-4-4-4-12 hex characters
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+
+    // Get artist profile by ID or slug
+    let artist: Artist | null
+    if (isUUID) {
+      artist = await ctx.env.DB.prepare(
+        'SELECT * FROM artists WHERE id = ?'
+      ).bind(id).first<Artist>()
+    } else {
+      // Lookup by slug
+      artist = await ctx.env.DB.prepare(
+        'SELECT * FROM artists WHERE slug = ?'
+      ).bind(id.toLowerCase()).first<Artist>()
+    }
 
     if (!artist) {
       return errorResponse(
@@ -1195,6 +1209,175 @@ export const getProfileStats: RouteHandler = async (ctx) => {
     return errorResponse(
       ErrorCodes.INTERNAL_ERROR,
       'Failed to get profile stats',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
+ * Update artist profile slug (custom URL)
+ * PUT /v1/profile/slug
+ * Allows users to customize their profile URL slug
+ */
+export const updateSlug: RouteHandler = async (ctx) => {
+  if (!ctx.userId) {
+    return errorResponse(
+      ErrorCodes.AUTHENTICATION_FAILED,
+      'Authentication required',
+      401,
+      undefined,
+      ctx.requestId
+    )
+  }
+
+  try {
+    const body = await ctx.request.json() as { slug?: string }
+    const { slug } = body
+
+    if (!slug) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'Slug is required',
+        400,
+        'slug',
+        ctx.requestId
+      )
+    }
+
+    // Normalize and validate the slug
+    const normalizedSlug = normalizeSlug(slug)
+    const validation = validateSlug(normalizedSlug)
+
+    if (!validation.valid) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        validation.error || 'Invalid slug',
+        400,
+        'slug',
+        ctx.requestId
+      )
+    }
+
+    // Get artist profile
+    const artist = await ctx.env.DB.prepare(
+      'SELECT id, slug FROM artists WHERE user_id = ?'
+    ).bind(ctx.userId).first<{ id: string; slug: string | null }>()
+
+    if (!artist) {
+      return errorResponse(
+        ErrorCodes.NOT_FOUND,
+        'Artist profile not found',
+        404,
+        undefined,
+        ctx.requestId
+      )
+    }
+
+    // Check if slug is already taken by another artist
+    const existingArtist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE slug = ? AND id != ?'
+    ).bind(normalizedSlug, artist.id).first<{ id: string }>()
+
+    if (existingArtist) {
+      return errorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'This URL is already taken. Please choose a different slug.',
+        400,
+        'slug',
+        ctx.requestId
+      )
+    }
+
+    // Update the slug
+    await ctx.env.DB.prepare(
+      'UPDATE artists SET slug = ?, updated_at = ? WHERE id = ?'
+    ).bind(normalizedSlug, new Date().toISOString(), artist.id).run()
+
+    logger.info('ProfileController', 'updateSlug', 'Artist slug updated', {
+      artistId: artist.id,
+      oldSlug: artist.slug,
+      newSlug: normalizedSlug,
+    })
+
+    return successResponse({
+      message: 'Profile URL updated successfully',
+      slug: normalizedSlug,
+      url: `/artist/${normalizedSlug}`,
+    }, 200, ctx.requestId)
+  } catch (error) {
+    console.error('Error updating slug:', error)
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Failed to update profile URL',
+      500,
+      undefined,
+      ctx.requestId
+    )
+  }
+}
+
+/**
+ * Check slug availability
+ * GET /v1/profile/slug/:slug/available
+ * Returns whether a slug is available for use
+ */
+export const checkSlugAvailability: RouteHandler = async (ctx) => {
+  const { slug } = ctx.params
+
+  if (!slug) {
+    return errorResponse(
+      ErrorCodes.VALIDATION_ERROR,
+      'Slug is required',
+      400,
+      'slug',
+      ctx.requestId
+    )
+  }
+
+  try {
+    // Normalize and validate the slug
+    const normalizedSlug = normalizeSlug(slug)
+    const validation = validateSlug(normalizedSlug)
+
+    if (!validation.valid) {
+      return successResponse({
+        available: false,
+        slug: normalizedSlug,
+        error: validation.error,
+      }, 200, ctx.requestId)
+    }
+
+    // Check if slug exists in database
+    const existingArtist = await ctx.env.DB.prepare(
+      'SELECT id FROM artists WHERE slug = ?'
+    ).bind(normalizedSlug).first<{ id: string }>()
+
+    const available = !existingArtist
+
+    // Generate suggestion if not available
+    let suggestion: string | undefined
+    if (!available) {
+      // Get all existing slugs that start with the normalized slug
+      const similarSlugs = await ctx.env.DB.prepare(
+        'SELECT slug FROM artists WHERE slug LIKE ?'
+      ).bind(`${normalizedSlug}%`).all<{ slug: string }>()
+
+      const existingSlugs = new Set(similarSlugs.results?.map(r => r.slug) || [])
+      suggestion = generateUniqueSlug(normalizedSlug, existingSlugs)
+    }
+
+    return successResponse({
+      available,
+      slug: normalizedSlug,
+      suggestion,
+    }, 200, ctx.requestId)
+  } catch (error) {
+    console.error('Error checking slug availability:', error)
+    return errorResponse(
+      ErrorCodes.INTERNAL_ERROR,
+      'Failed to check slug availability',
       500,
       undefined,
       ctx.requestId

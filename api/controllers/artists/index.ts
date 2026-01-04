@@ -248,11 +248,18 @@ export const getArtist: RouteHandler = async (ctx) => {
   }
 
   try {
-    // Fetch artist from database
+    // Check if the param is a UUID pattern or a slug
+    const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id)
+    
+    // Also check for legacy artist_ prefixed IDs
+    const isLegacyId = id.startsWith('artist_')
+
+    // Fetch artist from database - by ID or slug
     const artist = await ctx.env.DB.prepare(`
       SELECT
         a.id,
         a.user_id,
+        a.slug,
         a.stage_name,
         a.legal_name,
         a.verified,
@@ -277,10 +284,11 @@ export const getArtist: RouteHandler = async (ctx) => {
         a.connection_count,
         (SELECT COUNT(*) FROM artist_followers WHERE artist_id = a.id) as follower_count
       FROM artists a
-      WHERE a.id = ?
+      WHERE ${isUUID || isLegacyId ? 'a.id = ?' : 'a.slug = ?'}
     `).bind(id).first<{
       id: string
       user_id: string
+      slug: string | null
       stage_name: string
       legal_name: string | null
       verified: number
@@ -350,6 +358,7 @@ export const getArtist: RouteHandler = async (ctx) => {
       {
         id: artist.id,
         user_id: artist.user_id, // User ID for starting conversations
+        slug: artist.slug || undefined,
         artist_name: artist.stage_name,
         full_name: artist.legal_name || artist.stage_name,
         bio: artist.bio || undefined,

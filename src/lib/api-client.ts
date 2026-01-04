@@ -17,6 +17,17 @@ import type {
   MutualConnectionsResponse,
   NotificationsResponse,
   UnreadCountResponse,
+  VenueProfileResponse,
+  PublicVenueProfile,
+  CreateVenueInput,
+  UpdateVenueInput,
+  CreateGigInput,
+  UpdateGigInput,
+  VenueGig,
+  GigApplication,
+  MyApplication,
+  CreateGigResponse,
+  ApplyToGigResponse,
 } from '@/types'
 import { getSession, clearSession } from '@/lib/session'
 import { triggerSessionTimeout } from '@/contexts/SessionTimeoutContext'
@@ -291,6 +302,64 @@ class APIClient {
     })
   }
 
+  // User role management
+  async updateUserRole(
+    role: 'artist' | 'venue' | 'fan' | 'collective'
+  ): Promise<{ user: { id: string; email: string; role: string; onboarding_complete: boolean } }> {
+    return this.request('/users/role', {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
+    })
+  }
+
+  // ============================================================================
+  // VENUE PROFILE ENDPOINTS
+  // ============================================================================
+
+  /**
+   * Get current user's venue profile
+   */
+  async getVenueProfile(): Promise<VenueProfileResponse> {
+    const response = await this.request<{ venue: VenueProfileResponse }>('/venue/profile')
+    return response.venue
+  }
+
+  /**
+   * Create venue profile (during onboarding)
+   */
+  async createVenueProfile(data: CreateVenueInput): Promise<VenueProfileResponse> {
+    const response = await this.request<{ venue: VenueProfileResponse; message: string }>(
+      '/venue/profile',
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    )
+    return response.venue
+  }
+
+  /**
+   * Update venue profile
+   */
+  async updateVenueProfile(data: UpdateVenueInput): Promise<VenueProfileResponse> {
+    const response = await this.request<{ venue: VenueProfileResponse; message: string }>(
+      '/venue/profile',
+      {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }
+    )
+    return response.venue
+  }
+
+  /**
+   * Get public venue profile by ID
+   */
+  async getPublicVenueProfile(venueId: string): Promise<PublicVenueProfile> {
+    const response = await this.request<{ venue: PublicVenueProfile }>(`/venue/profile/${venueId}`)
+    return response.venue
+  }
+
   // Marketplace endpoints (stubs for future implementation)
   async listGigs(): Promise<Gig[]> {
     return this.request<Gig[]>('/gigs')
@@ -298,6 +367,95 @@ class APIClient {
 
   async getGig(gigId: string): Promise<Gig> {
     return this.request<Gig>(`/gigs/${gigId}`)
+  }
+
+  // ============================================================================
+  // GIG MANAGEMENT (Phase B - Venue/Artist marketplace)
+  // ============================================================================
+
+  /**
+   * Create a new gig (venue-only)
+   */
+  async createGig(data: CreateGigInput): Promise<CreateGigResponse> {
+    return this.request<CreateGigResponse>('/gigs', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  /**
+   * Update an existing gig (venue-only, own gigs)
+   */
+  async updateGig(gigId: string, data: UpdateGigInput): Promise<{ message: string; id: string }> {
+    return this.request<{ message: string; id: string }>(`/gigs/${gigId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
+  /**
+   * Delete/cancel a gig (venue-only, own gigs)
+   */
+  async deleteGig(gigId: string): Promise<{ message: string; id: string }> {
+    return this.request<{ message: string; id: string }>(`/gigs/${gigId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  /**
+   * Get venue's own posted gigs
+   */
+  async getMyGigs(): Promise<{ gigs: VenueGig[] }> {
+    return this.request<{ gigs: VenueGig[] }>('/gigs/mine')
+  }
+
+  /**
+   * Get applications for a specific gig (venue-only)
+   */
+  async getGigApplications(gigId: string): Promise<{ applications: GigApplication[] }> {
+    return this.request<{ applications: GigApplication[] }>(`/gigs/${gigId}/applications`)
+  }
+
+  /**
+   * Update application status (venue-only: accept/reject)
+   */
+  async updateApplicationStatus(
+    gigId: string,
+    applicationId: string,
+    status: 'accepted' | 'rejected'
+  ): Promise<{ message: string; applicationId: string; status: string }> {
+    return this.request<{ message: string; applicationId: string; status: string }>(
+      `/gigs/${gigId}/applications/${applicationId}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ status }),
+      }
+    )
+  }
+
+  /**
+   * Apply to a gig (artist-only)
+   */
+  async applyToGig(gigId: string): Promise<ApplyToGigResponse> {
+    return this.request<ApplyToGigResponse>(`/gigs/${gigId}/apply`, {
+      method: 'POST',
+    })
+  }
+
+  /**
+   * Withdraw application from a gig (artist-only)
+   */
+  async withdrawApplication(gigId: string): Promise<{ message: string; gigId: string }> {
+    return this.request<{ message: string; gigId: string }>(`/gigs/${gigId}/apply`, {
+      method: 'DELETE',
+    })
+  }
+
+  /**
+   * Get artist's own applications
+   */
+  async getMyApplications(): Promise<{ applications: MyApplication[] }> {
+    return this.request<{ applications: MyApplication[] }>('/gigs/applications')
   }
 
   async listArtists(): Promise<ArtistPublicProfile[]> {

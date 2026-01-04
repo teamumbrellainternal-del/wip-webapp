@@ -6,6 +6,11 @@
 import { generateUUIDv4 } from '../../api/utils/uuid'
 
 /**
+ * User role type
+ */
+export type UserRole = 'artist' | 'venue' | 'fan' | 'collective'
+
+/**
  * Create test user data
  */
 export function createTestUser(overrides?: {
@@ -13,6 +18,7 @@ export function createTestUser(overrides?: {
   oauth_provider?: 'google' | 'apple'
   oauth_id?: string
   onboarding_complete?: boolean
+  role?: UserRole | null
 }) {
   const id = generateUUIDv4()
   return {
@@ -20,10 +26,31 @@ export function createTestUser(overrides?: {
     email: overrides?.email || `test-${id}@example.com`,
     oauth_provider: overrides?.oauth_provider || 'google',
     oauth_id: overrides?.oauth_id || `oauth-${id}`,
+    role: overrides?.role ?? null,
     onboarding_complete: overrides?.onboarding_complete ?? false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }
+}
+
+/**
+ * Create test user with artist role
+ */
+export function createTestArtistUser(overrides?: Parameters<typeof createTestUser>[0]) {
+  return createTestUser({
+    ...overrides,
+    role: 'artist',
+  })
+}
+
+/**
+ * Create test user with venue role
+ */
+export function createTestVenueUser(overrides?: Parameters<typeof createTestUser>[0]) {
+  return createTestUser({
+    ...overrides,
+    role: 'venue',
+  })
 }
 
 /**
@@ -52,6 +79,75 @@ export function createTestArtist(userId: string, overrides?: Partial<any>) {
     looking_for_collaborators: overrides?.looking_for_collaborators ?? true,
     gigs_available_dates: overrides?.gigs_available_dates || null,
     years_experience: overrides?.years_experience || 5,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    ...overrides,
+  }
+}
+
+/**
+ * Venue type classification
+ */
+export type VenueType = 'club' | 'bar' | 'theater' | 'arena' | 'outdoor' | 'restaurant' | 'other'
+
+/**
+ * Stage size options
+ */
+export type StageSize = 'small' | 'medium' | 'large'
+
+/**
+ * Venue status for booking availability
+ */
+export type VenueStatus = 'open_for_bookings' | 'closed' | 'limited'
+
+/**
+ * Create test venue profile data
+ */
+export function createTestVenue(userId: string, overrides?: Partial<any>) {
+  const id = generateUUIDv4()
+  return {
+    id,
+    user_id: userId,
+
+    // Identity
+    name: overrides?.name || `Test Venue ${id.substring(0, 8)}`,
+    tagline: overrides?.tagline || 'Your premier live music destination',
+    venue_type: overrides?.venue_type || 'club',
+
+    // Location
+    address_line1: overrides?.address_line1 || '123 Main Street',
+    address_line2: overrides?.address_line2 || null,
+    city: overrides?.city || 'Los Angeles',
+    state: overrides?.state || 'CA',
+    zip_code: overrides?.zip_code || '90001',
+    country: overrides?.country || 'US',
+
+    // Venue Details
+    capacity: overrides?.capacity ?? 500,
+    standing_capacity: overrides?.standing_capacity ?? 400,
+    seated_capacity: overrides?.seated_capacity ?? 100,
+    stage_size: overrides?.stage_size || 'medium',
+    sound_system: overrides?.sound_system || 'Professional Bose L1 Pro System',
+    has_green_room: overrides?.has_green_room ?? 1, // SQLite boolean
+    has_parking: overrides?.has_parking ?? 1, // SQLite boolean
+
+    // Booking
+    status: overrides?.status || 'open_for_bookings',
+    booking_lead_days: overrides?.booking_lead_days ?? 14,
+    preferred_genres: overrides?.preferred_genres || JSON.stringify(['Rock', 'Jazz', 'Blues']),
+
+    // Media
+    avatar_url: overrides?.avatar_url || null,
+    cover_url: overrides?.cover_url || null,
+
+    // Verification
+    verified: overrides?.verified ?? 0, // SQLite boolean
+
+    // Stats
+    events_hosted: overrides?.events_hosted ?? 0,
+    total_artists_booked: overrides?.total_artists_booked ?? 0,
+
+    // Timestamps
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     ...overrides,

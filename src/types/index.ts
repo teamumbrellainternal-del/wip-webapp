@@ -39,6 +39,7 @@ export interface SocialLinks {
 export interface Artist {
   id: string
   user_id?: string // User ID for starting conversations
+  slug?: string // SEO-friendly URL slug (e.g., "john-doe")
   artist_name: string
   full_name: string
   bio?: string
@@ -55,6 +56,17 @@ export interface Artist {
   avatar_url?: string
   banner_url?: string
   social_links: SocialLinks
+  // Flat social link fields (returned by API alongside social_links object)
+  website_url?: string | null
+  instagram_handle?: string | null
+  tiktok_handle?: string | null
+  youtube_url?: string | null
+  spotify_url?: string | null
+  apple_music_url?: string | null
+  soundcloud_url?: string | null
+  facebook_url?: string | null
+  twitter_url?: string | null
+  bandcamp_url?: string | null
   created_at: string
   updated_at: string
 }
@@ -70,6 +82,105 @@ export interface ArtistSearchParams {
   sort_by?: 'relevance' | 'rating' | 'gigs_completed' | 'followers'
   page?: number
   limit?: number
+}
+
+// ============================================================================
+// VENUE TYPES
+// ============================================================================
+
+export type VenueStatus = 'open_for_bookings' | 'closed' | 'limited'
+export type VenueType = 'club' | 'bar' | 'theater' | 'arena' | 'outdoor' | 'restaurant' | 'other'
+export type StageSize = 'small' | 'medium' | 'large'
+
+export interface VenueProfileResponse {
+  id: string
+  user_id: string
+  slug?: string // SEO-friendly URL slug (e.g., "the-blue-note")
+  name: string
+  tagline: string | null
+  venue_type: VenueType | null
+  address_line1: string | null
+  address_line2: string | null
+  city: string
+  state: string | null
+  zip_code: string | null
+  country: string
+  capacity: number | null
+  standing_capacity: number | null
+  seated_capacity: number | null
+  stage_size: StageSize | null
+  sound_system: string | null
+  has_green_room: boolean
+  has_parking: boolean
+  status: VenueStatus
+  booking_lead_days: number
+  preferred_genres: string[]
+  avatar_url: string | null
+  cover_url: string | null
+  verified: boolean
+  events_hosted: number
+  total_artists_booked: number
+  created_at: string
+  updated_at: string
+}
+
+export interface PublicVenueProfile {
+  id: string
+  slug?: string // SEO-friendly URL slug (e.g., "the-blue-note")
+  name: string
+  tagline: string | null
+  venue_type: VenueType | null
+  city: string
+  state: string | null
+  capacity: number | null
+  stage_size: StageSize | null
+  status: VenueStatus
+  avatar_url: string | null
+  cover_url: string | null
+  verified: boolean
+  events_hosted: number
+  total_artists_booked: number
+}
+
+export interface CreateVenueInput {
+  name: string
+  city: string
+  tagline?: string
+  venue_type?: VenueType
+  state?: string
+  capacity?: number
+  standing_capacity?: number
+  seated_capacity?: number
+  stage_size?: StageSize
+  sound_system?: string
+  has_green_room?: boolean
+  has_parking?: boolean
+  booking_lead_days?: number
+  preferred_genres?: string[]
+}
+
+export interface UpdateVenueInput {
+  name?: string
+  tagline?: string
+  venue_type?: VenueType
+  address_line1?: string
+  address_line2?: string
+  city?: string
+  state?: string
+  zip_code?: string
+  country?: string
+  capacity?: number
+  standing_capacity?: number
+  seated_capacity?: number
+  stage_size?: StageSize
+  sound_system?: string
+  has_green_room?: boolean
+  has_parking?: boolean
+  status?: VenueStatus
+  booking_lead_days?: number
+  preferred_genres?: string[]
+  avatar_url?: string
+  cover_url?: string
 }
 
 // ============================================================================
@@ -119,6 +230,123 @@ export interface GigOpportunity {
   payment_amount: number
   urgency_flag: boolean
   match_score?: number
+}
+
+// ============================================================================
+// GIG MANAGEMENT TYPES (Phase B)
+// ============================================================================
+
+/**
+ * Input for creating a new gig (venue-only)
+ */
+export interface CreateGigInput {
+  title: string
+  description?: string
+  venue_name: string
+  location_city: string
+  location_state: string
+  location_address?: string
+  location_zip?: string
+  date: string // ISO date YYYY-MM-DD
+  start_time?: string // HH:MM format
+  end_time?: string // HH:MM format
+  genre?: string
+  capacity?: number
+  payment_amount?: number
+  payment_type?: 'flat' | 'hourly' | 'negotiable'
+}
+
+/**
+ * Input for updating an existing gig
+ */
+export type UpdateGigInput = Partial<CreateGigInput> & {
+  status?: 'open' | 'filled' | 'cancelled' | 'completed'
+}
+
+/**
+ * Gig as returned from venue's "My Gigs" endpoint
+ */
+export interface VenueGig {
+  id: string
+  title: string
+  description?: string
+  venue_name: string
+  location: string
+  location_city: string
+  location_state: string
+  date: string
+  start_time?: string
+  end_time?: string
+  genre?: string
+  capacity?: number
+  filled_slots: number
+  payment_amount?: number
+  payment_type?: 'flat' | 'hourly' | 'negotiable'
+  status: 'open' | 'filled' | 'cancelled' | 'completed'
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * Application from an artist to a gig
+ */
+export interface GigApplication {
+  id: string
+  status: 'pending' | 'accepted' | 'rejected'
+  applied_at: string
+  artist: {
+    id: string
+    stage_name: string
+    bio?: string
+    base_rate_flat?: number
+    base_rate_hourly?: number
+    website_url?: string
+    avatar_url?: string
+    avg_rating: number
+    total_gigs: number
+  }
+}
+
+/**
+ * Artist's view of their own application
+ */
+export interface MyApplication {
+  id: string
+  status: 'pending' | 'accepted' | 'rejected'
+  applied_at: string
+  gig: {
+    id: string
+    title: string
+    venue_name: string
+    location: string
+    date: string
+    start_time?: string
+    payment_amount?: number
+    status: 'open' | 'filled' | 'cancelled' | 'completed'
+  }
+}
+
+/**
+ * Response from creating a gig
+ */
+export interface CreateGigResponse {
+  message: string
+  id: string
+  title: string
+  date: string
+  location: string
+  status: string
+}
+
+/**
+ * Response from applying to a gig
+ */
+export interface ApplyToGigResponse {
+  message: string
+  applicationId: string
+  gigId: string
+  gigTitle: string
+  appliedAt: string
 }
 
 // ============================================================================

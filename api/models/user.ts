@@ -4,6 +4,11 @@
  */
 
 /**
+ * Valid user roles for RBAC
+ */
+export type UserRole = 'artist' | 'venue' | 'fan' | 'collective'
+
+/**
  * User record stored in D1
  */
 export interface User {
@@ -12,6 +17,7 @@ export interface User {
   oauth_provider: 'apple' | 'google'
   oauth_id: string
   email: string
+  role: UserRole | null // User role for RBAC (added in migration 0017)
   onboarding_complete: number // 0 or 1 in SQLite
   created_at: string
   updated_at: string
@@ -31,6 +37,7 @@ export interface CreateUserInput {
  */
 export interface UpdateUserInput {
   email?: string
+  role?: UserRole
   onboarding_complete?: boolean
 }
 
@@ -40,6 +47,7 @@ export interface UpdateUserInput {
 export interface UserProfile {
   id: string
   email: string
+  role: UserRole | null
   onboarding_complete: boolean
   created_at: string
 }
@@ -69,6 +77,7 @@ export function sanitizeUser(user: User): UserProfile {
   return {
     id: user.id,
     email: user.email,
+    role: user.role || null,
     onboarding_complete: user.onboarding_complete === 1,
     created_at: user.created_at,
   }

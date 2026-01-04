@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -433,7 +433,13 @@ export default function MarketplacePage() {
               <CardContent className="flex flex-1 flex-col p-4">
                 <div className="mb-2 flex items-start justify-between">
                   <div>
-                    <h3 className="font-semibold text-foreground">{gig.venue_name}</h3>
+                    <Link
+                      to={`/venue/${gig.venue_id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="font-semibold text-foreground hover:text-purple-600 hover:underline"
+                    >
+                      {gig.venue_name}
+                    </Link>
                     <p className="text-sm text-muted-foreground">{gig.title}</p>
                   </div>
                   <div className="text-right">

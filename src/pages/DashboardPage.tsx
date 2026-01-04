@@ -20,6 +20,7 @@ import {
 import AppLayout from '@/components/layout/AppLayout'
 import LoadingState from '@/components/common/LoadingState'
 import ErrorState from '@/components/common/ErrorState'
+import { MyApplicationsSection } from '@/components/dashboard/MyApplicationsSection'
 import { analyticsService } from '@/services/api'
 import { apiClient } from '@/lib/api-client'
 import type { DashboardMetrics } from '@/types'
@@ -390,6 +391,9 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* My Applications Section */}
+            <MyApplicationsSection />
           </div>
 
           {/* Sidebar - Right Column */}

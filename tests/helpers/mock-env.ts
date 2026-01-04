@@ -255,6 +255,7 @@ export class MockD1Database implements D1Database {
     // Initialize empty tables
     this.tables.set('users', new Map())
     this.tables.set('artists', new Map())
+    this.tables.set('venues', new Map())
     this.tables.set('tracks', new Map())
     this.tables.set('gigs', new Map())
     this.tables.set('gig_applications', new Map())
@@ -342,6 +343,27 @@ export class MockD1Database implements D1Database {
     if (query.includes('from artists')) {
       const artists = this.tables.get('artists')!
 
+      // Handle slug-related queries
+      if (query.includes('where slug is not null')) {
+        const results = Array.from(artists.values())
+          .filter((a) => a.slug != null)
+          .map((a) => ({ slug: a.slug }))
+        return mode === 'all' ? results : results[0] || null
+      }
+
+      if (query.includes('where slug =')) {
+        const result = Array.from(artists.values()).find((a) => a.slug === values[0])
+        return mode === 'all' ? (result ? [result] : []) : result || null
+      }
+
+      if (query.includes('where slug like')) {
+        const pattern = values[0].replace('%', '')
+        const results = Array.from(artists.values())
+          .filter((a) => a.slug && a.slug.startsWith(pattern))
+          .map((a) => ({ slug: a.slug }))
+        return mode === 'all' ? results : results[0] || null
+      }
+
       if (query.includes('where user_id')) {
         const result = Array.from(artists.values()).find((a) => a.user_id === values[0])
         return mode === 'all' ? (result ? [result] : []) : result || null
@@ -354,6 +376,46 @@ export class MockD1Database implements D1Database {
 
       if (mode === 'all' && !query.includes('where')) {
         return Array.from(artists.values())
+      }
+    }
+
+    // Venues table
+    if (query.includes('from venues')) {
+      const venues = this.tables.get('venues')!
+
+      // Handle slug-related queries
+      if (query.includes('where slug is not null')) {
+        const results = Array.from(venues.values())
+          .filter((v) => v.slug != null)
+          .map((v) => ({ slug: v.slug }))
+        return mode === 'all' ? results : results[0] || null
+      }
+
+      if (query.includes('where slug =')) {
+        const result = Array.from(venues.values()).find((v) => v.slug === values[0])
+        return mode === 'all' ? (result ? [result] : []) : result || null
+      }
+
+      if (query.includes('where slug like')) {
+        const pattern = values[0].replace('%', '')
+        const results = Array.from(venues.values())
+          .filter((v) => v.slug && v.slug.startsWith(pattern))
+          .map((v) => ({ slug: v.slug }))
+        return mode === 'all' ? results : results[0] || null
+      }
+
+      if (query.includes('where user_id')) {
+        const result = Array.from(venues.values()).find((v) => v.user_id === values[0])
+        return mode === 'all' ? (result ? [result] : []) : result || null
+      }
+
+      if (query.includes('where id')) {
+        const result = venues.get(values[0])
+        return mode === 'all' ? (result ? [result] : []) : result || null
+      }
+
+      if (mode === 'all' && !query.includes('where')) {
+        return Array.from(venues.values())
       }
     }
 
@@ -393,17 +455,31 @@ export class MockD1Database implements D1Database {
   private handleInsert(query: string, values: any[]): any {
     if (query.includes('into users')) {
       const users = this.tables.get('users')!
-      const [id, oauth_provider, oauth_id, email, onboarding_complete, created_at, updated_at] =
-        values
-      users.set(id, {
-        id,
-        oauth_provider,
-        oauth_id,
-        email,
-        onboarding_complete,
-        created_at,
-        updated_at,
-      })
+      const id = values[0]
+      const userData: any = { id }
+
+      // Parse INSERT columns dynamically to support role and other fields
+      const columnsMatch = query.match(/\(([^)]+)\)/)
+      if (columnsMatch) {
+        const columns = columnsMatch[1].split(',').map((c) => c.trim())
+        columns.forEach((col, idx) => {
+          userData[col] = values[idx]
+        })
+      } else {
+        // Fallback for older format
+        const [, oauth_provider, oauth_id, email, onboarding_complete, created_at, updated_at] =
+          values
+        Object.assign(userData, {
+          oauth_provider,
+          oauth_id,
+          email,
+          onboarding_complete,
+          created_at,
+          updated_at,
+        })
+      }
+
+      users.set(id, userData)
       return { changes: 1 }
     }
 
@@ -422,6 +498,24 @@ export class MockD1Database implements D1Database {
       }
 
       artists.set(id, artistData)
+      return { changes: 1 }
+    }
+
+    if (query.includes('into venues')) {
+      const venues = this.tables.get('venues')!
+      const id = values[0]
+      const venueData: any = { id }
+
+      // Parse INSERT columns
+      const columnsMatch = query.match(/\(([^)]+)\)/)
+      if (columnsMatch) {
+        const columns = columnsMatch[1].split(',').map((c) => c.trim())
+        columns.forEach((col, idx) => {
+          venueData[col] = values[idx]
+        })
+      }
+
+      venues.set(id, venueData)
       return { changes: 1 }
     }
 
@@ -461,8 +555,15 @@ export class MockD1Database implements D1Database {
       const userId = values[values.length - 1]
       const user = users.get(userId)
 
-      if (user && query.includes('onboarding_complete')) {
-        user.onboarding_complete = values[0]
+      if (user) {
+        if (query.includes('onboarding_complete')) {
+          user.onboarding_complete = values[0]
+        }
+        if (query.includes('role')) {
+          // role = ?, updated_at = ? WHERE id = ?
+          user.role = values[0]
+          user.updated_at = values[1]
+        }
         users.set(userId, user)
         return { changes: 1 }
       }
@@ -477,6 +578,20 @@ export class MockD1Database implements D1Database {
         // Update fields based on query
         Object.assign(artist, { updated_at: new Date().toISOString() })
         artists.set(artistId, artist)
+        return { changes: 1 }
+      }
+    }
+
+    if (query.includes('update venues')) {
+      const venues = this.tables.get('venues')!
+      // For venue updates, user_id is the WHERE clause value (last value)
+      const userId = values[values.length - 1]
+      const venue = Array.from(venues.values()).find((v) => v.user_id === userId)
+
+      if (venue) {
+        // Update fields based on query - parse SET clause dynamically
+        Object.assign(venue, { updated_at: values[0] }) // First value is always updated_at
+        venues.set(venue.id, venue)
         return { changes: 1 }
       }
     }

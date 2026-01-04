@@ -1,10 +1,13 @@
 import { ReactNode } from 'react'
 import { AuthContext } from './AuthContext'
 
+type UserRole = 'artist' | 'venue' | 'fan' | 'collective'
+
 interface User {
   id: string
   email: string
   name: string
+  role: UserRole | null
   onboarding_complete: boolean
 }
 
@@ -22,6 +25,7 @@ export function MockAuthProvider({ children }: { children: ReactNode }) {
     id: 'demo-user-123',
     email: 'demo@umbrella-app.com',
     name: 'Demo User',
+    role: 'artist', // Default to artist role for demo
     onboarding_complete: true, // Set to true to bypass onboarding
   }
 

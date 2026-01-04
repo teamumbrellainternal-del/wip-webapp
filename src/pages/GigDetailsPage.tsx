@@ -19,12 +19,16 @@ import {
   ArrowLeft,
   Share2,
   Flag,
+  Loader2,
+  X,
 } from 'lucide-react'
-import { gigsService } from '@/services/api'
+import { apiClient } from '@/lib/api-client'
+import { logger } from '@/utils/logger'
 import type { Gig } from '@/types'
 import { toast } from 'sonner'
 import ErrorState from '@/components/common/ErrorState'
 import { MetaTags } from '@/components/MetaTags'
+import { useAuth } from '@/contexts/AuthContext'
 
 /**
  * Gig Details Page
@@ -35,12 +39,17 @@ import { MetaTags } from '@/components/MetaTags'
 export default function GigDetailsPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user } = useAuth()
 
   const [gig, setGig] = useState<Gig | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
   const [applying, setApplying] = useState(false)
-  const [hasApplied, setHasApplied] = useState(false)
+  const [withdrawing, setWithdrawing] = useState(false)
+  const [applicationStatus, setApplicationStatus] = useState<string | null>(null)
+
+  const isArtist = user?.role === 'artist'
+  const hasApplied = !!applicationStatus
 
   useEffect(() => {
     if (!id) {
@@ -55,15 +64,21 @@ export default function GigDetailsPage() {
   const fetchGigDetails = async () => {
     if (!id) return
 
+    logger.info('GigDetailsPage:fetchDetails', { gigId: id })
     setLoading(true)
     setError(null)
 
     try {
-      const data = await gigsService.getById(id)
+      const data = await apiClient.getGig(id)
       setGig(data)
+      // Check if user has already applied (API returns application_status)
+      if ((data as any).application_status?.status) {
+        setApplicationStatus((data as any).application_status.status)
+      }
+      logger.info('GigDetailsPage:fetchDetails:success', { gigId: id })
     } catch (err) {
       setError(err as Error)
-      console.error('Failed to fetch gig details:', err)
+      logger.error('GigDetailsPage:fetchDetails:error', { error: err })
     } finally {
       setLoading(false)
     }
@@ -78,21 +93,46 @@ export default function GigDetailsPage() {
       return
     }
 
+    logger.info('GigDetailsPage:apply', { gigId: id })
     setApplying(true)
 
     try {
-      await gigsService.apply(id)
-      setHasApplied(true)
+      const response = await apiClient.applyToGig(id)
+      setApplicationStatus('pending')
+      logger.info('GigDetailsPage:apply:success', { applicationId: response.applicationId })
       toast.success('Application submitted!', {
         description: 'The venue will review your profile and get back to you.',
       })
     } catch (err) {
-      console.error('Failed to apply to gig:', err)
+      logger.error('GigDetailsPage:apply:error', { error: err })
       toast.error('Failed to submit application', {
         description: err instanceof Error ? err.message : 'Please try again later',
       })
     } finally {
       setApplying(false)
+    }
+  }
+
+  const handleWithdraw = async () => {
+    if (!id) return
+
+    logger.info('GigDetailsPage:withdraw', { gigId: id })
+    setWithdrawing(true)
+
+    try {
+      await apiClient.withdrawApplication(id)
+      setApplicationStatus(null)
+      logger.info('GigDetailsPage:withdraw:success', { gigId: id })
+      toast.success('Application withdrawn', {
+        description: 'You can apply again anytime.',
+      })
+    } catch (err) {
+      logger.error('GigDetailsPage:withdraw:error', { error: err })
+      toast.error('Failed to withdraw application', {
+        description: err instanceof Error ? err.message : 'Please try again later',
+      })
+    } finally {
+      setWithdrawing(false)
     }
   }
 
@@ -289,14 +329,55 @@ export default function GigDetailsPage() {
             {/* Apply Section */}
             <div className="space-y-4 rounded-lg bg-muted/30 p-6">
               {hasApplied ? (
-                <div className="flex items-center gap-2 text-green-600">
-                  <CheckCircle2 className="h-5 w-5" />
-                  <span className="font-medium">Application Submitted</span>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {applicationStatus === 'accepted' ? (
+                        <>
+                          <CheckCircle2 className="h-5 w-5 text-green-600" />
+                          <span className="font-medium text-green-600">Application Accepted!</span>
+                        </>
+                      ) : applicationStatus === 'rejected' ? (
+                        <>
+                          <X className="h-5 w-5 text-red-600" />
+                          <span className="font-medium text-red-600">Application Not Selected</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="h-5 w-5 text-yellow-600" />
+                          <span className="font-medium text-yellow-600">Application Pending</span>
+                        </>
+                      )}
+                    </div>
+                    {applicationStatus === 'pending' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleWithdraw}
+                        disabled={withdrawing}
+                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                      >
+                        {withdrawing ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Withdraw'}
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {applicationStatus === 'accepted'
+                      ? 'Congratulations! The venue has accepted your application. They will reach out with next steps.'
+                      : applicationStatus === 'rejected'
+                        ? 'Unfortunately, the venue has selected another artist for this gig.'
+                        : "The venue is reviewing your application. They'll notify you once they make a decision."}
+                  </p>
                 </div>
               ) : isGigClosed ? (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <AlertCircle className="h-5 w-5" />
                   <span>This gig is no longer accepting applications</span>
+                </div>
+              ) : !isArtist ? (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <AlertCircle className="h-5 w-5" />
+                  <span>Only artists can apply to gigs. Switch to an artist account to apply.</span>
                 </div>
               ) : (
                 <>
@@ -315,7 +396,7 @@ export default function GigDetailsPage() {
                   >
                     {applying ? (
                       <>
-                        <span className="mr-2 animate-spin">⏳</span>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Submitting...
                       </>
                     ) : (

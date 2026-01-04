@@ -4,10 +4,16 @@ import { usePostHog } from 'posthog-js/react'
 import { logger } from '@/utils/logger'
 import { apiClient } from '@/lib/api-client'
 
+/**
+ * Valid user roles for RBAC
+ */
+export type UserRole = 'artist' | 'venue' | 'fan' | 'collective'
+
 interface User {
   id: string
   email: string
   name: string
+  role: UserRole | null
   onboarding_complete: boolean
 }
 
@@ -113,6 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             id: data.user.id,
             email: data.user.email,
             name: clerkUser?.fullName || clerkUser?.primaryEmailAddress?.emailAddress || '',
+            role: data.user.role || null,
             onboarding_complete: data.user.onboarding_complete,
           })
 
@@ -120,6 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           posthog?.identify(data.user.id, {
             email: data.user.email,
             name: clerkUser?.fullName || clerkUser?.primaryEmailAddress?.emailAddress || '',
+            role: data.user.role || null,
           })
         } else {
           logger.error('Invalid response format: missing user data', { requestId, data: json })

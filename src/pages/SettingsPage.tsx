@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import AppLayout from '@/components/layout/AppLayout'
@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog'
 import { AlertTriangle, Trash2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { SlugEditor } from '@/components/settings'
 
 export default function SettingsPage() {
   const { user } = useAuth()
@@ -25,6 +26,46 @@ export default function SettingsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
+  const [currentSlug, setCurrentSlug] = useState<string | undefined>(undefined)
+  const [userRole, setUserRole] = useState<'artist' | 'venue'>('artist')
+
+  // Fetch current profile to get slug
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        // First check if user is a venue
+        const venueResponse = await fetch('/v1/venue/profile', {
+          credentials: 'include',
+        })
+        if (venueResponse.ok) {
+          const venueData = await venueResponse.json()
+          if (venueData.success && venueData.data?.venue) {
+            setUserRole('venue')
+            setCurrentSlug(venueData.data.venue.slug)
+            return
+          }
+        }
+
+        // Otherwise, assume artist
+        const artistResponse = await fetch('/v1/profile', {
+          credentials: 'include',
+        })
+        if (artistResponse.ok) {
+          const artistData = await artistResponse.json()
+          if (artistData.success && artistData.data) {
+            setUserRole('artist')
+            setCurrentSlug(artistData.data.slug)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching profile for slug:', error)
+      }
+    }
+
+    if (user) {
+      fetchProfile()
+    }
+  }, [user])
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmation !== 'DELETE') {
@@ -112,6 +153,23 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <Button onClick={() => navigate('/profile/edit')}>Edit Profile</Button>
+            </CardContent>
+          </Card>
+
+          {/* Custom Profile URL */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Custom Profile URL</CardTitle>
+              <CardDescription>
+                Customize your profile link for easier sharing and better search visibility
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SlugEditor
+                currentSlug={currentSlug}
+                type={userRole}
+                onSlugUpdate={(newSlug) => setCurrentSlug(newSlug)}
+              />
             </CardContent>
           </Card>
 

@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS users (
   oauth_provider TEXT NOT NULL CHECK (oauth_provider IN ('apple', 'google')),
   oauth_id TEXT NOT NULL,
   email TEXT NOT NULL,
+  role TEXT DEFAULT 'artist' CHECK (role IN ('artist', 'venue', 'fan', 'collective')),
   onboarding_complete BOOLEAN DEFAULT 0,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
@@ -35,6 +36,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE INDEX IF NOT EXISTS idx_users_oauth ON users(oauth_provider, oauth_id);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 
 -- ============================================================================
 -- SECTION 2: ARTIST PROFILES
